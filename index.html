@@ -22,12 +22,11 @@
         <span class="text-2xl">🌿</span>
         <div class="leading-tight">
           <h1 class="text-sm md:text-lg font-bold tracking-wide">艾草生活體驗館</h1>
-          <p class="text-[10px] text-emerald-200">產地直送 · 微信支付</p>
+          <p class="text-[10px] text-emerald-200">產地直送 · 官方正品</p>
         </div>
       </div>
       
       <div class="flex items-center gap-2">
-        <!-- 新增：推廣分享按鈕 -->
         <button onclick="openShareModal()" class="bg-emerald-800 hover:bg-emerald-700 px-3 py-1.5 rounded-full flex items-center gap-1 transition text-xs border border-emerald-600">
           📢 分享
         </button>
@@ -58,7 +57,6 @@
 
   <!-- 購物車與結帳抽屜 -->
   <div id="cartDrawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col">
-    <!-- 同上一版，包含購物車明細、收件資訊表單、支付方式單選框 -->
     <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
       <h2 class="font-bold text-slate-800 flex items-center gap-1.5"><span>🛍️</span> 結帳與收件資訊</h2>
       <button onclick="toggleCartDrawer()" class="text-slate-400 hover:text-slate-600 text-lg px-2">✕</button>
@@ -67,19 +65,39 @@
     <div class="flex-1 overflow-y-auto p-4 space-y-4">
       <div id="cartItemList" class="space-y-2"></div>
 
+      <!-- 發貨資料填寫區 (含即時驗證紅字提示) -->
       <div class="border-t border-slate-200 pt-3 space-y-2.5">
         <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1"><span>📦</span> 收件人發貨資料</h3>
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <input type="text" id="orderName" placeholder="收件人姓名 *" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none focus:border-emerald-600">
-          <input type="tel" id="orderPhone" placeholder="聯絡電話 *" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none focus:border-emerald-600">
+        
+        <div class="grid grid-cols-2 gap-2 text-xs items-start">
+          <div>
+            <label class="block text-slate-500 mb-1">收件人姓名 *</label>
+            <input type="text" id="orderName" placeholder="如：張先生 / 李華" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderName', 'errName')">
+            <p id="errName" class="text-[10px] text-rose-500 hidden mt-1">請輸入真實姓名 (2~15字)</p>
+          </div>
+          <div>
+            <label class="block text-slate-500 mb-1">聯絡電話 *</label>
+            <input type="tel" id="orderPhone" maxlength="11" placeholder="11位手機號" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderPhone', 'errPhone')">
+            <p id="errPhone" class="text-[10px] text-rose-500 hidden mt-1">請輸入有效手機號</p>
+          </div>
         </div>
-        <select id="orderDeliveryType" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs">
-          <option value="快遞寄送">快遞包郵寄送至指定地址</option>
-          <option value="現場自提">現場展台自提</option>
-        </select>
-        <textarea id="orderAddress" rows="2" placeholder="詳細收貨地址 (省/市/區/門牌) *" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none focus:border-emerald-600 text-xs"></textarea>
+
+        <div class="text-xs">
+          <label class="block text-slate-500 mb-1">送貨方式</label>
+          <select id="orderDeliveryType" onchange="handleDeliveryChange()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs">
+            <option value="快遞寄送">快遞包郵寄送至指定地址</option>
+            <option value="現場自提">現場展台自提</option>
+          </select>
+        </div>
+
+        <div class="text-xs">
+          <label class="block text-slate-500 mb-1" id="lblAddress">詳細收貨地址 *</label>
+          <textarea id="orderAddress" rows="2" placeholder="請詳細填寫：省、市、區/縣、街道、門牌號" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderAddress', 'errAddress')"></textarea>
+          <p id="errAddress" class="text-[10px] text-rose-500 hidden mt-1">地址過於簡略，請填寫完整門牌 (至少8字)</p>
+        </div>
       </div>
 
+      <!-- 支付方式選擇區 -->
       <div class="border-t border-slate-200 pt-3 space-y-2">
         <h3 class="text-xs font-bold text-slate-700">💳 選擇支付方式</h3>
         <div class="grid grid-cols-2 gap-2">
@@ -99,6 +117,7 @@
       </div>
     </div>
 
+    <!-- 底部付款按鈕 -->
     <div class="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
       <div class="flex justify-between items-baseline">
         <span class="text-xs text-slate-500">應付總額</span><span class="text-2xl font-bold text-emerald-800" id="cartTotalText">¥0</span>
@@ -133,7 +152,28 @@
     </div>
   </div>
 
-  <!-- 微信推廣分享 Modal (新功能) -->
+  <!-- 下單成功 + 引流關注官方公眾號 Modal -->
+  <div id="successModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center space-y-3">
+      <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">✓</div>
+      <h3 class="text-base font-bold text-slate-800">選購登記已成功！</h3>
+      
+      <p class="text-xs text-slate-500">
+        訂單號：<span id="orderNumberShow" class="font-mono text-emerald-800 font-bold"></span>
+      </p>
+
+      <!-- 關注公眾號專區 -->
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+        <p class="text-xs font-bold text-slate-700">👇 長按識別二維碼關注我們</p>
+        <img id="officialAccountQrImg" src="./official-account.jpg" alt="公司公眾號" class="w-36 h-36 mx-auto rounded-lg object-contain" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=OfficialAccountPlaceholder'">
+        <p class="text-[11px] text-emerald-700 leading-tight">關注後發送訂單號，可即時追蹤快遞發貨動態與節氣養生指南</p>
+      </div>
+
+      <button onclick="closeSuccessModal()" class="w-full py-2 bg-emerald-800 text-white font-bold rounded-lg text-xs">完成</button>
+    </div>
+  </div>
+
+  <!-- 微信推廣分享 Modal -->
   <div id="shareModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b pb-2">
@@ -143,7 +183,6 @@
       
       <p class="text-xs text-slate-500">邀請好友來逛逛艾草生活館</p>
       
-      <!-- 動態生成當前網址的二維碼 -->
       <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 inline-block">
         <img id="shareQrImg" src="" alt="店鋪二維碼" class="w-48 h-48 mx-auto rounded-lg object-contain">
       </div>
@@ -169,12 +208,12 @@
     const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
     const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
 
-    // 1. 您的收款碼網址 (請換成真實的二維碼圖片連結)
+    // 1. 本地收款碼與公眾號圖片路徑
     const WECHAT_PAY_QR_URL = "./pay-wx.jpg";
     const ALIPAY_QR_URL = "./pay-ali.jpg";
+    const OFFICIAL_ACCOUNT_QR_URL = "./official-account.jpg";
         
-    // 2. 微信通知 PushPlus Token (請填入您在 PushPlus 獲取的 Token)
-    // 留空代表不開啟推播功能
+    // 2. 微信通知 PushPlus Token
     const PUSHPLUS_TOKEN = "4c5528d6f3c142df86875e0e7c63a5ac"; 
     // =====================================
 
@@ -184,7 +223,6 @@
     let currentCategory = 'ALL';
     let selectedPayMethod = 'wechat';
 
-    // (省略與上一版完全相同的渲染與購物車邏輯，保持原始碼整潔)
     async function fetchCatalog() {
       const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
       catalogProducts = data || [];
@@ -232,6 +270,7 @@
       else cart.push({ part_no: p.part_no, part_name: p.part_name, unit_price: p.unit_price, maxStock: p.stock, qty: 1 });
       updateCartUI();
     }
+
     function changeQty(partNo, delta) {
       const idx = cart.findIndex(i => i.part_no === partNo);
       if (idx === -1) return;
@@ -239,6 +278,7 @@
       if (cart[idx].qty <= 0) cart.splice(idx, 1);
       updateCartUI();
     }
+
     function updateCartUI() {
       document.getElementById('cartCountBadge').innerText = cart.reduce((sum, i) => sum + i.qty, 0);
       document.getElementById('cartTotalText').innerText = `¥${cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0)}`;
@@ -253,67 +293,126 @@
       box.innerHTML = cart.map(i => `<div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100"><div class="flex-1 pr-2"><h4 class="font-bold text-xs text-slate-800 line-clamp-1">${i.part_name}</h4><div class="text-[11px] text-emerald-800 font-semibold">¥${i.unit_price}</div></div><div class="flex items-center gap-2"><button onclick="changeQty('${i.part_no}', -1)" class="w-5 h-5 bg-white border rounded text-xs">-</button><span class="text-xs font-bold">${i.qty}</span><button onclick="changeQty('${i.part_no}', 1)" class="w-5 h-5 bg-white border rounded text-xs">+</button></div></div>`).join('');
     }
     document.querySelectorAll('input[name="payMethod"]').forEach(r => r.addEventListener('change', updateCartUI));
+
     function toggleCartDrawer() {
       const d = document.getElementById('cartDrawer'), b = document.getElementById('cartBackdrop');
       const open = !d.classList.contains('translate-x-full');
       d.classList.toggle('translate-x-full', open); b.classList.toggle('hidden', open);
     }
-    
-   // 替換原有的 openPayModal 函數
-function openPayModal() {
-  const nameInput = document.getElementById('orderName');
-  const phoneInput = document.getElementById('orderPhone');
-  const addrInput = document.getElementById('orderAddress');
 
-  const name = nameInput.value.trim();
-  const phone = phoneInput.value.trim();
-  const addr = addrInput.value.trim();
-
-  // 視覺化防呆：未填寫時外框變紅
-  let hasError = false;
-  [nameInput, phoneInput, addrInput].forEach(input => {
-    if (!input.value.trim()) {
-      input.classList.add('border-rose-500', 'bg-rose-50');
-      hasError = true;
-    } else {
-      input.classList.remove('border-rose-500', 'bg-rose-50');
+    // ================== 收件資料驗證輔助邏輯 ==================
+    function clearError(inputId, errId) {
+      document.getElementById(inputId).classList.remove('border-rose-500', 'bg-rose-50');
+      document.getElementById(errId).classList.add('hidden');
     }
-  });
 
-  if (hasError) {
-    alert("請完整填寫收件人姓名、電話及地址，才能為您安排發貨！");
-    return;
-  }
+    function handleDeliveryChange() {
+      const type = document.getElementById('orderDeliveryType').value;
+      const addrInput = document.getElementById('orderAddress');
+      const lbl = document.getElementById('lblAddress');
+      clearError('orderAddress', 'errAddress');
+      
+      if (type === '現場自提') {
+        lbl.innerText = '自提展位 / 備註 *';
+        addrInput.placeholder = '請註明您的展位號或預計自提時間（如：A08展位）';
+      } else {
+        lbl.innerText = '詳細收貨地址 *';
+        addrInput.placeholder = '請詳細填寫：省、市、區/縣、街道、門牌號';
+      }
+    }
 
-  const total = cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0);
-  document.getElementById('payModalAmount').innerText = `¥${total}`;
-  
-  selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
-  const isWx = selectedPayMethod === 'wechat';
-  
-  document.getElementById('payModalTitle').innerHTML = isWx ? '<span>💬</span> 微信安全支付' : '<span>🔷</span> 支付寶安全支付';
-  document.getElementById('payModalTitle').className = `text-xs font-bold flex items-center gap-1 ${isWx ? 'text-emerald-700' : 'text-sky-700'}`;
-  
-  const qrImg = document.getElementById('payQrImg');
-  const targetSrc = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
-  
-  // 破圖防呆：若找不到圖片，顯示錯誤提示
-  qrImg.onerror = function() {
-    alert(`找不到收款圖片：${targetSrc}\n請確認 GitHub 根目錄中是否已上傳該圖片，且檔案名稱與大小寫完全一致。`);
-  };
-  qrImg.src = targetSrc;
+    function validateShippingInfo() {
+      const nameEl = document.getElementById('orderName');
+      const phoneEl = document.getElementById('orderPhone');
+      const addrEl = document.getElementById('orderAddress');
+      const delType = document.getElementById('orderDeliveryType').value;
 
-  document.getElementById('payInstruction').innerText = isWx 
-    ? '請長按識別二維碼，或截圖後使用微信掃一掃' 
-    : '請截圖後使用支付寶掃一掃付款';
+      const errName = document.getElementById('errName');
+      const errPhone = document.getElementById('errPhone');
+      const errAddress = document.getElementById('errAddress');
 
-  document.getElementById('payModal').classList.replace('hidden', 'flex');
-}
-    function closePayModal() { document.getElementById('payModal').classList.replace('flex', 'hidden'); }
+      let isValid = true;
 
-    // ================== 新增：微信推播通知功能 ==================
+      // 1. 姓名校驗：2~15字，支援中文、英文與少數民族點號·，禁用純數字或標點
+      const nameVal = nameEl.value.trim();
+      const nameRegex = /^[\u4e00-\u9fa5a-zA-Z·\s]{2,15}$/;
+      if (!nameRegex.test(nameVal)) {
+        nameEl.classList.add('border-rose-500', 'bg-rose-50');
+        errName.classList.remove('hidden');
+        isValid = false;
+      }
+
+      // 2. 手機號校驗：大陸標準11位手機號碼 (13~19開頭)
+      const phoneVal = phoneEl.value.trim();
+      const phoneRegex = /^1[3-9]\d{9}$/;
+      if (!phoneRegex.test(phoneVal)) {
+        phoneEl.classList.add('border-rose-500', 'bg-rose-50');
+        errPhone.classList.remove('hidden');
+        isValid = false;
+      }
+
+      // 3. 收貨地址校驗
+      const addrVal = addrEl.value.trim();
+      if (delType === '現場自提') {
+        if (addrVal.length < 2) {
+          addrEl.classList.add('border-rose-500', 'bg-rose-50');
+          errAddress.innerText = '自提請填寫展位號或備註（至少2字）';
+          errAddress.classList.remove('hidden');
+          isValid = false;
+        }
+      } else {
+        const isPureNumOrLetter = /^[0-9a-zA-Z]+$/.test(addrVal);
+        if (addrVal.length < 8 || isPureNumOrLetter) {
+          addrEl.classList.add('border-rose-500', 'bg-rose-50');
+          errAddress.innerText = '地址過於簡略，請包含省市區/縣及詳細街道門牌（至少8字）';
+          errAddress.classList.remove('hidden');
+          isValid = false;
+        }
+      }
+
+      return isValid;
+    }
+
+    // 呼叫支付彈窗
+    function openPayModal() {
+      if (!validateShippingInfo()) {
+        alert("收貨人資料填寫有誤，請依紅字提示修正後再行結算！");
+        return;
+      }
+
+      const total = cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0);
+      document.getElementById('payModalAmount').innerText = `¥${total}`;
+      
+      selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
+      const isWx = selectedPayMethod === 'wechat';
+      
+      document.getElementById('payModalTitle').innerHTML = isWx ? '<span>💬</span> 微信安全支付' : '<span>🔷</span> 支付寶安全支付';
+      document.getElementById('payModalTitle').className = `text-xs font-bold flex items-center gap-1 ${isWx ? 'text-emerald-700' : 'text-sky-700'}`;
+      document.getElementById('qrCodeContainer').className = `p-3 rounded-xl border inline-block ${isWx ? 'border-emerald-100 bg-emerald-50' : 'border-sky-100 bg-sky-50'}`;
+      
+      const qrImg = document.getElementById('payQrImg');
+      const targetSrc = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
+      
+      qrImg.onerror = function() {
+        alert(`找不到收款圖片：${targetSrc}\n請確認 GitHub 根目錄中是否已上傳該圖片，且檔案名稱與大小寫完全一致。`);
+      };
+      qrImg.src = targetSrc;
+
+      document.getElementById('payInstruction').innerText = isWx 
+        ? '請長按識別二維碼，或截圖後使用微信掃一掃' 
+        : '請截圖後使用支付寶掃一掃付款';
+
+      document.getElementById('btnConfirmPaid').className = `w-full py-2.5 text-white font-bold rounded-lg text-xs shadow-md ${isWx ? 'bg-emerald-600' : 'bg-sky-600'}`;
+      document.getElementById('payModal').classList.replace('hidden', 'flex');
+    }
+
+    function closePayModal() { 
+      document.getElementById('payModal').classList.replace('flex', 'hidden'); 
+    }
+
+    // ================== 微信推播通知功能 ==================
     async function sendWechatPush(orderNo, name, amount) {
-      if (!PUSHPLUS_TOKEN || PUSHPLUS_TOKEN.includes("請在此貼上")) return; // 若未設定則略過
+      if (!PUSHPLUS_TOKEN || PUSHPLUS_TOKEN.includes("請在此貼上")) return;
       
       const title = `🌿 艾草館新訂單通知：${orderNo}`;
       const content = `顧客 **${name}** 剛下了一筆訂單！\n\n- 訂單金額：¥${amount}\n- 支付方式：${selectedPayMethod === 'wechat' ? '微信' : '支付寶'}\n- 時間：${new Date().toLocaleString()}\n\n請登入電腦後台 (ai-admin.html) 查看發貨地址與明細。`;
@@ -329,37 +428,83 @@ function openPayModal() {
       }
     }
 
+    // 送出訂單與庫存扣減 -> 彈出關注公眾號視窗
     async function confirmPaidAndSubmit() {
-      const btn = document.getElementById('btnConfirmPaid'); btn.disabled = true; btn.innerText = "訂單處理中...";
-      const name = document.getElementById('orderName').value.trim(), phone = document.getElementById('orderPhone').value.trim(), addr = document.getElementById('orderAddress').value.trim(), delType = document.getElementById('orderDeliveryType').value;
+      const btn = document.getElementById('btnConfirmPaid'); 
+      btn.disabled = true; 
+      btn.innerText = "訂單處理中...";
+      
+      const name = document.getElementById('orderName').value.trim();
+      const phone = document.getElementById('orderPhone').value.trim();
+      const addr = document.getElementById('orderAddress').value.trim();
+      const delType = document.getElementById('orderDeliveryType').value;
       const total = cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0);
       const orderNo = (selectedPayMethod === 'wechat' ? 'WX' : 'AL') + Date.now().toString().slice(-8);
 
       try {
-        await supabaseClient.from('shop_orders').insert([{ order_no: orderNo, customer_name: name, customer_phone: phone, customer_address: addr, delivery_type: delType, total_amount: total, items: cart, pay_status: '已付款(待核對)', shipping_status: '待發貨' }]);
+        await supabaseClient.from('shop_orders').insert([{ 
+          order_no: orderNo, 
+          customer_name: name, 
+          customer_phone: phone, 
+          customer_address: addr, 
+          delivery_type: delType, 
+          total_amount: total, 
+          items: cart, 
+          pay_status: '已付款(待核對)', 
+          shipping_status: '待發貨' 
+        }]);
+
         for (const item of cart) {
           const product = catalogProducts.find(p => p.part_no === item.part_no);
           if (product) {
             await supabaseClient.from('products').update({ stock: product.stock - item.qty }).eq('part_no', item.part_no);
-            await supabaseClient.from('inventory_transactions').insert([{ part_no: item.part_no, trans_type: 'OUT', qty: item.qty, bin_location: product.bin_location, operator: `${selectedPayMethod==='wechat'?'微信':'支付寶'}訂單(${orderNo})` }]);
+            await supabaseClient.from('inventory_transactions').insert([{ 
+              part_no: item.part_no, 
+              trans_type: 'OUT', 
+              qty: item.qty, 
+              bin_location: product.bin_location, 
+              operator: `${selectedPayMethod==='wechat'?'微信':'支付寶'}訂單(${orderNo})` 
+            }]);
           }
         }
         
-        // 觸發店長微信通知！
         await sendWechatPush(orderNo, name, total);
 
-        alert(`下單成功！訂單號：${orderNo}\n我們已收到您的收貨地址，將盡快安排發貨！`);
-        cart = []; updateCartUI(); closePayModal(); toggleCartDrawer();
-        document.getElementById('orderName').value=''; document.getElementById('orderPhone').value=''; document.getElementById('orderAddress').value='';
+        // 關閉結帳與抽屜
+        closePayModal(); 
+        toggleCartDrawer();
+
+        // 彈出下單成功 + 關注公眾號彈窗
+        document.getElementById('orderNumberShow').innerText = orderNo;
+        document.getElementById('officialAccountQrImg').src = OFFICIAL_ACCOUNT_QR_URL;
+        document.getElementById('successModal').classList.replace('hidden', 'flex');
+
+        // 清空表單與購物車
+        cart = []; 
+        updateCartUI(); 
+        document.getElementById('orderName').value = ''; 
+        document.getElementById('orderPhone').value = ''; 
+        document.getElementById('orderAddress').value = '';
+        clearError('orderName', 'errName');
+        clearError('orderPhone', 'errPhone');
+        clearError('orderAddress', 'errAddress');
+
         fetchCatalog();
-      } catch (err) { alert("失敗: " + err.message); } 
-      finally { btn.disabled = false; btn.innerText = "我已完成付款，立即送出訂單"; }
+      } catch (err) { 
+        alert("失敗: " + err.message); 
+      } finally { 
+        btn.disabled = false; 
+        btn.innerText = "我已完成付款，立即送出訂單"; 
+      }
     }
 
-    // ================== 新增：微信推廣與分享功能 ==================
+    function closeSuccessModal() {
+      document.getElementById('successModal').classList.replace('flex', 'hidden');
+    }
+
+    // ================== 微信推廣與分享功能 ==================
     function openShareModal() {
-      const currentUrl = window.location.href.split('?')[0]; // 取得當前網址去除參數
-      // 生成網址專屬二維碼
+      const currentUrl = window.location.href.split('?')[0];
       document.getElementById('shareQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(currentUrl)}`;
       document.getElementById('shareModal').classList.replace('hidden', 'flex');
     }
