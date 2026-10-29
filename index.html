@@ -217,6 +217,9 @@
   let supabaseClient = null;
   let inventoryList = [];
   let currentTab = 'table';
+  // 固化專屬雲端連線設定（一勞永逸，全設備免登入）
+  const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
+  const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
 
   // 初始化連線
   function initSupabase() {
