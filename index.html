@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>艾產品管理系統 (雲端 SQL 聯網版) </title>
+  <title>艾產品管理系統 (雲端 SQL 聯網版) - 含發貨與圖片管理</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -11,190 +11,145 @@
     .bg-panel { background-color: #141e33; }
     .bg-sub { background-color: #0d1527; }
     .border-theme { border-color: #223254; }
+    /* 自訂卷軸 */
+    ::-webkit-scrollbar { height: 6px; width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
   </style>
 </head>
 <body class="p-3 md:p-6 text-sm">
 
 <div class="max-w-7xl mx-auto flex flex-col gap-4">
   
-  <!-- 頂部 Header 與連線/帳號設定 -->
   <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-theme gap-3">
     <div>
       <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2 text-white">
         🌿 艾產品管理系統
-        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900 text-emerald-300 font-normal">授權控制版</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">多端中台版</span>
       </h1>
-      <p class="text-xs text-slate-400 mt-1">跨門市、基地、倉庫即時異動中台</p>
+      <p class="text-xs text-slate-400 mt-1">含展銷發貨、圖庫管理、權限控制</p>
     </div>
+    
     <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-      <!-- 帳號狀態區 -->
       <div id="accountStatus" class="flex items-center gap-2 mr-2 border-r border-theme pr-4">
-         <span id="userEmailLabel" class="text-xs text-slate-400">未登入 (訪客模式)</span>
+         <span id="userEmailLabel" class="text-xs text-slate-400">未登入</span>
          <button id="btnLoginOut" onclick="toggleLogin()" class="px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-bold">登入</button>
       </div>
-      
-      <button onclick="openConfigModal()" class="flex-1 md:flex-none px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs border border-theme text-slate-300">⚙️ 資料庫</button>
-      <button onclick="openShortageModal()" class="flex-1 md:flex-none px-3 py-1.5 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 text-xs border border-amber-500/40">📢 催辦</button>
-      <button onclick="exportCSV()" class="flex-1 md:flex-none px-3 py-1.5 rounded bg-sky-500 text-slate-900 font-semibold hover:bg-sky-400 text-xs">📤 匯出台帳</button>
+      <button onclick="openShortageModal()" class="px-3 py-1.5 rounded bg-amber-600/20 text-amber-400 text-xs border border-amber-500/40">📢 催辦</button>
+      <button onclick="exportCSV()" class="px-3 py-1.5 rounded bg-sky-500 text-slate-900 font-bold text-xs">📤 匯出台帳</button>
     </div>
   </header>
 
-  <!-- 戰情指標看板 -->
+  <!-- 戰情看板 -->
   <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5">
     <div class="bg-panel border border-theme rounded-lg p-3">
-      <div class="text-xs text-slate-400">納管品項 (SKUs)</div>
-      <div class="text-xl font-bold text-sky-400 mt-1" id="kpiSkuTotal">0</div>
+      <div class="text-xs text-slate-400">納管品項 (SKUs)</div><div class="text-xl font-bold text-sky-400 mt-1" id="kpiSkuTotal">0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3">
-      <div class="text-xs text-slate-400">庫存總值 (RMB)</div>
-      <div class="text-xl font-bold text-white mt-1" id="kpiTotalValue">¥0</div>
+      <div class="text-xs text-slate-400">庫存總值 (RMB)</div><div class="text-xl font-bold text-white mt-1" id="kpiTotalValue">¥0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3">
-      <div class="text-xs text-slate-400">水位充足率</div>
-      <div class="text-xl font-bold text-emerald-400 mt-1" id="kpiSafeRate">0%</div>
+      <div class="text-xs text-slate-400">待發貨訂單</div><div class="text-xl font-bold text-indigo-400 mt-1" id="kpiPendingOrder">0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3">
-      <div class="text-xs text-slate-400">安全水位告警</div>
-      <div class="text-xl font-bold text-amber-400 mt-1" id="kpiLowStock">0</div>
+      <div class="text-xs text-slate-400">安全水位告警</div><div class="text-xl font-bold text-amber-400 mt-1" id="kpiLowStock">0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3 col-span-2 md:col-span-1">
-      <div class="text-xs text-slate-400">零庫存斷貨品項</div>
-      <div class="text-xl font-bold text-rose-500 mt-1" id="kpiZeroStock">0</div>
+      <div class="text-xs text-slate-400">零庫存斷貨品項</div><div class="text-xl font-bold text-rose-500 mt-1" id="kpiZeroStock">0</div>
     </div>
   </div>
 
-  <!-- 主操作區 -->
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
     
-    <!-- 左側：現場出入庫登記台 -->
+    <!-- 左側：異動登記 -->
     <div class="lg:col-span-4 bg-panel border border-theme rounded-lg p-4 relative">
-      <!-- 權限遮罩：未登入時覆蓋操作區 -->
-      <div id="authOverlay" class="absolute inset-0 bg-panel/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-lg border border-indigo-500/50">
-        <span class="text-4xl mb-2">🔒</span>
-        <p class="text-indigo-300 font-bold mb-3">請先登入授權帳號</p>
-        <button onclick="toggleLogin()" class="px-4 py-2 bg-indigo-600 rounded text-white text-xs font-bold shadow-lg">前往登入</button>
+      <div id="authOverlay" class="absolute inset-0 bg-panel/90 backdrop-blur z-10 flex flex-col items-center justify-center rounded-lg">
+        <span class="text-4xl mb-2">🔒</span><p class="text-indigo-300 font-bold mb-3">請登入系統</p>
+        <button onclick="toggleLogin()" class="px-4 py-2 bg-indigo-600 rounded text-white text-xs font-bold shadow">前往登入</button>
       </div>
 
-      <h2 class="text-sm font-semibold text-sky-400 mb-3 flex justify-between items-center">
-        <span>📦 庫存異動登記</span>
-        <span id="syncStatus" class="text-xs font-normal text-emerald-400">● 雲端已連線</span>
-      </h2>
-
+      <h2 class="text-sm font-semibold text-sky-400 mb-3">📦 庫存異動登記</h2>
       <div class="space-y-3">
-        <!-- 表單內容與原版一致 -->
         <div>
           <label class="block text-xs text-slate-400 mb-1">異動類型 *</label>
           <select id="transType" onchange="toggleTransFields()" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
             <option value="IN">基地收穫 / 產品入庫 (+)</option>
-            <option value="OUT">門市調撥 / 銷售發貨 (-)</option>
-            <option value="NEW">新產品建檔 (Register SKU)</option>
+            <option value="OUT">門市調撥 / 發貨出庫 (-)</option>
+            <option value="NEW">新產品建檔</option>
           </select>
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1">產品編號 / 國際條碼 *</label>
-          <input type="text" id="partNo" placeholder="如 MOXA-STICK-05" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200 uppercase font-mono">
+          <label class="block text-xs text-slate-400 mb-1">產品品號 *</label>
+          <input type="text" id="partNo" placeholder="如 MOXA-01" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200 uppercase font-mono">
         </div>
 
         <div id="newSkuFields" class="hidden space-y-2 border-l-2 border-sky-500 pl-2">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">產品品名規格 *</label>
-            <input type="text" id="partName" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
-          </div>
+          <input type="text" id="partName" placeholder="產品品名" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
+          <select id="partCategory" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
+            <option>傳統灸條/艾柱</option><option>艾絨原料</option><option>艾灸器具/儀器</option><option>草本貼膏/精油</option><option>日用洗沐衍生品</option>
+          </select>
           <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">分類</label>
-              <select id="partCategory" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
-                <option value="傳統灸條/艾柱">傳統灸條/艾柱</option>
-                <option value="艾絨原料">艾絨原料</option>
-                <option value="艾灸器具/儀器">艾灸器具/儀器</option>
-                <option value="草本貼膏/精油">草本貼膏/精油</option>
-                <option value="日用洗沐衍生品">日用洗沐衍生品</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">單位</label>
-              <input type="text" id="unit" value="盒" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">單價 (RMB)</label>
-              <input type="number" id="unitPrice" value="50" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">安全水位</label>
-              <input type="number" id="safetyStock" value="20" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
-            </div>
+            <input type="number" id="unitPrice" placeholder="單價" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
+            <input type="number" id="safetyStock" placeholder="安全水位" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">數量 *</label>
-            <input type="number" id="transQty" min="1" placeholder="正整數" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">乾燥儲位 *</label>
-            <input type="text" id="binLocation" placeholder="陳化庫-A01" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200 uppercase">
-          </div>
+          <input type="number" id="transQty" placeholder="數量 *" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
+          <input type="text" id="binLocation" placeholder="儲位" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200 uppercase">
         </div>
-
-        <button onclick="executeTransaction()" id="btnSubmit" class="w-full mt-2 py-2.5 rounded bg-sky-500 hover:bg-sky-400 text-slate-900 font-bold text-xs transition">
-          💾 提交庫存異動至雲端 SQL
-        </button>
+        <button onclick="executeTransaction()" class="w-full mt-2 py-2.5 rounded bg-sky-500 hover:bg-sky-400 text-slate-900 font-bold text-xs transition">💾 提交異動</button>
       </div>
     </div>
 
-    <!-- 右側：產品台帳 / 齊套率分析 / 操作日誌 -->
+    <!-- 右側：資料視圖 -->
     <div class="lg:col-span-8 bg-panel border border-theme rounded-lg p-4">
-      
-      <!-- 篩選與視圖切換 -->
       <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 mb-4">
         <input type="text" id="searchKwd" oninput="renderViews()" placeholder="🔍 搜尋品號、品名..." class="bg-sub border border-theme rounded px-3 py-1.5 text-xs text-slate-200 flex-1">
         
         <div class="flex gap-2 overflow-x-auto whitespace-nowrap">
           <button onclick="switchView('table')" id="btnTabTable" class="px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold">產品台帳</button>
-          <button onclick="switchView('kitting')" id="btnTabKitting" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">齊套率</button>
+          <button onclick="switchView('orders')" id="btnTabOrders" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">📦 發貨訂單</button>
           <button onclick="switchView('logs')" id="btnTabLogs" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">📖 操作日誌</button>
         </div>
       </div>
 
-      <!-- 視圖 1：台帳列表 -->
-      <div id="viewTable">
-        <div id="mobileCards" class="block md:hidden space-y-2"></div>
-        <div class="hidden md:block overflow-x-auto border border-theme rounded">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-900 text-slate-400 border-b border-theme">
-              <tr>
-                <th class="p-2.5 font-medium">品號 / 條碼</th>
-                <th class="p-2.5 font-medium">品名規格</th>
-                <th class="p-2.5 font-medium">儲位</th>
-                <th class="p-2.5 font-medium">在庫量</th>
-                <th class="p-2.5 font-medium">單價</th>
-                <th class="p-2.5 font-medium">總值</th>
-                <th class="p-2.5 font-medium">狀態</th>
-              </tr>
-            </thead>
-            <tbody id="inventoryTableBody" class="divide-y divide-theme"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- 視圖 2：養生套裝齊套率分析 -->
-      <div id="viewKitting" class="hidden space-y-3"></div>
-
-      <!-- 視圖 3：操作日誌 -->
-      <div id="viewLogs" class="hidden overflow-x-auto border border-theme rounded">
-        <table class="w-full text-left text-xs">
+      <!-- 視圖 1：台帳列表 (含圖片上傳) -->
+      <div id="viewTable" class="overflow-x-auto border border-theme rounded">
+        <table class="w-full text-left text-xs min-w-[700px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
             <tr>
-              <th class="p-2.5 font-medium">時間</th>
-              <th class="p-2.5 font-medium">操作者</th>
-              <th class="p-2.5 font-medium">品號</th>
-              <th class="p-2.5 font-medium">動作</th>
-              <th class="p-2.5 font-medium">數量</th>
-              <th class="p-2.5 font-medium">儲位</th>
+              <th class="p-2.5 w-16 text-center">圖片</th>
+              <th class="p-2.5">品號 / 品名</th>
+              <th class="p-2.5">庫存 / 儲位</th>
+              <th class="p-2.5">單價 (總值)</th>
+              <th class="p-2.5">圖片管理</th>
             </tr>
+          </thead>
+          <tbody id="inventoryTableBody" class="divide-y divide-theme"></tbody>
+        </table>
+      </div>
+
+      <!-- 視圖 2：發貨管理 -->
+      <div id="viewOrders" class="hidden overflow-x-auto border border-theme rounded">
+        <table class="w-full text-left text-xs min-w-[800px]">
+          <thead class="bg-slate-900 text-slate-400 border-b border-theme">
+            <tr>
+              <th class="p-2.5">訂單號 / 時間</th>
+              <th class="p-2.5">收件資訊</th>
+              <th class="p-2.5">品項明細</th>
+              <th class="p-2.5">金額</th>
+              <th class="p-2.5">發貨狀態</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody" class="divide-y divide-theme"></tbody>
+        </table>
+      </div>
+
+      <!-- 視圖 3：日誌 -->
+      <div id="viewLogs" class="hidden overflow-x-auto border border-theme rounded">
+        <table class="w-full text-left text-xs min-w-[600px]">
+          <thead class="bg-slate-900 text-slate-400 border-b border-theme">
+            <tr><th class="p-2.5">時間</th><th class="p-2.5">操作者</th><th class="p-2.5">品號</th><th class="p-2.5">動作</th><th class="p-2.5">數量</th></tr>
           </thead>
           <tbody id="logsTableBody" class="divide-y divide-theme"></tbody>
         </table>
@@ -204,253 +159,228 @@
   </div>
 </div>
 
-<!-- 登入 Modal -->
+<!-- 隱藏的檔案上傳輸入框 (用於上傳圖片) -->
+<input type="file" id="imageUploader" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+
+<!-- Auth & Modal ... 保持簡化 ... -->
 <div id="authModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
-  <div class="bg-panel border border-theme rounded-lg p-5 max-w-sm w-full">
-    <h3 class="text-lg font-bold text-indigo-400 mb-4 text-center">🔐 系統登入</h3>
-    <div class="space-y-3 text-xs">
-      <div>
-        <label class="text-slate-400 block mb-1">員工帳號 (Email)</label>
-        <input type="email" id="authEmail" class="w-full bg-sub border border-theme rounded p-2 text-slate-200">
-      </div>
-      <div>
-        <label class="text-slate-400 block mb-1">密碼</label>
-        <input type="password" id="authPassword" class="w-full bg-sub border border-theme rounded p-2 text-slate-200">
-      </div>
-    </div>
-    <div class="flex justify-between items-center mt-5">
-      <button onclick="closeAuthModal()" class="px-4 py-2 rounded text-xs bg-slate-800 text-slate-300">取消</button>
-      <button onclick="performLogin()" class="px-4 py-2 rounded text-xs bg-indigo-600 hover:bg-indigo-500 font-bold text-white">登入系統</button>
-    </div>
-  </div>
-</div>
-
-<!-- Config / Shortage Modals (保留原樣) ... -->
-<!-- 為節省篇幅，這部分同您原來的 HTML 結構 -->
-<div id="configModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
-  <div class="bg-panel border border-theme rounded-lg p-5 max-w-md w-full">
-    <h3 class="text-sm font-bold text-sky-400 mb-2">⚙️ 雲端 SQL 連線</h3>
-    <div class="space-y-2.5 text-xs">
-      <input type="text" id="cfgUrl" placeholder="Project URL" class="w-full bg-sub border border-theme rounded p-2 text-slate-200">
-      <input type="text" id="cfgKey" placeholder="Anon Public Key" class="w-full bg-sub border border-theme rounded p-2 text-slate-200 font-mono">
-    </div>
-    <div class="flex justify-end gap-2 mt-4">
-      <button onclick="closeConfigModal()" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300">取消</button>
-      <button onclick="saveConfig()" class="px-3 py-1.5 rounded text-xs bg-sky-500 font-bold text-slate-900">儲存</button>
-    </div>
-  </div>
-</div>
-
-<div id="shortageModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
-  <div class="bg-panel border border-theme rounded-lg p-5 max-w-lg w-full">
-    <h3 class="text-sm font-bold text-amber-400 mb-2">📢 催辦通報</h3>
-    <textarea id="shortageContent" class="w-full h-56 bg-sub border border-theme rounded p-2 text-xs font-mono text-slate-300"></textarea>
-    <div class="flex justify-end gap-2 mt-3">
-      <button onclick="closeShortageModal()" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300">關閉</button>
-      <button onclick="copyShortageDraft()" class="px-3 py-1.5 rounded text-xs bg-sky-500 font-bold text-slate-900">複製</button>
-    </div>
+  <div class="bg-panel border border-theme rounded-lg p-5 max-w-sm w-full space-y-3">
+    <h3 class="font-bold text-indigo-400 text-center">🔐 系統登入</h3>
+    <input type="email" id="authEmail" placeholder="Email" class="w-full bg-sub border border-theme rounded p-2 text-slate-200 text-xs">
+    <input type="password" id="authPassword" placeholder="Password" class="w-full bg-sub border border-theme rounded p-2 text-slate-200 text-xs">
+    <div class="flex gap-2"><button onclick="closeAuthModal()" class="flex-1 py-1.5 rounded text-xs bg-slate-800">取消</button><button onclick="performLogin()" class="flex-1 py-1.5 rounded text-xs bg-indigo-600 font-bold">登入</button></div>
   </div>
 </div>
 
 <script>
-  let supabaseClient = null;
-  let inventoryList = [];
-  let currentTab = 'table';
-  let currentUser = null; // 新增：追蹤目前登入使用者
-
   const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
   const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
 
-  // 1. 初始化與帳號狀態監聽
-  function initSupabase() {
-    const url = localStorage.getItem('moxa_supabase_url') || FIXED_SUPABASE_URL;
-    const key = localStorage.getItem('moxa_supabase_key') || FIXED_SUPABASE_KEY;
+  let supabaseClient = supabase.createClient(FIXED_SUPABASE_URL, FIXED_SUPABASE_KEY);
+  let inventoryList = [];
+  let currentTab = 'table';
+  let currentUser = null;
+  let targetPartNoForUpload = null; // 記錄目前要上傳圖片的品號
 
-    if (url && key) {
-      supabaseClient = supabase.createClient(url, key);
-      document.getElementById('syncStatus').innerText = '● 雲端 SQL 已連線';
-      fetchProducts();
-      
-      // 監聽 Auth 狀態
-      supabaseClient.auth.onAuthStateChange((event, session) => {
-        currentUser = session ? session.user : null;
-        updateAuthUI();
-      });
-      
-    } else {
-      openConfigModal();
-    }
-  }
-
-  // 2. 更新登入 UI
-  function updateAuthUI() {
-    const authOverlay = document.getElementById('authOverlay');
-    const userLabel = document.getElementById('userEmailLabel');
-    const btnLoginOut = document.getElementById('btnLoginOut');
-
-    if (currentUser) {
-      authOverlay.classList.add('hidden');
-      userLabel.innerText = `👤 ${currentUser.email}`;
-      userLabel.classList.replace('text-slate-400', 'text-indigo-300');
-      btnLoginOut.innerText = "登出";
-      btnLoginOut.classList.replace('bg-indigo-600', 'bg-slate-700');
-    } else {
-      authOverlay.classList.remove('hidden');
-      userLabel.innerText = "未登入 (訪客模式)";
-      userLabel.classList.replace('text-indigo-300', 'text-slate-400');
-      btnLoginOut.innerText = "登入";
-      btnLoginOut.classList.replace('bg-slate-700', 'bg-indigo-600');
-    }
-  }
-
-  // 3. 登入與登出邏輯
-  function toggleLogin() {
-    if (currentUser) {
-      supabaseClient.auth.signOut();
-      alert("已安全登出。");
-    } else {
-      document.getElementById('authModal').classList.remove('hidden');
-      document.getElementById('authModal').classList.add('flex');
-    }
-  }
+  // 初始化與登入
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    currentUser = session ? session.user : null;
+    document.getElementById('authOverlay').classList.toggle('hidden', !!currentUser);
+    document.getElementById('userEmailLabel').innerText = currentUser ? `👤 ${currentUser.email}` : '未登入';
+    document.getElementById('btnLoginOut').innerText = currentUser ? '登出' : '登入';
+  });
   
-  function closeAuthModal() {
-    document.getElementById('authModal').classList.add('hidden');
-    document.getElementById('authModal').classList.remove('flex');
-  }
-
+  function toggleLogin() { currentUser ? supabaseClient.auth.signOut() : document.getElementById('authModal').classList.replace('hidden', 'flex'); }
+  function closeAuthModal() { document.getElementById('authModal').classList.replace('flex', 'hidden'); }
   async function performLogin() {
-    const email = document.getElementById('authEmail').value;
-    const password = document.getElementById('authPassword').value;
-    if (!email || !password) return alert("請填寫帳號密碼！");
-
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) {
-      alert("登入失敗：" + error.message);
-    } else {
-      closeAuthModal();
-      document.getElementById('authPassword').value = '';
-    }
-  }
-
-  // 4. 獲取產品資料 (原版邏輯)
-  async function fetchProducts() {
-    if (!supabaseClient) return;
-    const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
-    if (!error) {
-      inventoryList = data || [];
-      renderViews();
-    }
-  }
-
-  // 5. 執行異動 (新增寫入 Operator 日誌)
-  async function executeTransaction() {
-    if (!supabaseClient) return alert("資料庫未連線！");
-    if (!currentUser) return alert("您沒有權限！請先登入系統。");
-
-    const type = document.getElementById('transType').value;
-    const partNo = document.getElementById('partNo').value.trim().toUpperCase();
-    const qty = parseInt(document.getElementById('transQty').value, 10);
-    const bin = document.getElementById('binLocation').value.trim().toUpperCase();
-
-    if (!partNo) return alert("請輸入品號！");
-    if (isNaN(qty) || qty <= 0) return alert("請輸入正確數量！");
-
-    const item = inventoryList.find(i => i.part_no === partNo);
-
-    if (type === 'NEW') {
-      if (item) return alert("該品號已存在！");
-      const partName = document.getElementById('partName').value.trim();
-      const { error } = await supabaseClient.from('products').insert([{
-        part_no: partNo, part_name: partName, category: document.getElementById('partCategory').value,
-        bin_location: bin, stock: qty, safety_stock: document.getElementById('safetyStock').value || 20,
-        unit_price: document.getElementById('unitPrice').value || 0, unit: document.getElementById('unit').value || '盒'
-      }]);
-      if (error) return alert("建檔失敗: " + error.message);
-    } else if (type === 'IN') {
-      if (!item) return alert("品號不存在，請先建檔！");
-      const { error } = await supabaseClient.from('products').update({ stock: item.stock + qty, bin_location: bin || item.bin_location }).eq('part_no', partNo);
-      if (error) return alert("入庫失敗: " + error.message);
-    } else if (type === 'OUT') {
-      if (!item) return alert("品號不存在！");
-      if (item.stock < qty) return alert(`庫存不足！目前僅剩 ${item.stock}`);
-      const { error } = await supabaseClient.from('products').update({ stock: item.stock - qty }).eq('part_no', partNo);
-      if (error) return alert("出庫失敗: " + error.message);
-    }
-
-    // 🔴 關鍵升級：寫入異動流水記錄時，帶入目前操作人員 (operator)
-    await supabaseClient.from('inventory_transactions').insert([{
-      part_no: partNo, trans_type: type, qty: qty, bin_location: bin,
-      operator: currentUser.email // 將登入者的 Email 記錄至資料庫
-    }]);
-
-    document.getElementById('transQty').value = "";
-    fetchProducts();
-    if(currentTab === 'logs') fetchLogs(); // 若停留在日誌頁，更新日誌
-    alert("庫存更新與操作日誌寫入成功！");
-  }
-
-  // 6. 視圖切換邏輯擴充
-  function switchView(tab) {
-    currentTab = tab;
-    document.getElementById('viewTable').className = tab === 'table' ? 'block' : 'hidden';
-    document.getElementById('viewKitting').className = tab === 'kitting' ? 'block' : 'hidden';
-    document.getElementById('viewLogs').className = tab === 'logs' ? 'block' : 'hidden';
-    
-    // 更新按鈕樣式
-    ['Table', 'Kitting', 'Logs'].forEach(t => {
-      const btn = document.getElementById('btnTab' + t);
-      if (tab === t.toLowerCase()) {
-        btn.className = 'px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold';
-      } else {
-        btn.className = 'px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme';
-      }
+    const { error } = await supabaseClient.auth.signInWithPassword({
+      email: document.getElementById('authEmail').value,
+      password: document.getElementById('authPassword').value
     });
-
-    if (tab === 'kitting') loadKitting();
-    if (tab === 'logs') fetchLogs();
+    if (error) alert("登入失敗：" + error.message);
+    else closeAuthModal();
   }
 
-  // 7. 獲取操作日誌
-  async function fetchLogs() {
-    if (!supabaseClient) return;
-    const { data, error } = await supabaseClient.from('inventory_transactions')
-                            .select('*').order('created_at', { ascending: false }).limit(50);
-    if (error) return console.error(error);
+  // 取資料
+  async function fetchProducts() {
+    const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+    inventoryList = data || [];
+    renderViews();
+  }
+
+  // 渲染台帳與圖片管理
+  function renderViews() {
+    const kwd = document.getElementById('searchKwd').value.toLowerCase();
     
-    document.getElementById('logsTableBody').innerHTML = data.map(log => {
-      let actionStr = log.trans_type === 'IN' ? '<span class="text-emerald-400">入庫 (+)</span>' : 
-                      log.trans_type === 'OUT' ? '<span class="text-amber-400">出庫 (-)</span>' : 
-                      '<span class="text-sky-400">新產品建檔</span>';
-      let time = new Date(log.created_at).toLocaleString('zh-TW', {hour12: false});
-      
+    // KPI 計算
+    let totalVal = 0, lowCount = 0, zeroCount = 0;
+    inventoryList.forEach(i => { totalVal += i.stock * i.unit_price; if (i.stock === 0) zeroCount++; else if (i.stock <= i.safety_stock) lowCount++; });
+    document.getElementById('kpiSkuTotal').innerText = inventoryList.length;
+    document.getElementById('kpiTotalValue').innerText = `¥${totalVal.toLocaleString()}`;
+    document.getElementById('kpiLowStock').innerText = lowCount;
+    document.getElementById('kpiZeroStock').innerText = zeroCount;
+
+    const tbody = document.getElementById('inventoryTableBody');
+    tbody.innerHTML = inventoryList.filter(i => i.part_no.toLowerCase().includes(kwd) || i.part_name.toLowerCase().includes(kwd)).map(i => {
+      // 判斷有無圖片
+      const imgDisplay = i.image_url 
+        ? `<img src="${i.image_url}" class="w-10 h-10 object-cover rounded shadow border border-slate-700">` 
+        : `<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center text-[10px] text-slate-500">無圖</div>`;
+
       return `
         <tr class="hover:bg-slate-800/40">
-          <td class="p-2.5 text-slate-400">${time}</td>
-          <td class="p-2.5 font-bold text-indigo-300">${log.operator || '未知使用者'}</td>
-          <td class="p-2.5 font-mono text-sky-400">${log.part_no}</td>
-          <td class="p-2.5">${actionStr}</td>
-          <td class="p-2.5 font-bold">${log.qty}</td>
-          <td class="p-2.5 font-mono text-slate-400">${log.bin_location || '-'}</td>
+          <td class="p-2.5 flex justify-center">${imgDisplay}</td>
+          <td class="p-2.5 leading-tight">
+            <span class="font-mono text-sky-400 font-bold">${i.part_no}</span><br>
+            <span class="text-[11px] text-slate-300">${i.part_name}</span>
+          </td>
+          <td class="p-2.5 leading-tight">
+            <span class="${i.stock===0?'text-rose-400':'text-emerald-400'} font-bold">${i.stock} ${i.unit||'件'}</span><br>
+            <span class="font-mono text-amber-300 text-[10px]">儲位: ${i.bin_location}</span>
+          </td>
+          <td class="p-2.5 leading-tight">
+            ¥${i.unit_price}<br>
+            <span class="text-slate-500 text-[10px]">總額 ¥${(i.stock * i.unit_price)}</span>
+          </td>
+          <td class="p-2.5">
+            <button onclick="triggerImageUpload('${i.part_no}')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white transition flex items-center gap-1">
+              📷 換圖片
+            </button>
+          </td>
         </tr>
       `;
     }).join('');
   }
 
-  // 其他原始邏輯保留 (renderViews, toggleTransFields, Config, Shortage, exportCSV)
-  function renderViews() { /* 同原碼 */ 
-    const kwd = document.getElementById('searchKwd').value.toLowerCase();
-    const tbody = document.getElementById('inventoryTableBody');
-    tbody.innerHTML = inventoryList.filter(i => i.part_no.toLowerCase().includes(kwd) || i.part_name.toLowerCase().includes(kwd))
-      .map(i => `<tr class="hover:bg-slate-800/40"><td class="p-2.5 font-mono text-sky-400">${i.part_no}</td><td class="p-2.5">${i.part_name}</td><td class="p-2.5 font-mono text-amber-300">${i.bin_location}</td><td class="p-2.5 font-bold">${i.stock} ${i.unit}</td><td class="p-2.5">¥${i.unit_price}</td><td class="p-2.5">¥${(i.stock * i.unit_price).toLocaleString()}</td><td class="p-2.5">${i.stock===0?'<span class="text-rose-400">斷貨</span>':'<span class="text-emerald-400">充足</span>'}</td></tr>`).join('');
+  // ================= 圖片上傳核心邏輯 =================
+  function triggerImageUpload(partNo) {
+    if (!currentUser) return alert("請先登入系統才能更換圖片！");
+    targetPartNoForUpload = partNo;
+    document.getElementById('imageUploader').click(); // 模擬點擊隱藏的上傳按鈕
   }
+
+  async function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file || !targetPartNoForUpload) return;
+    
+    // 限制 2MB
+    if (file.size > 2 * 1024 * 1024) return alert("圖片太大！請選擇 2MB 以下的照片。");
+
+    // 1. 上傳檔案至 Supabase Storage (product-images 桶)
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${targetPartNoForUpload}_${Date.now()}.${fileExt}`; // 防止快取
+    const filePath = `images/${fileName}`;
+
+    alert("圖片上傳中，請稍候...");
+
+    try {
+      const { data, error } = await supabaseClient.storage
+        .from('product-images')
+        .upload(filePath, file);
+
+      if (error) throw error;
+
+      // 2. 獲取檔案的公開網址 (Public URL)
+      const { data: publicUrlData } = supabaseClient.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+      
+      const imageUrl = publicUrlData.publicUrl;
+
+      // 3. 更新 products 表格的 image_url
+      const { error: updateErr } = await supabaseClient.from('products')
+        .update({ image_url: imageUrl })
+        .eq('part_no', targetPartNoForUpload);
+
+      if (updateErr) throw updateErr;
+
+      alert("圖片上傳與更新成功！");
+      fetchProducts(); // 刷新畫面
+
+    } catch (err) {
+      alert("上傳失敗: " + err.message);
+    } finally {
+      document.getElementById('imageUploader').value = ''; // 清空選擇
+      targetPartNoForUpload = null;
+    }
+  }
+  // ====================================================
+
+  // 發貨訂單處理
+  async function fetchShopOrders() {
+    const { data } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
+    if (!data) return;
+    
+    let pendingCount = 0;
+    
+    document.getElementById('ordersTableBody').innerHTML = data.map(o => {
+      if (o.shipping_status !== '已發貨') pendingCount++;
+      return `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-2.5 text-[11px] font-mono text-slate-400">
+            <span class="text-sky-400 font-bold">${o.order_no}</span><br>${new Date(o.created_at).toLocaleString('zh-TW',{hour12:false})}
+          </td>
+          <td class="p-2.5 leading-tight">
+            <strong class="text-white">${o.customer_name}</strong> (${o.customer_phone})<br>
+            <span class="text-slate-400 text-[10px] break-words max-w-[200px] inline-block">${o.customer_address}</span>
+          </td>
+          <td class="p-2.5 text-[10px] text-slate-300">${o.items.map(i=>`${i.part_name} x${i.qty}`).join('<br>')}</td>
+          <td class="p-2.5 font-bold text-emerald-400">¥${o.total_amount}</td>
+          <td class="p-2.5">
+            ${o.shipping_status === '已發貨' 
+              ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">已出貨</span><br><span class="text-[10px] text-slate-500">${o.tracking_no}</span>`
+              : `<button onclick="shipOrder('${o.order_no}')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold">點擊發貨</button>`}
+          </td>
+        </tr>`;
+    }).join('');
+    
+    document.getElementById('kpiPendingOrder').innerText = pendingCount;
+  }
+
+  async function shipOrder(orderNo) {
+    if(!currentUser) return alert("請先登入！");
+    const track = prompt("請填寫快遞單號 (可選填)：");
+    if (track === null) return;
+    await supabaseClient.from('shop_orders').update({ shipping_status: '已發貨', tracking_no: track }).eq('order_no', orderNo);
+    fetchShopOrders();
+  }
+
+  // 頁籤與基礎函數
+  function switchView(tab) {
+    currentTab = tab;
+    ['table', 'orders', 'logs'].forEach(t => {
+      document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? 'block overflow-x-auto border border-theme rounded' : 'hidden';
+      document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) 
+        ? 'px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold' 
+        : 'px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme';
+    });
+    if(tab==='orders') fetchShopOrders();
+    if(tab==='logs') supabaseClient.from('inventory_transactions').select('*').order('created_at',{ascending:false}).limit(50).then(({data}) => {
+      document.getElementById('logsTableBody').innerHTML = data.map(l => `<tr class="hover:bg-slate-800/40"><td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td><td class="p-2.5 text-indigo-300 text-[11px]">${l.operator||'-'}</td><td class="p-2.5 font-mono text-sky-400 text-xs">${l.part_no}</td><td class="p-2.5 text-xs ${l.trans_type==='IN'?'text-emerald-400':'text-amber-400'}">${l.trans_type}</td><td class="p-2.5 font-bold">${l.qty}</td></tr>`).join('');
+    });
+  }
+
   function toggleTransFields() { document.getElementById('newSkuFields').className = document.getElementById('transType').value === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden'; }
-  function openConfigModal() { document.getElementById('configModal').classList.remove('hidden'); document.getElementById('configModal').classList.add('flex'); }
-  function closeConfigModal() { document.getElementById('configModal').classList.add('hidden'); document.getElementById('configModal').classList.remove('flex'); }
-  function openShortageModal() { document.getElementById('shortageModal').classList.remove('hidden'); document.getElementById('shortageModal').classList.add('flex'); }
-  function closeShortageModal() { document.getElementById('shortageModal').classList.add('hidden'); document.getElementById('shortageModal').classList.remove('flex'); }
   
-  window.addEventListener('DOMContentLoaded', initSupabase);
+  async function executeTransaction() {
+    if (!currentUser) return alert("無權限！");
+    const t = document.getElementById('transType').value, p = document.getElementById('partNo').value.toUpperCase(), q = parseInt(document.getElementById('transQty').value), b = document.getElementById('binLocation').value.toUpperCase();
+    if(!p || isNaN(q)) return alert("欄位錯誤");
+    const i = inventoryList.find(x => x.part_no === p);
+    if(t==='NEW' && i) return alert("已存在");
+    if(t!=='NEW' && !i) return alert("不存在");
+    
+    if(t==='NEW') await supabaseClient.from('products').insert([{part_no:p, part_name:document.getElementById('partName').value, category:document.getElementById('partCategory').value, stock:q, bin_location:b, unit_price:document.getElementById('unitPrice').value||0, safety_stock:document.getElementById('safetyStock').value||0}]);
+    else if(t==='IN') await supabaseClient.from('products').update({stock:i.stock+q, bin_location:b||i.bin_location}).eq('part_no',p);
+    else if(t==='OUT'){ if(i.stock<q) return alert("庫存不足"); await supabaseClient.from('products').update({stock:i.stock-q}).eq('part_no',p); }
+    
+    await supabaseClient.from('inventory_transactions').insert([{part_no:p, trans_type:t, qty:q, bin_location:b, operator:currentUser.email}]);
+    document.getElementById('transQty').value='';
+    fetchProducts();
+    alert("更新成功");
+  }
+
+  fetchProducts();
 </script>
 </body>
 </html>
