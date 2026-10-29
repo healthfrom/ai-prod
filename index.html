@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>艾產品管理系統 (雲端 SQL 聯網版)</title>
+  <!-- 引入 Tailwind CSS 與 Supabase JS SDK -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { background-color: #0a0f1d; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+    .bg-panel { background-color: #141e33; }
+    .bg-sub { background-color: #0d1527; }
+    .border-theme { border-color: #223254; }
+  </style>
+</head>
+<body class="p-3 md:p-6 text-sm">
+
+<div class="max-w-7xl mx-auto flex flex-col gap-4">
+  
+  <!-- 頂部 Header 與連線設定 -->
+  <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-theme gap-3">
+    <div>
+      <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2 text-white">
+        🌿 艾產品管理系統
+        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-900 text-emerald-300 font-normal">雲端 SQL 聯網版</span>
+      </h1>
+      <p class="text-xs text-slate-400 mt-1">跨門市、基地、倉庫即時異動中台</p>
+    </div>
+    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+      <button onclick="openConfigModal()" class="flex-1 md:flex-none px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs border border-theme text-slate-300">⚙️ 資料庫配置</button>
+      <button onclick="openShortageModal()" class="flex-1 md:flex-none px-3 py-1.5 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 text-xs border border-amber-500/40">📢 缺料催辦清冊</button>
+      <button onclick="exportCSV()" class="flex-1 md:flex-none px-3 py-1.5 rounded bg-sky-500 text-slate-900 font-semibold hover:bg-sky-400 text-xs">📤 匯出台帳</button>
+    </div>
+  </header>
+
+  <!-- 戰情指標看板 (手機橫向滑動，電腦 5 欄) -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5">
+    <div class="bg-panel border border-theme rounded-lg p-3">
+      <div class="text-xs text-slate-400">納管品項 (SKUs)</div>
+      <div class="text-xl font-bold text-sky-400 mt-1" id="kpiSkuTotal">0</div>
+    </div>
+    <div class="bg-panel border border-theme rounded-lg p-3">
+      <div class="text-xs text-slate-400">庫存總值 (RMB)</div>
+      <div class="text-xl font-bold text-white mt-1" id="kpiTotalValue">¥0</div>
+    </div>
+    <div class="bg-panel border border-theme rounded-lg p-3">
+      <div class="text-xs text-slate-400">水位充足率</div>
+      <div class="text-xl font-bold text-emerald-400 mt-1" id="kpiSafeRate">0%</div>
+    </div>
+    <div class="bg-panel border border-theme rounded-lg p-3">
+      <div class="text-xs text-slate-400">安全水位告警</div>
+      <div class="text-xl font-bold text-amber-400 mt-1" id="kpiLowStock">0</div>
+    </div>
+    <div class="bg-panel border border-theme rounded-lg p-3 col-span-2 md:col-span-1">
+      <div class="text-xs text-slate-400">零庫存斷貨品項</div>
+      <div class="text-xl font-bold text-rose-500 mt-1" id="kpiZeroStock">0</div>
+    </div>
+  </div>
+
+  <!-- 主操作區：手機版單欄垂直排列，電腦版雙欄 -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+    
+    <!-- 左側：現場出入庫登記台 -->
+    <div class="lg:col-span-4 bg-panel border border-theme rounded-lg p-4">
+      <h2 class="text-sm font-semibold text-sky-400 mb-3 flex justify-between items-center">
+        <span>📦 庫存異動登記</span>
+        <span id="syncStatus" class="text-xs font-normal text-emerald-400">● 雲端已連線</span>
+      </h2>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">異動類型 *</label>
+          <select id="transType" onchange="toggleTransFields()" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
+            <option value="IN">基地收穫 / 產品入庫 (+)</option>
+            <option value="OUT">門市調撥 / 銷售發貨 (-)</option>
+            <option value="NEW">新產品建檔 (Register SKU)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">產品編號 / 國際條碼 *</label>
+          <input type="text" id="partNo" placeholder="如 MOXA-STICK-05" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200 uppercase font-mono">
+        </div>
+
+        <!-- 新產品欄位 -->
+        <div id="newSkuFields" class="hidden space-y-2 border-l-2 border-sky-500 pl-2">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">產品品名規格 *</label>
+            <input type="text" id="partName" placeholder="如：五年陳 40:1 手工艾條" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">分類</label>
+              <select id="partCategory" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
+                <option value="傳統灸條/艾柱">傳統灸條/艾柱</option>
+                <option value="艾絨原料">艾絨原料</option>
+                <option value="艾灸器具/儀器">艾灸器具/儀器</option>
+                <option value="草本貼膏/精油">草本貼膏/精油</option>
+                <option value="日用洗沐衍生品">日用洗沐衍生品</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">單位</label>
+              <input type="text" id="unit" value="盒" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">單價 (RMB)</label>
+              <input type="number" id="unitPrice" value="50" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">安全水位</label>
+              <input type="number" id="safetyStock" value="20" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">數量 *</label>
+            <input type="number" id="transQty" min="1" placeholder="正整數" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">乾燥儲位 *</label>
+            <input type="text" id="binLocation" placeholder="陳化庫-A01" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200 uppercase">
+          </div>
+        </div>
+
+        <button onclick="executeTransaction()" id="btnSubmit" class="w-full mt-2 py-2.5 rounded bg-sky-500 hover:bg-sky-400 text-slate-900 font-bold text-xs transition">
+          💾 提交庫存異動至雲端 SQL
+        </button>
+      </div>
+    </div>
+
+    <!-- 右側：產品台帳與套裝齊套率分析 -->
+    <div class="lg:col-span-8 bg-panel border border-theme rounded-lg p-4">
+      
+      <!-- 篩選與視圖切換 -->
+      <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 mb-4">
+        <input type="text" id="searchKwd" oninput="renderViews()" placeholder="🔍 搜尋品號、品名、儲位..." class="bg-sub border border-theme rounded px-3 py-1.5 text-xs text-slate-200 flex-1">
+        
+        <div class="flex gap-2">
+          <button onclick="switchView('table')" id="btnTabTable" class="px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold">產品台帳</button>
+          <button onclick="switchView('kitting')" id="btnTabKitting" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">齊套率分析</button>
+        </div>
+      </div>
+
+      <!-- 視圖 1：台帳列表 (手機卡片，電腦表格) -->
+      <div id="viewTable">
+        <!-- 手機端卡片列表 (小螢幕顯示) -->
+        <div id="mobileCards" class="block md:hidden space-y-2"></div>
+
+        <!-- 電腦端表格 (中大螢幕顯示) -->
+        <div class="hidden md:block overflow-x-auto border border-theme rounded">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900 text-slate-400 border-b border-theme">
+              <tr>
+                <th class="p-2.5 font-medium">品號 / 條碼</th>
+                <th class="p-2.5 font-medium">品名規格</th>
+                <th class="p-2.5 font-medium">儲位</th>
+                <th class="p-2.5 font-medium">在庫量</th>
+                <th class="p-2.5 font-medium">單價</th>
+                <th class="p-2.5 font-medium">總值</th>
+                <th class="p-2.5 font-medium">狀態</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody" class="divide-y divide-theme"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 視圖 2：養生套裝齊套率分析 -->
+      <div id="viewKitting" class="hidden space-y-3"></div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- 雲端連線設定 Modal -->
+<div id="configModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
+  <div class="bg-panel border border-theme rounded-lg p-5 max-w-md w-full">
+    <h3 class="text-sm font-bold text-sky-400 mb-2">⚙️ 雲端 SQL (Supabase) 連線金鑰</h3>
+    <p class="text-xs text-slate-400 mb-3">請至您的 Supabase 專案 -> Settings -> API 複製 URL 與 anon public key：</p>
+    <div class="space-y-2.5 text-xs">
+      <div>
+        <label class="text-slate-400 block mb-1">Project URL</label>
+        <input type="text" id="cfgUrl" placeholder="https://xxxx.supabase.co" class="w-full bg-sub border border-theme rounded p-2 text-slate-200">
+      </div>
+      <div>
+        <label class="text-slate-400 block mb-1">Anon Public Key</label>
+        <input type="text" id="cfgKey" placeholder="eyJhbGciOi..." class="w-full bg-sub border border-theme rounded p-2 text-slate-200 font-mono">
+      </div>
+    </div>
+    <div class="flex justify-end gap-2 mt-4">
+      <button onclick="closeConfigModal()" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300">取消</button>
+      <button onclick="saveConfig()" class="px-3 py-1.5 rounded text-xs bg-sky-500 font-bold text-slate-900">儲存並連線</button>
+    </div>
+  </div>
+</div>
+
+<!-- 缺料採購催辦清冊 Modal -->
+<div id="shortageModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
+  <div class="bg-panel border border-theme rounded-lg p-5 max-w-lg w-full">
+    <h3 class="text-sm font-bold text-amber-400 mb-2">📢 核心艾產品缺料採購催辦通報</h3>
+    <textarea id="shortageContent" class="w-full h-56 bg-sub border border-theme rounded p-2 text-xs font-mono text-slate-300"></textarea>
+    <div class="flex justify-end gap-2 mt-3">
+      <button onclick="closeShortageModal()" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300">關閉</button>
+      <button onclick="copyShortageDraft()" class="px-3 py-1.5 rounded text-xs bg-sky-500 font-bold text-slate-900">複製通報至剪貼簿</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let supabaseClient = null;
+  let inventoryList = [];
+  let currentTab = 'table';
+
+  // 初始化連線
+  function initSupabase() {
+    const url = localStorage.getItem('moxa_supabase_url');
+    const key = localStorage.getItem('moxa_supabase_key');
+    if (url && key) {
+      supabaseClient = supabase.createClient(url, key);
+      document.getElementById('syncStatus').innerText = '● 雲端 SQL 已連線';
+      document.getElementById('syncStatus').className = 'text-xs font-normal text-emerald-400';
+      fetchProducts();
+    } else {
+      document.getElementById('syncStatus').innerText = '○ 未設定雲端連線';
+      document.getElementById('syncStatus').className = 'text-xs font-normal text-amber-400';
+      openConfigModal();
+    }
+  }
+
+  // 從雲端 SQL 獲取產品資料
+  async function fetchProducts() {
+    if (!supabaseClient) return;
+    const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+    if (error) {
+      alert("連線資料庫失敗: " + error.message);
+      return;
+    }
+    inventoryList = data || [];
+    renderViews();
+  }
+
+  // 執行異動
+  async function executeTransaction() {
+    if (!supabaseClient) {
+      alert("請先完成資料庫配置！");
+      return;
+    }
+    const type = document.getElementById('transType').value;
+    const partNo = document.getElementById('partNo').value.trim().toUpperCase();
+    const qty = parseInt(document.getElementById('transQty').value, 10);
+    const bin = document.getElementById('binLocation').value.trim().toUpperCase();
+
+    if (!partNo) { alert("請輸入產品品號！"); return; }
+    if (isNaN(qty) || qty <= 0) { alert("請輸入正確數量！"); return; }
+
+    const item = inventoryList.find(i => i.part_no === partNo);
+
+    if (type === 'NEW') {
+      if (item) { alert("該品號已存在台帳！"); return; }
+      const partName = document.getElementById('partName').value.trim();
+      const category = document.getElementById('partCategory').value;
+      const unitPrice = parseFloat(document.getElementById('unitPrice').value) || 0;
+      const safetyStock = parseInt(document.getElementById('safetyStock').value, 10) || 20;
+      const unit = document.getElementById('unit').value.trim() || '盒';
+
+      const { error } = await supabaseClient.from('products').insert([{
+        part_no: partNo, part_name: partName, category, bin_location: bin,
+        stock: qty, safety_stock: safetyStock, unit_price: unitPrice, unit
+      }]);
+      if (error) { alert("建檔失敗: " + error.message); return; }
+    } else if (type === 'IN') {
+      if (!item) { alert("品號不存在，請先建檔！"); return; }
+      const newStock = item.stock + qty;
+      const { error } = await supabaseClient.from('products').update({ stock: newStock, bin_location: bin || item.bin_location }).eq('part_no', partNo);
+      if (error) { alert("入庫更新失敗: " + error.message); return; }
+    } else if (type === 'OUT') {
+      if (!item) { alert("品號不存在！"); return; }
+      if (item.stock < qty) { alert(`庫存不足！目前僅剩 ${item.stock}`); return; }
+      const newStock = item.stock - qty;
+      const { error } = await supabaseClient.from('products').update({ stock: newStock }).eq('part_no', partNo);
+      if (error) { alert("出庫更新失敗: " + error.message); return; }
+    }
+
+    // 寫入流水記錄
+    await supabaseClient.from('inventory_transactions').insert([{
+      part_no: partNo, trans_type: type, qty, bin_location: bin
+    }]);
+
+    document.getElementById('transQty').value = "";
+    fetchProducts();
+    alert("雲端 SQL 庫存更新成功！");
+  }
+
+  // 畫面渲染邏輯
+  function renderViews() {
+    const kwd = document.getElementById('searchKwd').value.toLowerCase();
+    let totalVal = 0, lowCount = 0, zeroCount = 0, normalCount = 0;
+
+    inventoryList.forEach(i => {
+      totalVal += i.stock * i.unit_price;
+      if (i.stock === 0) zeroCount++;
+      else if (i.stock <= i.safety_stock) lowCount++;
+      else normalCount++;
+    });
+
+    const safeRate = inventoryList.length > 0 ? ((normalCount / inventoryList.length) * 100).toFixed(1) : 0;
+    document.getElementById('kpiSkuTotal').innerText = inventoryList.length;
+    document.getElementById('kpiTotalValue').innerText = `¥${totalVal.toLocaleString()}`;
+    document.getElementById('kpiSafeRate').innerText = `${safeRate}%`;
+    document.getElementById('kpiLowStock').innerText = lowCount;
+    document.getElementById('kpiZeroStock').innerText = zeroCount;
+
+    const filtered = inventoryList.filter(i => 
+      i.part_no.toLowerCase().includes(kwd) || 
+      i.part_name.toLowerCase().includes(kwd) || 
+      i.bin_location.toLowerCase().includes(kwd)
+    );
+
+    // 電腦表格
+    const tbody = document.getElementById('inventoryTableBody');
+    tbody.innerHTML = filtered.map(i => {
+      let badge = '<span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400">充足</span>';
+      if (i.stock === 0) badge = '<span class="px-1.5 py-0.5 rounded text-[10px] bg-rose-500/20 text-rose-400">斷貨</span>';
+      else if (i.stock <= i.safety_stock) badge = '<span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-400">缺貨</span>';
+      return `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-2.5 font-mono text-sky-400">${i.part_no}</td>
+          <td class="p-2.5">${i.part_name}</td>
+          <td class="p-2.5 font-mono text-amber-300">${i.bin_location}</td>
+          <td class="p-2.5 font-bold">${i.stock} ${i.unit}</td>
+          <td class="p-2.5">¥${i.unit_price}</td>
+          <td class="p-2.5">¥${(i.stock * i.unit_price).toLocaleString()}</td>
+          <td class="p-2.5">${badge}</td>
+        </tr>
+      `;
+    }).join('');
+
+    // 手機卡片 (適配觸控螢幕)
+    const mobileBox = document.getElementById('mobileCards');
+    mobileBox.innerHTML = filtered.map(i => {
+      let statusColor = "text-emerald-400";
+      if (i.stock === 0) statusColor = "text-rose-400";
+      else if (i.stock <= i.safety_stock) statusColor = "text-amber-400";
+      return `
+        <div class="bg-sub border border-theme rounded-lg p-3 flex flex-col gap-1.5">
+          <div class="flex justify-between items-start">
+            <span class="font-mono text-xs font-bold text-sky-400">${i.part_no}</span>
+            <span class="text-xs font-bold ${statusColor}">現存: ${i.stock} ${i.unit}</span>
+          </div>
+          <div class="text-xs font-medium text-slate-200">${i.part_name}</div>
+          <div class="flex justify-between items-center text-[11px] text-slate-400 pt-1 border-t border-slate-800">
+            <span>儲位: <strong class="text-amber-300 font-mono">${i.bin_location}</strong></span>
+            <span>水位線: ${i.safety_stock} | 單價: ¥${i.unit_price}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 視圖切換
+  function switchView(tab) {
+    currentTab = tab;
+    document.getElementById('viewTable').className = tab === 'table' ? 'block' : 'hidden';
+    document.getElementById('viewKitting').className = tab === 'kitting' ? 'block' : 'hidden';
+    document.getElementById('btnTabTable').className = tab === 'table' ? 'px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold' : 'px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme';
+    document.getElementById('btnTabKitting').className = tab === 'kitting' ? 'px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold' : 'px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme';
+    if (tab === 'kitting') loadKitting();
+  }
+
+  // 套件齊套率
+  async function loadKitting() {
+    const { data: orders } = await supabaseClient.from('work_orders').select('*, work_order_boms(*)');
+    if (!orders) return;
+    const box = document.getElementById('viewKitting');
+    box.innerHTML = orders.map(wo => {
+      let okCount = 0;
+      let total = wo.work_order_boms.length;
+      let shortages = [];
+      wo.work_order_boms.forEach(b => {
+        const item = inventoryList.find(i => i.part_no === b.part_no);
+        const cur = item ? item.stock : 0;
+        if (cur >= b.required_qty) okCount++;
+        else shortages.push(`品號 ${b.part_no} 尚缺 ${b.required_qty - cur}`);
+      });
+      const rate = total > 0 ? Math.round((okCount / total) * 100) : 0;
+      return `
+        <div class="bg-sub border border-theme rounded-lg p-3.5">
+          <div class="flex justify-between items-center mb-1">
+            <strong class="text-sky-400 font-mono">${wo.wo_id}</strong>
+            <span class="text-xs font-bold ${rate === 100 ? 'text-emerald-400' : 'text-amber-400'}">齊套率: ${rate}%</span>
+          </div>
+          <div class="text-xs text-slate-300 mb-2">${wo.target_kit} (負責人: ${wo.planner})</div>
+          <div class="w-full bg-slate-950 h-2 rounded overflow-hidden mb-2">
+            <div class="h-full ${rate === 100 ? 'bg-emerald-500' : 'bg-amber-500'}" style="width:${rate}%"></div>
+          </div>
+          <div class="text-[11px] text-slate-400">
+            ${shortages.length === 0 ? '✅ 原料器具已全數到齊，可投入組裝。' : '🚨 ' + shortages.join('，')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 表單控制
+  function toggleTransFields() {
+    const t = document.getElementById('transType').value;
+    document.getElementById('newSkuFields').className = t === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden';
+  }
+
+  // 配置設定
+  function openConfigModal() {
+    document.getElementById('cfgUrl').value = localStorage.getItem('moxa_supabase_url') || '';
+    document.getElementById('cfgKey').value = localStorage.getItem('moxa_supabase_key') || '';
+    document.getElementById('configModal').classList.remove('hidden');
+    document.getElementById('configModal').classList.add('flex');
+  }
+  function closeConfigModal() {
+    document.getElementById('configModal').classList.add('hidden');
+    document.getElementById('configModal').classList.remove('flex');
+  }
+  function saveConfig() {
+    const url = document.getElementById('cfgUrl').value.trim();
+    const key = document.getElementById('cfgKey').value.trim();
+    if (!url || !key) { alert("請填寫完整資訊！"); return; }
+    localStorage.setItem('moxa_supabase_url', url);
+    localStorage.setItem('moxa_supabase_key', key);
+    closeConfigModal();
+    initSupabase();
+  }
+
+  // 缺料清冊彈窗
+  function openShortageModal() {
+    const zeros = inventoryList.filter(i => i.stock === 0);
+    const lows = inventoryList.filter(i => i.stock > 0 && i.stock <= i.safety_stock);
+    let draft = `【艾產業供應鏈管理中心：核心產品斷貨風險與採購催辦清冊】\n基準日：${new Date().toISOString().slice(0, 10)}\n\n`;
+    draft += `=== 嚴重斷貨警告 (零庫存共 ${zeros.length} 款) ===\n` + (zeros.map(i => `• ${i.part_no} (${i.part_name}) 現存: 0 ${i.unit}`).join('\n') || '無') + '\n\n';
+    draft += `=== 補貨預警 (低於安全水位共 ${lows.length} 款) ===\n` + (lows.map(i => `• ${i.part_no} (${i.part_name}) 現存: ${i.stock} ${i.unit} (最低門檻: ${i.safety_stock})`).join('\n') || '無');
+    document.getElementById('shortageContent').value = draft;
+    document.getElementById('shortageModal').classList.remove('hidden');
+    document.getElementById('shortageModal').classList.add('flex');
+  }
+  function closeShortageModal() {
+    document.getElementById('shortageModal').classList.add('hidden');
+    document.getElementById('shortageModal').classList.remove('flex');
+  }
+  function copyShortageDraft() {
+    const el = document.getElementById('shortageContent');
+    el.select();
+    document.execCommand('copy');
+    alert("通報清冊已複製至剪貼簿！");
+  }
+
+  // 匯出 CSV
+  function exportCSV() {
+    let csv = "\uFEFF品號,品名規格,類別,儲位,現存量,安全水位,單價,總值\n";
+    inventoryList.forEach(i => {
+      csv += `"${i.part_no}","${i.part_name}","${i.category}","${i.bin_location}",${i.stock},${i.safety_stock},${i.unit_price},${i.stock * i.unit_price}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `艾產品台帳_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+  }
+
+  window.addEventListener('DOMContentLoaded', initSupabase);
+</script>
+</body>
+</html>
