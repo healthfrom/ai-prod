@@ -259,19 +259,56 @@
       d.classList.toggle('translate-x-full', open); b.classList.toggle('hidden', open);
     }
     
-    function openPayModal() {
-      const name = document.getElementById('orderName').value.trim(), phone = document.getElementById('orderPhone').value.trim(), addr = document.getElementById('orderAddress').value.trim();
-      if (!name || !phone || !addr) return alert("請完整填寫收件資訊！");
-      document.getElementById('payModalAmount').innerText = `¥${cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0)}`;
-      selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
-      const isWx = selectedPayMethod === 'wechat';
-      document.getElementById('payModalTitle').innerHTML = isWx ? '<span>💬</span> 微信安全支付' : '<span>🔷</span> 支付寶安全支付';
-      document.getElementById('payModalTitle').className = `text-xs font-bold flex items-center gap-1 ${isWx?'text-emerald-700':'text-sky-700'}`;
-      document.getElementById('qrCodeContainer').className = `p-3 rounded-xl border inline-block ${isWx?'border-emerald-100 bg-emerald-50':'border-sky-100 bg-sky-50'}`;
-      document.getElementById('payQrImg').src = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
-      document.getElementById('btnConfirmPaid').className = `w-full py-2.5 text-white font-bold rounded-lg text-xs shadow-md ${isWx?'bg-emerald-600':'bg-sky-600'}`;
-      document.getElementById('payModal').classList.replace('hidden', 'flex');
+   // 替換原有的 openPayModal 函數
+function openPayModal() {
+  const nameInput = document.getElementById('orderName');
+  const phoneInput = document.getElementById('orderPhone');
+  const addrInput = document.getElementById('orderAddress');
+
+  const name = nameInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const addr = addrInput.value.trim();
+
+  // 視覺化防呆：未填寫時外框變紅
+  let hasError = false;
+  [nameInput, phoneInput, addrInput].forEach(input => {
+    if (!input.value.trim()) {
+      input.classList.add('border-rose-500', 'bg-rose-50');
+      hasError = true;
+    } else {
+      input.classList.remove('border-rose-500', 'bg-rose-50');
     }
+  });
+
+  if (hasError) {
+    alert("請完整填寫收件人姓名、電話及地址，才能為您安排發貨！");
+    return;
+  }
+
+  const total = cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0);
+  document.getElementById('payModalAmount').innerText = `¥${total}`;
+  
+  selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
+  const isWx = selectedPayMethod === 'wechat';
+  
+  document.getElementById('payModalTitle').innerHTML = isWx ? '<span>💬</span> 微信安全支付' : '<span>🔷</span> 支付寶安全支付';
+  document.getElementById('payModalTitle').className = `text-xs font-bold flex items-center gap-1 ${isWx ? 'text-emerald-700' : 'text-sky-700'}`;
+  
+  const qrImg = document.getElementById('payQrImg');
+  const targetSrc = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
+  
+  // 破圖防呆：若找不到圖片，顯示錯誤提示
+  qrImg.onerror = function() {
+    alert(`找不到收款圖片：${targetSrc}\n請確認 GitHub 根目錄中是否已上傳該圖片，且檔案名稱與大小寫完全一致。`);
+  };
+  qrImg.src = targetSrc;
+
+  document.getElementById('payInstruction').innerText = isWx 
+    ? '請長按識別二維碼，或截圖後使用微信掃一掃' 
+    : '請截圖後使用支付寶掃一掃付款';
+
+  document.getElementById('payModal').classList.replace('hidden', 'flex');
+}
     function closePayModal() { document.getElementById('payModal').classList.replace('flex', 'hidden'); }
 
     // ================== 新增：微信推播通知功能 ==================
