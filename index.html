@@ -223,20 +223,19 @@
 
   // 初始化連線
   function initSupabase() {
-    const url = localStorage.getItem('moxa_supabase_url');
-    const key = localStorage.getItem('moxa_supabase_key');
-    if (url && key) {
+    const url = FIXED_SUPABASE_URL;
+    const key = FIXED_SUPABASE_KEY;
+
+    if (url && key && !key.includes("請貼上")) {
       supabaseClient = supabase.createClient(url, key);
       document.getElementById('syncStatus').innerText = '● 雲端 SQL 已連線';
       document.getElementById('syncStatus').className = 'text-xs font-normal text-emerald-400';
       fetchProducts();
     } else {
-      document.getElementById('syncStatus').innerText = '○ 未設定雲端連線';
-      document.getElementById('syncStatus').className = 'text-xs font-normal text-amber-400';
       openConfigModal();
     }
   }
-
+ 
   // 從雲端 SQL 獲取產品資料
   async function fetchProducts() {
     if (!supabaseClient) return;
