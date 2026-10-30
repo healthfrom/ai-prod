@@ -214,6 +214,9 @@
     document.getElementById('authOverlay').classList.toggle('hidden', !!currentUser);
     document.getElementById('userEmailLabel').innerText = currentUser ? `👤 ${currentUser.email}` : '未登入';
     document.getElementById('btnLoginOut').innerText = currentUser ? '登出' : '登入';
+    
+    // 如果登出，停止計時器
+    if (!currentUser) clearTimeout(idleTimer);
   });
   
   function toggleLogin() { currentUser ? supabaseClient.auth.signOut() : document.getElementById('authModal').classList.replace('hidden', 'flex'); }
@@ -224,8 +227,28 @@
       password: document.getElementById('authPassword').value
     });
     if (error) alert("登入失敗：" + error.message);
-    else closeAuthModal();
+    else {
+        closeAuthModal();
+        resetIdleTimer(); // 登入成功後開始防呆計時
+    }
   }
+
+  // 展場設備安全防護：閒置 15 分鐘強制自動登出
+  let idleTimer;
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    // 只有在已登入狀態才需要倒數計時登出
+    if (currentUser) {
+        idleTimer = setTimeout(() => {
+            supabaseClient.auth.signOut();
+            alert("為確保設備安全，系統已因閒置超過 15 分鐘自動登出，請重新登入！");
+            location.reload();
+        }, 15 * 60 * 1000);
+    }
+  }
+  ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+    window.addEventListener(evt, resetIdleTimer, false);
+  });
 
   // 載入商品與分類
   async function fetchAllData() {
@@ -470,8 +493,10 @@
   }
 
   function exportCSV() {
-    let csv = "\uFEFF品號,品名規格,類別,儲位,現存量,安全水位,單價,總值\n";
-    inventoryList.forEach(i => { csv += `"${i.part_no}","${i.part_name}","${i.category}","${i.bin_location}",${i.stock},${i.safety_stock},${i.unit_price},${i.stock * i.unit_price}\n`; });
+    let csv = "﻿品號,品名規格,類別,儲位,現存量,安全水位,單價,總值
+";
+    inventoryList.forEach(i => { csv += `"${i.part_no}","${i.part_name}","${i.category}","${i.bin_location}",${i.stock},${i.safety_stock},${i.unit_price},${i.stock * i.unit_price}
+`; });
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
     a.download = `艾產品台帳_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
   }
