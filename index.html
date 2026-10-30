@@ -21,7 +21,7 @@
       <div class="flex items-center gap-2 flex-1">
         <span class="text-2xl">🌿</span>
         <div class="leading-tight">
-          <h1 class="text-sm md:text-lg font-bold tracking-wide">艾草生活體驗館.南陽伏牛仙草生物科技有限公司</h1>
+          <h1 class="text-sm md:text-lg font-bold tracking-wide">艾草生活體驗館</h1>
           <p class="text-[10px] text-emerald-200">產地直送 · 官方正品</p>
         </div>
       </div>
@@ -40,13 +40,9 @@
 
   <!-- 主內容區 -->
   <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full">
-    <!-- 分類切換 -->
+    <!-- 動態分類菜單切換區 (由後台資料庫動態生成) -->
     <div class="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none" id="categoryFilter">
-      <button onclick="filterCategory('ALL')" class="category-btn active px-4 py-1.5 rounded-full text-xs font-semibold bg-emerald-800 text-white shadow-sm whitespace-nowrap">全部商品</button>
-      <button onclick="filterCategory('傳統灸條/艾柱')" class="category-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">傳統灸條/艾柱</button>
-      <button onclick="filterCategory('艾絨原料')" class="category-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">艾絨原料</button>
-      <button onclick="filterCategory('艾灸器具/儀器')" class="category-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">艾灸器具/儀器</button>
-      <button onclick="filterCategory('草本貼膏/精油')" class="category-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">草本貼膏/精油</button>
+      <div class="text-xs text-slate-400 py-1">正在載入菜單分類...</div>
     </div>
 
     <!-- 產品卡片網格 -->
@@ -152,7 +148,7 @@
     </div>
   </div>
 
-  <!-- 下單成功 + 引流關注官方公眾號 Modal -->
+  <!-- 下單成功 + 關注公眾號 Modal -->
   <div id="successModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center space-y-3">
       <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">✓</div>
@@ -162,7 +158,6 @@
         訂單號：<span id="orderNumberShow" class="font-mono text-emerald-800 font-bold"></span>
       </p>
 
-      <!-- 關注公眾號專區 -->
       <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
         <p class="text-xs font-bold text-slate-700">👇 長按識別二維碼關注我們</p>
         <img id="officialAccountQrImg" src="./official-account.jpg" alt="公司公眾號" class="w-36 h-36 mx-auto rounded-lg object-contain" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=OfficialAccountPlaceholder'">
@@ -208,21 +203,53 @@
     const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
     const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
 
-    // 1. 本地收款碼與公眾號圖片路徑
     const WECHAT_PAY_QR_URL = "./pay-wx.jpg";
     const ALIPAY_QR_URL = "./pay-ali.jpg";
     const OFFICIAL_ACCOUNT_QR_URL = "./official-account.jpg";
-        
-    // 2. 微信通知 PushPlus Token
     const PUSHPLUS_TOKEN = "4c5528d6f3c142df86875e0e7c63a5ac"; 
     // =====================================
 
     let supabaseClient = supabase.createClient(FIXED_SUPABASE_URL, FIXED_SUPABASE_KEY);
     let catalogProducts = [];
+    let dynamicCategories = [];
     let cart = [];
     let currentCategory = 'ALL';
     let selectedPayMethod = 'wechat';
 
+    async function initStore() {
+      await fetchCategories();
+      await fetchCatalog();
+    }
+
+    // 1. 動態從資料庫獲取分類並渲染頂部菜單按鈕
+    async function fetchCategories() {
+      const { data } = await supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
+      dynamicCategories = data || [];
+      renderCategoryMenu();
+    }
+
+    function renderCategoryMenu() {
+      const filterBox = document.getElementById('categoryFilter');
+      
+      let html = `
+        <button onclick="filterCategory('ALL')" class="category-btn ${currentCategory==='ALL'?'active bg-emerald-800 text-white shadow-sm':'bg-white text-slate-600 border border-slate-200'} px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap">
+          全部商品
+        </button>
+      `;
+
+      dynamicCategories.forEach(c => {
+        const isActive = currentCategory === c.name;
+        html += `
+          <button onclick="filterCategory('${c.name}')" class="category-btn ${isActive?'active bg-emerald-800 text-white shadow-sm':'bg-white text-slate-600 border border-slate-200'} px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap">
+            ${c.name}
+          </button>
+        `;
+      });
+
+      filterBox.innerHTML = html;
+    }
+
+    // 2. 獲取產品列表
     async function fetchCatalog() {
       const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
       catalogProducts = data || [];
@@ -231,8 +258,14 @@
 
     function renderProducts() {
       const container = document.getElementById('productGrid');
-      const filtered = currentCategory === 'ALL' ? catalogProducts : catalogProducts.filter(p => p.category === currentCategory);
-      if (filtered.length === 0) return container.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400 text-xs">此分類暫無商品。</div>';
+      const filtered = currentCategory === 'ALL' 
+        ? catalogProducts 
+        : catalogProducts.filter(p => (p.category || '未分類') === currentCategory);
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400 text-xs">該分類下目前暫無商品。</div>';
+        return;
+      }
 
       container.innerHTML = filtered.map(item => {
         const isOutOfStock = item.stock <= 0;
@@ -241,7 +274,7 @@
           <div class="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden">
             <div class="relative w-full h-36 bg-slate-100">
               <img src="${displayImg}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&q=60'">
-              <span class="absolute top-2 left-2 text-[10px] bg-black/60 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">${item.category}</span>
+              <span class="absolute top-2 left-2 text-[10px] bg-black/60 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">${item.category || '未分類'}</span>
             </div>
             <div class="p-3 flex-1 flex flex-col justify-between">
               <div><h3 class="font-bold text-slate-800 text-xs line-clamp-2 mb-1">${item.part_name}</h3><p class="text-[10px] text-slate-400 font-mono mb-2">品號: ${item.part_no}</p></div>
@@ -256,9 +289,7 @@
 
     function filterCategory(cat) {
       currentCategory = cat;
-      document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.className = btn.innerText === (cat === 'ALL' ? '全部商品' : cat) ? 'category-btn active px-4 py-1.5 rounded-full text-xs font-semibold bg-emerald-800 text-white shadow-sm whitespace-nowrap' : 'category-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap';
-      });
+      renderCategoryMenu();
       renderProducts();
     }
 
@@ -300,7 +331,6 @@
       d.classList.toggle('translate-x-full', open); b.classList.toggle('hidden', open);
     }
 
-    // ================== 收件資料驗證輔助邏輯 ==================
     function clearError(inputId, errId) {
       document.getElementById(inputId).classList.remove('border-rose-500', 'bg-rose-50');
       document.getElementById(errId).classList.add('hidden');
@@ -333,7 +363,6 @@
 
       let isValid = true;
 
-      // 1. 姓名校驗：2~15字，支援中文、英文與少數民族點號·，禁用純數字或標點
       const nameVal = nameEl.value.trim();
       const nameRegex = /^[\u4e00-\u9fa5a-zA-Z·\s]{2,15}$/;
       if (!nameRegex.test(nameVal)) {
@@ -342,7 +371,6 @@
         isValid = false;
       }
 
-      // 2. 手機號校驗：大陸標準11位手機號碼 (13~19開頭)
       const phoneVal = phoneEl.value.trim();
       const phoneRegex = /^1[3-9]\d{9}$/;
       if (!phoneRegex.test(phoneVal)) {
@@ -351,7 +379,6 @@
         isValid = false;
       }
 
-      // 3. 收貨地址校驗
       const addrVal = addrEl.value.trim();
       if (delType === '現場自提') {
         if (addrVal.length < 2) {
@@ -373,7 +400,6 @@
       return isValid;
     }
 
-    // 呼叫支付彈窗
     function openPayModal() {
       if (!validateShippingInfo()) {
         alert("收貨人資料填寫有誤，請依紅字提示修正後再行結算！");
@@ -394,7 +420,7 @@
       const targetSrc = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
       
       qrImg.onerror = function() {
-        alert(`找不到收款圖片：${targetSrc}\n請確認 GitHub 根目錄中是否已上傳該圖片，且檔案名稱與大小寫完全一致。`);
+        alert(`找不到收款圖片：${targetSrc}\n請確認 GitHub 根目錄中是否已上傳該圖片。`);
       };
       qrImg.src = targetSrc;
 
@@ -406,33 +432,24 @@
       document.getElementById('payModal').classList.replace('hidden', 'flex');
     }
 
-    function closePayModal() { 
-      document.getElementById('payModal').classList.replace('flex', 'hidden'); 
-    }
+    function closePayModal() { document.getElementById('payModal').classList.replace('flex', 'hidden'); }
 
-    // ================== 微信推播通知功能 ==================
     async function sendWechatPush(orderNo, name, amount) {
       if (!PUSHPLUS_TOKEN || PUSHPLUS_TOKEN.includes("請在此貼上")) return;
-      
       const title = `🌿 艾草館新訂單通知：${orderNo}`;
       const content = `顧客 **${name}** 剛下了一筆訂單！\n\n- 訂單金額：¥${amount}\n- 支付方式：${selectedPayMethod === 'wechat' ? '微信' : '支付寶'}\n- 時間：${new Date().toLocaleString()}\n\n請登入電腦後台 (ai-admin.html) 查看發貨地址與明細。`;
-      
       try {
         await fetch(`https://www.pushplus.plus/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: PUSHPLUS_TOKEN, title: title, content: content, template: "markdown" })
         });
-      } catch (e) {
-        console.error("微信推送失敗:", e);
-      }
+      } catch (e) { console.error("微信推送失敗:", e); }
     }
 
-    // 送出訂單與庫存扣減 -> 彈出關注公眾號視窗
     async function confirmPaidAndSubmit() {
       const btn = document.getElementById('btnConfirmPaid'); 
-      btn.disabled = true; 
-      btn.innerText = "訂單處理中...";
+      btn.disabled = true; btn.innerText = "訂單處理中...";
       
       const name = document.getElementById('orderName').value.trim();
       const phone = document.getElementById('orderPhone').value.trim();
@@ -443,15 +460,8 @@
 
       try {
         await supabaseClient.from('shop_orders').insert([{ 
-          order_no: orderNo, 
-          customer_name: name, 
-          customer_phone: phone, 
-          customer_address: addr, 
-          delivery_type: delType, 
-          total_amount: total, 
-          items: cart, 
-          pay_status: '已付款(待核對)', 
-          shipping_status: '待發貨' 
+          order_no: orderNo, customer_name: name, customer_phone: phone, customer_address: addr, 
+          delivery_type: delType, total_amount: total, items: cart, pay_status: '已付款(待核對)', shipping_status: '待發貨' 
         }]);
 
         for (const item of cart) {
@@ -459,10 +469,7 @@
           if (product) {
             await supabaseClient.from('products').update({ stock: product.stock - item.qty }).eq('part_no', item.part_no);
             await supabaseClient.from('inventory_transactions').insert([{ 
-              part_no: item.part_no, 
-              trans_type: 'OUT', 
-              qty: item.qty, 
-              bin_location: product.bin_location, 
+              part_no: item.part_no, trans_type: 'OUT', qty: item.qty, bin_location: product.bin_location, 
               operator: `${selectedPayMethod==='wechat'?'微信':'支付寶'}訂單(${orderNo})` 
             }]);
           }
@@ -470,72 +477,43 @@
         
         await sendWechatPush(orderNo, name, total);
 
-        // 關閉結帳與抽屜
         closePayModal(); 
         toggleCartDrawer();
 
-        // 彈出下單成功 + 關注公眾號彈窗
         document.getElementById('orderNumberShow').innerText = orderNo;
         document.getElementById('officialAccountQrImg').src = OFFICIAL_ACCOUNT_QR_URL;
         document.getElementById('successModal').classList.replace('hidden', 'flex');
 
-        // 清空表單與購物車
-        cart = []; 
-        updateCartUI(); 
-        document.getElementById('orderName').value = ''; 
-        document.getElementById('orderPhone').value = ''; 
-        document.getElementById('orderAddress').value = '';
-        clearError('orderName', 'errName');
-        clearError('orderPhone', 'errPhone');
-        clearError('orderAddress', 'errAddress');
+        cart = []; updateCartUI(); 
+        document.getElementById('orderName').value = ''; document.getElementById('orderPhone').value = ''; document.getElementById('orderAddress').value = '';
+        clearError('orderName', 'errName'); clearError('orderPhone', 'errPhone'); clearError('orderAddress', 'errAddress');
 
         fetchCatalog();
-      } catch (err) { 
-        alert("失敗: " + err.message); 
-      } finally { 
-        btn.disabled = false; 
-        btn.innerText = "我已完成付款，立即送出訂單"; 
-      }
+      } catch (err) { alert("失敗: " + err.message); } 
+      finally { btn.disabled = false; btn.innerText = "我已完成付款，立即送出訂單"; }
     }
 
-    function closeSuccessModal() {
-      document.getElementById('successModal').classList.replace('flex', 'hidden');
-    }
+    function closeSuccessModal() { document.getElementById('successModal').classList.replace('flex', 'hidden'); }
 
-    // ================== 微信推廣與分享功能 ==================
     function openShareModal() {
       const currentUrl = window.location.href.split('?')[0];
       document.getElementById('shareQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(currentUrl)}`;
       document.getElementById('shareModal').classList.replace('hidden', 'flex');
     }
-    
-    function closeShareModal() {
-      document.getElementById('shareModal').classList.replace('flex', 'hidden');
-    }
+    function closeShareModal() { document.getElementById('shareModal').classList.replace('flex', 'hidden'); }
 
     function copyStoreLink() {
       const url = window.location.href.split('?')[0];
-      navigator.clipboard.writeText(url).then(() => {
-        alert("網址已成功複製！可以直接貼給微信好友。");
-      }).catch(() => {
-        alert("複製失敗，請手動複製網址分享。");
-      });
+      navigator.clipboard.writeText(url).then(() => { alert("網址已成功複製！"); }).catch(() => { alert("複製失敗，請手動複製網址。"); });
     }
 
     function nativeShare() {
       const url = window.location.href.split('?')[0];
-      if (navigator.share) {
-        navigator.share({
-          title: '艾草生活館 - 產地直送',
-          text: '發現一家超讚的艾草生活體驗館，微信付款、快遞到府，快來逛逛吧！',
-          url: url,
-        }).catch((error) => console.log('分享取消', error));
-      } else {
-        alert("您的瀏覽器不支援系統分享，請點擊「複製網址」分享給好友！");
-      }
+      if (navigator.share) navigator.share({ title: '艾草生活館', text: '發現一家優質艾草生活館，快來看看！', url: url });
+      else alert("您的設備暫不支援直接調用系統分享，請點擊「複製網址」！");
     }
 
-    window.addEventListener('DOMContentLoaded', () => { fetchCatalog(); });
+    window.addEventListener('DOMContentLoaded', initStore);
   </script>
 </body>
 </html>
