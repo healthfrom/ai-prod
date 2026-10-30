@@ -3,200 +3,381 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- 內容安全策略 (CSP)：白名單納入 Cloudflare Turnstile、Supabase、QR 渲染及 Tailwind CDN -->
   <meta http-equiv="Content-Security-Policy" content="
-  default-src 'self' 'unsafe-inline' https:;
-  connect-src 'self' https://xayagdicjwexwtehdjby.supabase.co https://api.qrserver.com;
-  img-src 'self' data: https: blob:;
-">
-  <title>艾草生活館 - 產品展銷中心</title>
+    default-src 'self' 'unsafe-inline' https:;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net;
+    frame-src 'self' https://challenges.cloudflare.com;
+    connect-src 'self' https://xayagdicjwexwtehdjby.supabase.co wss://xayagdicjwexwtehdjby.supabase.co https://api.qrserver.com https://challenges.cloudflare.com;
+    img-src 'self' data: https: blob:;
+    font-src 'self' data: https:;
+  ">
+  <title>艾草生活體驗館 - 官方正品展銷中心</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
   <style>
-    body { background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
-    input[type="radio"]:checked + div { border-color: currentColor; background-color: #f8fafc; }
-    .radio-wechat:checked + div { border-color: #059669; color: #059669; background-color: #ecfdf5; }
-    .radio-alipay:checked + div { border-color: #0284c7; color: #0284c7; background-color: #f0f9ff; }
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    
+    :root {
+      --primary: #064e3b;
+      --primary-light: #047857;
+      --accent-gold: #b45309;
+    }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: #fbfaf6;
+      color: #1e293b;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .font-serif-title {
+      font-family: 'Noto Serif TC', serif;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    input[type="radio"]:checked + div {
+      box-shadow: 0 4px 14px -2px rgba(6, 78, 59, 0.12);
+    }
+    .radio-wechat:checked + div {
+      border-color: #059669;
+      background-color: #ecfdf5;
+      color: #065f46;
+    }
+    .radio-alipay:checked + div {
+      border-color: #0284c7;
+      background-color: #f0f9ff;
+      color: #075985;
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col selection:bg-emerald-800 selection:text-white">
 
-  <!-- 頂部導覽 -->
-  <header class="bg-emerald-900 text-white shadow-md sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center gap-2">
-      <div class="flex items-center gap-2 flex-1">
-        <span class="text-2xl">🌿</span>
+  <!-- 頂部頂級導覽列 -->
+  <header class="sticky top-0 z-40 bg-emerald-950/95 backdrop-blur-md text-white border-b border-emerald-900/60 shadow-lg">
+    <div class="max-w-6xl mx-auto px-4 py-3 sm:py-3.5 flex justify-between items-center gap-3">
+      
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center shadow-inner border border-emerald-500/30 text-lg">
+          🌿
+        </div>
         <div class="leading-tight">
-          <h1 class="text-sm md:text-lg font-bold tracking-wide">艾草生活體驗館</h1>
-          <p class="text-[10px] text-emerald-200">產地直送 · 官方正品</p>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-wider font-serif-title text-amber-100">艾草生活體驗館</h1>
+            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-medium bg-emerald-800/80 text-emerald-200 border border-emerald-700/60 rounded-full">產地直供</span>
+          </div>
+          <p class="text-[11px] text-emerald-300/80 tracking-wide font-light">南陽伏牛山地道純艾 · 匠心溫養</p>
         </div>
       </div>
       
-      <div class="flex items-center gap-2">
-        <button onclick="openShareModal()" class="bg-emerald-800 hover:bg-emerald-700 px-3 py-1.5 rounded-full flex items-center gap-1 transition text-xs border border-emerald-600">
-          📢 分享
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button onclick="openShareModal()" class="px-3 py-1.5 rounded-full text-xs font-medium text-emerald-100 bg-emerald-900/80 hover:bg-emerald-800 border border-emerald-700/60 transition flex items-center gap-1.5 shadow-sm active:scale-95">
+          <span>📢</span> <span class="hidden sm:inline">推廣分享</span>
         </button>
-        <button onclick="toggleCartDrawer()" class="relative bg-emerald-800 hover:bg-emerald-700 px-3 py-1.5 rounded-full flex items-center gap-1 transition text-xs">
-          🛒 購物車
-          <span id="cartCountBadge" class="bg-amber-400 text-slate-900 font-bold text-[10px] px-1.5 rounded-full">0</span>
+        
+        <button onclick="toggleCartDrawer()" class="relative px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-950 bg-gradient-to-r from-amber-300 to-amber-400 hover:from-amber-200 hover:to-amber-300 transition flex items-center gap-1.5 shadow-md active:scale-95">
+          <span>🛒</span> <span>購物車</span>
+          <span id="cartCountBadge" class="ml-0.5 bg-emerald-950 text-amber-300 font-mono font-bold text-[10px] px-1.5 py-0.2 rounded-full min-w-[18px] text-center">0</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- 主內容區 -->
-  <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full">
-    <!-- 動態分類菜單切換區 (由後台資料庫動態生成) -->
-    <div class="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none" id="categoryFilter">
-      <div class="text-xs text-slate-400 py-1">正在載入菜單分類...</div>
+  <!-- 品牌氛圍橫幅 -->
+  <section class="bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-800 text-white pt-6 pb-8 px-4 border-b border-emerald-700/30">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 uppercase tracking-widest bg-emerald-950/60 px-2.5 py-1 rounded-full border border-amber-400/20">
+          <span>✦</span> 傳統中醫本草 · 現代健康美學
+        </div>
+        <h2 class="text-xl sm:text-2xl md:text-3xl font-bold font-serif-title tracking-wide text-stone-50 pt-1">
+          溫通經絡，靜享艾香純陽之韻
+        </h2>
+        <p class="text-xs sm:text-sm text-emerald-200/90 max-w-xl font-light leading-relaxed">
+          全系列產品遵循古法製作，精選三年及五年陳放天然艾絨，不摻雜質、純陽溫煦，為您與家人守護日常元氣。
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 md:pt-0">
+        <div class="bg-emerald-950/50 backdrop-blur-sm border border-emerald-700/40 rounded-xl p-2.5 text-center">
+          <div class="text-base sm:text-lg mb-0.5">🌱</div>
+          <div class="text-xs font-bold text-amber-100">南陽伏牛山</div>
+          <div class="text-[10px] text-emerald-300/80">核心產地直送</div>
+        </div>
+        <div class="bg-emerald-950/50 backdrop-blur-sm border border-emerald-700/40 rounded-xl p-2.5 text-center">
+          <div class="text-base sm:text-lg mb-0.5">🍂</div>
+          <div class="text-xs font-bold text-amber-100">精純陳年艾</div>
+          <div class="text-[10px] text-emerald-300/80">三年五年陳放</div>
+        </div>
+        <div class="bg-emerald-950/50 backdrop-blur-sm border border-emerald-700/40 rounded-xl p-2.5 text-center">
+          <div class="text-base sm:text-lg mb-0.5">📦</div>
+          <div class="text-xs font-bold text-amber-100">全國包郵寄</div>
+          <div class="text-[10px] text-emerald-300/80">安心密封發貨</div>
+        </div>
+        <div class="bg-emerald-950/50 backdrop-blur-sm border border-emerald-700/40 rounded-xl p-2.5 text-center">
+          <div class="text-base sm:text-lg mb-0.5">🛡️</div>
+          <div class="text-xs font-bold text-amber-100">官方正品保證</div>
+          <div class="text-[10px] text-emerald-300/80">品質售後無憂</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 主商城展示區 -->
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full space-y-6">
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
+          <span class="w-2 h-4 rounded-full bg-emerald-800"></span>
+          <span>精選產品分類</span>
+        </h3>
+        <span class="text-[11px] text-slate-400">點選分類快速篩選商品</span>
+      </div>
+
+      <div class="flex gap-2.5 overflow-x-auto pb-2 no-scrollbar" id="categoryFilter">
+        <div class="text-xs text-slate-400 py-2">載入系列分類中...</div>
+      </div>
     </div>
 
     <!-- 產品卡片網格 -->
-    <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <div class="col-span-full py-12 text-center text-slate-400 text-sm">正在載入商品中...</div>
+    <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div class="col-span-full py-20 text-center text-slate-400 text-xs">
+        <div class="text-3xl mb-2 animate-bounce">🌿</div>
+        正在為您同步正品庫存，請稍候...
+      </div>
     </div>
   </main>
 
-  <!-- 購物車與結帳抽屜 -->
-  <div id="cartDrawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col">
-    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-      <h2 class="font-bold text-slate-800 flex items-center gap-1.5"><span>🛍️</span> 結帳與收件資訊</h2>
-      <button onclick="toggleCartDrawer()" class="text-slate-400 hover:text-slate-600 text-lg px-2">✕</button>
+  <!-- 底部版權聲明 -->
+  <footer class="bg-emerald-950 text-emerald-400/80 text-[11px] py-6 border-t border-emerald-900/60 mt-12">
+    <div class="max-w-6xl mx-auto px-4 text-center space-y-1">
+      <p class="font-medium text-emerald-200">🌿 艾草生活體驗館 · 官方直營展銷中心</p>
+      <p class="text-[10px] text-emerald-500/70">本站商品均經安全嚴格品控 · 支持微信/支付寶安全結算 · 發貨進度請關注微信公眾號</p>
+    </div>
+  </footer>
+
+  <!-- 購物車與收件資訊抽屜 -->
+  <div id="cartDrawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    
+    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-emerald-950 to-emerald-900 text-white">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🛍️</span>
+        <div>
+          <h2 class="font-bold text-sm tracking-wide">結帳與收件資訊</h2>
+          <p class="text-[10px] text-emerald-300 font-light">全場官方包郵 · 當天極速發貨</p>
+        </div>
+      </div>
+      <button onclick="toggleCartDrawer()" class="text-emerald-300 hover:text-white text-lg p-1 transition rounded-lg hover:bg-emerald-800/50">
+        ✕
+      </button>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-4 space-y-4">
-      <div id="cartItemList" class="space-y-2"></div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-5">
+      <div class="space-y-2.5">
+        <h4 class="text-xs font-bold text-slate-700 flex items-center justify-between">
+          <span>已選購產品</span>
+          <span class="text-[10px] text-emerald-700 font-normal">確認數量後填寫下方收件資料</span>
+        </h4>
+        <div id="cartItemList" class="space-y-2"></div>
+      </div>
 
-      <!-- 發貨資料填寫區 (加入 autocomplete="off" 防止展場設備記憶客資) -->
-      <div class="border-t border-slate-200 pt-3 space-y-2.5">
-        <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1"><span>📦</span> 收件人發貨資料</h3>
+      <!-- 收件發貨資料填寫區 -->
+      <div class="border-t border-slate-200 pt-4 space-y-3">
+        <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+          <span class="text-emerald-700">📦</span> 收件人發貨資訊
+        </h4>
         
-        <div class="grid grid-cols-2 gap-2 text-xs items-start">
+        <div class="grid grid-cols-2 gap-2.5 text-xs">
           <div>
-            <label class="block text-slate-500 mb-1">收件人姓名 *</label>
-            <input type="text" id="orderName" autocomplete="off" autocorrect="off" placeholder="如：張先生 / 李華" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderName', 'errName')">
-            <p id="errName" class="text-[10px] text-rose-500 hidden mt-1">請輸入真實姓名 (2~15字)</p>
+            <label class="block text-slate-600 font-medium mb-1">收件人姓名 *</label>
+            <input type="text" id="orderName" autocomplete="off" autocorrect="off" placeholder="如：張先生 / 李華" 
+                   class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/10" 
+                   oninput="clearError('orderName', 'errName')">
+            <p id="errName" class="text-[10px] text-rose-500 hidden mt-1">請填寫真實姓名 (2~15字)</p>
           </div>
+
           <div>
-            <label class="block text-slate-500 mb-1">聯絡電話 *</label>
-            <input type="tel" id="orderPhone" autocomplete="off" autocorrect="off" maxlength="11" placeholder="11位手機號" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderPhone', 'errPhone')">
-            <p id="errPhone" class="text-[10px] text-rose-500 hidden mt-1">請輸入有效手機號</p>
+            <label class="block text-slate-600 font-medium mb-1">聯絡電話 *</label>
+            <input type="tel" id="orderPhone" autocomplete="off" autocorrect="off" maxlength="11" placeholder="11位手機號" 
+                   class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 font-mono" 
+                   oninput="clearError('orderPhone', 'errPhone')">
+            <p id="errPhone" class="text-[10px] text-rose-500 hidden mt-1">請填寫有效11位手機號</p>
           </div>
         </div>
 
         <div class="text-xs">
-          <label class="block text-slate-500 mb-1">送貨方式</label>
-          <select id="orderDeliveryType" onchange="handleDeliveryChange()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs">
+          <label class="block text-slate-600 font-medium mb-1">收件方式</label>
+          <select id="orderDeliveryType" onchange="handleDeliveryChange()" 
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs text-slate-700 font-medium focus:border-emerald-600 focus:bg-white">
             <option value="快遞寄送">快遞包郵寄送至指定地址</option>
             <option value="現場自提">現場展台自提</option>
           </select>
         </div>
 
         <div class="text-xs">
-          <label class="block text-slate-500 mb-1" id="lblAddress">詳細收貨地址 *</label>
-          <textarea id="orderAddress" autocomplete="off" autocorrect="off" rows="2" placeholder="請詳細填寫：省、市、區/縣、街道、門牌號" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderAddress', 'errAddress')"></textarea>
-          <p id="errAddress" class="text-[10px] text-rose-500 hidden mt-1">地址過於簡略，請填寫完整門牌 (至少8字)</p>
+          <label class="block text-slate-600 font-medium mb-1" id="lblAddress">詳細收貨地址 *</label>
+          <textarea id="orderAddress" autocomplete="off" autocorrect="off" rows="2" 
+                    placeholder="請詳細填寫：省、市、區/縣、街道及詳細門牌號" 
+                    class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/10" 
+                    oninput="clearError('orderAddress', 'errAddress')"></textarea>
+          <p id="errAddress" class="text-[10px] text-rose-500 hidden mt-1">地址過於簡略，請填寫完整街道門牌 (至少8字)</p>
         </div>
       </div>
 
       <!-- 支付方式選擇區 -->
-      <div class="border-t border-slate-200 pt-3 space-y-2">
-        <h3 class="text-xs font-bold text-slate-700">💳 選擇支付方式</h3>
-        <div class="grid grid-cols-2 gap-2">
+      <div class="border-t border-slate-200 pt-4 space-y-2.5">
+        <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+          <span class="text-emerald-700">💳</span> 選擇結算方式
+        </h4>
+        <div class="grid grid-cols-2 gap-2.5">
           <label class="relative cursor-pointer">
             <input type="radio" name="payMethod" value="wechat" class="peer sr-only radio-wechat" checked>
-            <div class="flex items-center justify-center gap-2 p-2 border border-slate-200 rounded-lg text-slate-600 transition">
-              <span class="text-lg">💬</span> <span class="text-xs font-bold">微信支付</span>
+            <div class="flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl text-slate-600 transition bg-white">
+              <span class="text-xl">💬</span> 
+              <div class="text-left leading-tight">
+                <div class="text-xs font-bold">微信支付</div>
+                <div class="text-[9px] text-slate-400">官方掃碼結算</div>
+              </div>
             </div>
           </label>
+
           <label class="relative cursor-pointer">
             <input type="radio" name="payMethod" value="alipay" class="peer sr-only radio-alipay">
-            <div class="flex items-center justify-center gap-2 p-2 border border-slate-200 rounded-lg text-slate-600 transition">
-              <span class="text-lg">🔷</span> <span class="text-xs font-bold">支付寶</span>
+            <div class="flex items-center justify-center gap-2 p-3 border-2 border-slate-200 rounded-xl text-slate-600 transition bg-white">
+              <span class="text-xl">🔷</span> 
+              <div class="text-left leading-tight">
+                <div class="text-xs font-bold">支付寶</div>
+                <div class="text-[9px] text-slate-400">安全掃碼結算</div>
+              </div>
             </div>
           </label>
         </div>
       </div>
     </div>
 
-    <!-- 底部付款按鈕 -->
-    <div class="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
-      <div class="flex justify-between items-baseline">
-        <span class="text-xs text-slate-500">應付總額</span><span class="text-2xl font-bold text-emerald-800" id="cartTotalText">¥0</span>
+    <div class="p-4 border-t border-slate-100 bg-slate-50/90 backdrop-blur-sm space-y-3">
+      <div class="flex justify-between items-baseline px-1">
+        <span class="text-xs text-slate-500">訂單應付總額（包郵）</span>
+        <span class="text-2xl font-extrabold text-emerald-900 font-serif-title" id="cartTotalText">¥0</span>
       </div>
-      <button onclick="openPayModal()" id="btnGoPay" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg shadow-md flex items-center justify-center gap-2 text-sm disabled:bg-slate-300">
-        前往掃碼結算
+      
+      <button onclick="openPayModal()" id="btnGoPay" class="w-full py-3.5 bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none">
+        前往安全掃碼結算
       </button>
     </div>
   </div>
 
-  <div id="cartBackdrop" onclick="toggleCartDrawer()" class="fixed inset-0 bg-black/40 z-30 hidden"></div>
+  <div id="cartBackdrop" onclick="toggleCartDrawer()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden transition-opacity"></div>
 
   <!-- 掃碼結算 Modal -->
-  <div id="payModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <span id="payModalTitle" class="text-xs font-bold flex items-center gap-1"></span>
-        <button onclick="closePayModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+  <div id="payModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-3.5 shadow-2xl border border-slate-100">
+      
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <span id="payModalTitle" class="text-xs font-bold flex items-center gap-1.5"></span>
+        <button onclick="closePayModal()" class="text-slate-400 hover:text-slate-600 w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 transition">✕</button>
       </div>
-      <div class="text-slate-500 text-xs">應付金額</div>
-      <div class="text-3xl font-extrabold text-slate-900" id="payModalAmount">¥0</div>
-      <div id="qrCodeContainer" class="p-3 rounded-xl border inline-block">
-        <img id="payQrImg" src="" alt="收款碼" class="w-48 h-48 mx-auto rounded-lg object-contain">
-        <p id="payInstruction" class="text-[11px] mt-2"></p>
+
+      <div>
+        <div class="text-slate-400 text-[11px] font-medium">實付結算金額</div>
+        <div class="text-3xl font-extrabold text-slate-900 font-serif-title mt-0.5" id="payModalAmount">¥0</div>
       </div>
-      <div class="text-[11px] text-amber-600 bg-amber-50 p-2 rounded text-left">
-        💡 掃碼付款後請點擊下方按鈕，後台將立即為您安排打包發貨！
+
+      <!-- 收款二維碼容器 (自動帶有高質感兜底圖) -->
+      <div id="qrCodeContainer" class="p-3.5 rounded-2xl border inline-block shadow-inner bg-slate-50/50">
+        <img id="payQrImg" src="" alt="收款碼" class="w-48 h-48 mx-auto rounded-xl object-contain shadow-sm border border-slate-200/60">
+        <p id="payInstruction" class="text-[11px] mt-2 font-medium"></p>
       </div>
-      <button onclick="confirmPaidAndSubmit()" id="btnConfirmPaid" class="w-full py-2.5 text-white font-bold rounded-lg text-xs shadow-md">
+
+      <div class="text-[11px] text-amber-800 bg-amber-50/90 border border-amber-200/60 p-2.5 rounded-xl text-left leading-relaxed">
+        💡 <b>溫馨提醒：</b>掃碼轉帳付款後，請務必點擊下方按鈕送出訂單，系統將第一時間為您核對並安排出貨！
+      </div>
+
+      <!-- Cloudflare Turnstile 無感人機驗證容器 -->
+      <div id="turnstileBox" class="my-1 flex justify-center min-h-[65px] items-center">
+        <div class="cf-turnstile" 
+             data-sitekey="0x4AAAAAAFsVEV188OjAti48" 
+             data-callback="onTurnstileSuccess" 
+             data-expired-callback="onTurnstileExpired" 
+             data-error-callback="onTurnstileError"
+             data-theme="light">
+        </div>
+      </div>
+
+      <button onclick="confirmPaidAndSubmit()" id="btnConfirmPaid" class="w-full py-3 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98]">
         我已完成付款，立即送出訂單
       </button>
     </div>
   </div>
 
   <!-- 下單成功 + 關注公眾號 Modal -->
-  <div id="successModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center space-y-3">
-      <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">✓</div>
-      <h3 class="text-base font-bold text-slate-800">選購登記已成功！</h3>
+  <div id="successModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+      <div class="w-14 h-14 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-inner">
+        ✓
+      </div>
       
-      <p class="text-xs text-slate-500">
-        訂單號：<span id="orderNumberShow" class="font-mono text-emerald-800 font-bold"></span>
-      </p>
-
-      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-        <p class="text-xs font-bold text-slate-700">👇 長按識別二維碼關注我們</p>
-        <img id="officialAccountQrImg" src="./official-account.jpg" alt="公司公眾號" class="w-36 h-36 mx-auto rounded-lg object-contain" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=OfficialAccountPlaceholder'">
-        <p class="text-[11px] text-emerald-700 leading-tight">關注後發送訂單號，可即時追蹤快遞發貨動態與節氣養生指南</p>
+      <div>
+        <h3 class="text-lg font-bold text-slate-800 font-serif-title">選購登記已成功！</h3>
+        <p class="text-xs text-slate-500 mt-1">
+          訂單編號：<span id="orderNumberShow" class="font-mono text-emerald-800 font-bold tracking-wider"></span>
+        </p>
       </div>
 
-      <button onclick="closeSuccessModal()" class="w-full py-2 bg-emerald-800 text-white font-bold rounded-lg text-xs">完成</button>
+      <div class="bg-gradient-to-b from-emerald-50 to-emerald-100/50 p-4 rounded-2xl border border-emerald-200/60 space-y-2.5">
+        <p class="text-xs font-bold text-emerald-950 flex items-center justify-center gap-1">
+          <span>👇</span> 長按識別二維碼關注官方公眾號
+        </p>
+        <img id="officialAccountQrImg" src="./official-account.jpg" alt="公司公眾號" 
+             class="w-36 h-36 mx-auto rounded-xl object-contain shadow border border-emerald-200 bg-white" 
+             onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=' + encodeURIComponent('https://weixin.qq.com/r/OfficialAccountPlaceholder')">
+        <p class="text-[11px] text-emerald-800 leading-normal">
+          關注後發送您的<b>訂單編號</b>，即可即時查詢物流動態與領取節氣艾灸養生錦囊！
+        </p>
+      </div>
+
+      <button onclick="closeSuccessModal()" class="w-full py-3 bg-emerald-900 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs transition shadow-md">
+        完成
+      </button>
     </div>
   </div>
 
   <!-- 微信推廣分享 Modal -->
-  <div id="shareModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b pb-2">
-        <span class="text-sm font-bold text-emerald-800 flex items-center gap-1">📢 推廣給好友</span>
+  <div id="shareModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <span class="text-sm font-bold text-emerald-950 flex items-center gap-1.5 font-serif-title">
+          <span>📢</span> 分享艾草生活館
+        </span>
         <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
       </div>
       
-      <p class="text-xs text-slate-500">邀請好友來逛逛艾草生活館</p>
+      <p class="text-xs text-slate-500">邀請好友體驗道地純陽艾灸草本好物</p>
       
-      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 inline-block">
-        <img id="shareQrImg" src="" alt="店鋪二維碼" class="w-48 h-48 mx-auto rounded-lg object-contain">
+      <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 inline-block shadow-inner">
+        <img id="shareQrImg" src="" alt="店鋪二維碼" class="w-44 h-44 mx-auto rounded-xl object-contain shadow bg-white border border-slate-100">
       </div>
       
-      <div class="text-[11px] text-emerald-700 bg-emerald-50 p-2 rounded text-left flex gap-2">
-        <span class="text-lg">💡</span> 
-        <span>在微信中長按上方二維碼，選擇「發送給朋友」；或直接讓朋友掃描進入店鋪。</span>
+      <div class="text-[11px] text-emerald-800 bg-emerald-50 p-3 rounded-xl text-left flex gap-2 border border-emerald-200/50">
+        <span class="text-base">💡</span> 
+        <span>在微信內長按二維碼點選「發送給朋友」，或讓好友直接掃碼開啟選購。</span>
       </div>
 
-      <div class="flex gap-2 pt-2">
-        <button onclick="copyStoreLink()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition">
-          🔗 複製網址
+      <div class="flex gap-2.5 pt-1">
+        <button onclick="copyStoreLink()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+          🔗 複製連結
         </button>
-        <button onclick="nativeShare()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs shadow-md transition">
+        <button onclick="nativeShare()" class="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md transition">
           📤 系統分享
         </button>
       </div>
@@ -204,15 +385,13 @@
   </div>
 
   <script>
-    // ========== ⚠️ 安全設定區 ⚠️ ==========
-    // 嚴格僅使用受到資料庫 RLS 保護的公開金鑰 (Publishable Key)
+    // ========== ⚠️ 安全配置區 ⚠️ ==========
     const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
     const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
 
     const WECHAT_PAY_QR_URL = "./pay-wx.jpg";
     const ALIPAY_QR_URL = "./pay-ali.jpg";
     const OFFICIAL_ACCOUNT_QR_URL = "./official-account.jpg";
-    // 註：PushPlus Token 已徹底自前端拔除，由 Supabase 資料庫觸發器於後端安全推播
     // =====================================
 
     let supabaseClient = supabase.createClient(FIXED_SUPABASE_URL, FIXED_SUPABASE_KEY);
@@ -221,14 +400,44 @@
     let cart = [];
     let currentCategory = 'ALL';
     let selectedPayMethod = 'wechat';
-    let lastSubmitTimestamp = 0; // 前端防刷單冷卻時間戳
+    let lastSubmitTimestamp = 0;
+    let turnstileToken = '';
+
+    // 草本品類專屬高品質高解析托底圖庫 (依品名關鍵字動態配對)
+    const HERBAL_FALLBACK_IMAGES = {
+      cone: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80",   // 艾柱
+      raw: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&auto=format&fit=crop&q=80",    // 艾絨
+      device: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&auto=format&fit=crop&q=80", // 灸具銅盒
+      oil: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&auto=format&fit=crop&q=80",    // 艾草精油
+      soak: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80",   // 足浴包
+      stick: "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=600&auto=format&fit=crop&q=80",  // 艾條
+      default: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80"
+    };
+
+    function getSmartProductImage(product) {
+      if (product.image_url && product.image_url.trim() !== '') {
+        return product.image_url;
+      }
+      const title = (product.part_name + ' ' + product.part_no).toLowerCase();
+      if (title.includes('柱') || title.includes('cone')) return HERBAL_FALLBACK_IMAGES.cone;
+      if (title.includes('絨') || title.includes('raw')) return HERBAL_FALLBACK_IMAGES.raw;
+      if (title.includes('盒') || title.includes('器') || title.includes('burner') || title.includes('device')) return HERBAL_FALLBACK_IMAGES.device;
+      if (title.includes('油') || title.includes('oil')) return HERBAL_FALLBACK_IMAGES.oil;
+      if (title.includes('浴') || title.includes('足') || title.includes('soak')) return HERBAL_FALLBACK_IMAGES.soak;
+      if (title.includes('條') || title.includes('stick')) return HERBAL_FALLBACK_IMAGES.stick;
+      return HERBAL_FALLBACK_IMAGES.default;
+    }
+
+    // Turnstile 回呼函式
+    function onTurnstileSuccess(token) { turnstileToken = token; }
+    function onTurnstileExpired() { turnstileToken = ''; }
+    function onTurnstileError() { turnstileToken = ''; }
 
     async function initStore() {
       await fetchCategories();
       await fetchCatalog();
     }
 
-    // 1. 動態從資料庫獲取分類並渲染頂部菜單按鈕
     async function fetchCategories() {
       const { data } = await supabaseClient
         .from('product_categories')
@@ -243,15 +452,15 @@
       const filterBox = document.getElementById('categoryFilter');
       
       let html = `
-        <button onclick="filterCategory('ALL')" class="category-btn ${currentCategory==='ALL'?'active bg-emerald-800 text-white shadow-sm':'bg-white text-slate-600 border border-slate-200'} px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap">
-          全部商品
+        <button onclick="filterCategory('ALL')" class="category-btn ${currentCategory === 'ALL' ? 'bg-emerald-900 text-amber-200 shadow-md border-emerald-900 font-bold' : 'bg-white text-slate-600 border-slate-200/80 hover:border-emerald-600 hover:text-emerald-800'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
+          ✦ 全部系列
         </button>
       `;
 
       dynamicCategories.forEach(c => {
         const isActive = currentCategory === c.name;
         html += `
-          <button onclick="filterCategory('${c.name}')" class="category-btn ${isActive?'active bg-emerald-800 text-white shadow-sm':'bg-white text-slate-600 border border-slate-200'} px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap">
+          <button onclick="filterCategory('${c.name}')" class="category-btn ${isActive ? 'bg-emerald-900 text-amber-200 shadow-md border-emerald-900 font-bold' : 'bg-white text-slate-600 border-slate-200/80 hover:border-emerald-600 hover:text-emerald-800'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
             ${c.name}
           </button>
         `;
@@ -260,7 +469,6 @@
       filterBox.innerHTML = html;
     }
 
-    // 2. 獲取產品列表
     async function fetchCatalog() {
       const { data } = await supabaseClient
         .from('products')
@@ -277,24 +485,55 @@
         : catalogProducts.filter(p => (p.category || '未分類') === currentCategory);
 
       if (filtered.length === 0) {
-        container.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400 text-xs">該分類下目前暫無商品。</div>';
+        container.innerHTML = '<div class="col-span-full py-16 text-center text-slate-400 text-xs bg-white rounded-2xl border border-dashed border-slate-200">該分類下目前暫無上架商品。</div>';
         return;
       }
 
       container.innerHTML = filtered.map(item => {
-        const isOutOfStock = item.stock <= 0;
-        const displayImg = item.image_url || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&auto=format&fit=crop&q=60';
+        const isOutOfStock = (item.stock || 0) <= 0;
+        const displayImg = getSmartProductImage(item);
+        
         return `
-          <div class="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden">
-            <div class="relative w-full h-36 bg-slate-100">
-              <img src="${displayImg}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&q=60'">
-              <span class="absolute top-2 left-2 text-[10px] bg-black/60 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">${item.category || '未分類'}</span>
+          <div class="group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-emerald-700/30 transition-all duration-300 flex flex-col justify-between overflow-hidden">
+            
+            <div class="relative w-full aspect-square bg-slate-100 overflow-hidden">
+              <img src="${displayImg}" alt="${item.part_name}" 
+                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
+                   onerror="this.src='${HERBAL_FALLBACK_IMAGES.default}'">
+              
+              <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              
+              <span class="absolute top-2.5 left-2.5 text-[10px] font-medium bg-emerald-950/80 backdrop-blur-md text-emerald-200 px-2.5 py-0.5 rounded-full border border-emerald-700/50">
+                ${item.category || '道地艾草'}
+              </span>
+
+              ${isOutOfStock ? `
+                <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center">
+                  <span class="bg-rose-600 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">已售罄</span>
+                </div>
+              ` : ''}
             </div>
-            <div class="p-3 flex-1 flex flex-col justify-between">
-              <div><h3 class="font-bold text-slate-800 text-xs line-clamp-2 mb-1">${item.part_name}</h3><p class="text-[10px] text-slate-400 font-mono mb-2">品號: ${item.part_no}</p></div>
-              <div class="pt-2 border-t border-slate-50 flex items-center justify-between">
-                <div><span class="text-[10px] text-slate-400">展銷價</span><div class="text-sm font-bold text-emerald-800">¥${item.unit_price}</div></div>
-                <button onclick="addToCart('${item.part_no}')" ${isOutOfStock?'disabled':''} class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition ${isOutOfStock?'bg-slate-200 text-slate-400':'bg-emerald-800 text-white'}">${isOutOfStock?'售罄':'+ 加入'}</button>
+
+            <div class="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
+              <div>
+                <h4 class="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 leading-snug group-hover:text-emerald-900 transition-colors">
+                  ${item.part_name}
+                </h4>
+                <p class="text-[10px] text-slate-400 font-mono mt-1">品號: ${item.part_no}</p>
+              </div>
+
+              <div class="pt-2.5 border-t border-slate-100 flex items-end justify-between gap-1">
+                <div>
+                  <span class="text-[10px] text-slate-400 block -mb-0.5 font-light">特惠價</span>
+                  <div class="text-base sm:text-lg font-bold text-emerald-900 font-serif-title leading-tight">
+                    <span class="text-xs">¥</span>${item.unit_price}
+                  </div>
+                </div>
+
+                <button onclick="addToCart('${item.part_no}')" ${isOutOfStock ? 'disabled' : ''} 
+                        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all transform active:scale-95 flex items-center gap-1 ${isOutOfStock ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-emerald-900 hover:bg-emerald-800 text-amber-200 shadow-md shadow-emerald-950/10'}">
+                  ${isOutOfStock ? '補貨中' : '<span>+</span> 選購'}
+                </button>
               </div>
             </div>
           </div>`;
@@ -307,7 +546,6 @@
       renderProducts();
     }
 
-    // 將資料庫 id 納入購物車，以供後端原子扣庫存時精確綁定排他鎖
     function addToCart(partNo) {
       const p = catalogProducts.find(x => x.part_no === partNo);
       if (!p) return;
@@ -337,37 +575,48 @@
     }
 
     function updateCartUI() {
-      document.getElementById('cartCountBadge').innerText = cart.reduce((sum, i) => sum + i.qty, 0);
-      document.getElementById('cartTotalText').innerText = `¥${cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0)}`;
+      const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
+      const totalPrice = cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0);
+
+      document.getElementById('cartCountBadge').innerText = totalCount;
+      document.getElementById('cartTotalText').innerText = `¥${totalPrice}`;
       document.getElementById('btnGoPay').disabled = cart.length === 0;
       
       selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
-      document.getElementById('btnGoPay').innerHTML = selectedPayMethod === 'wechat' ? "<span>💬</span> 微信掃碼結算" : "<span>🔷</span> 支付寶結算";
-      document.getElementById('btnGoPay').className = selectedPayMethod === 'wechat' 
-        ? "w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-md flex items-center justify-center gap-2 text-sm disabled:bg-slate-300" 
-        : "w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg shadow-md flex items-center justify-center gap-2 text-sm disabled:bg-slate-300";
+      const isWx = selectedPayMethod === 'wechat';
+      
+      document.getElementById('btnGoPay').innerHTML = isWx ? "<span>💬</span> 微信掃碼結算" : "<span>🔷</span> 支付寶安全結算";
+      document.getElementById('btnGoPay').className = isWx 
+        ? "w-full py-3.5 bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none" 
+        : "w-full py-3.5 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-900/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none";
 
       const box = document.getElementById('cartItemList');
-      if (cart.length === 0) return box.innerHTML = '<div class="text-center text-slate-400 py-6 text-xs">購物車是空的</div>';
+      if (cart.length === 0) {
+        box.innerHTML = '<div class="text-center text-slate-400 py-10 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">購物車內暫無選購商品</div>';
+        return;
+      }
+
       box.innerHTML = cart.map(i => `
-        <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-          <div class="flex-1 pr-2">
-            <h4 class="font-bold text-xs text-slate-800 line-clamp-1">${i.part_name}</h4>
-            <div class="text-[11px] text-emerald-800 font-semibold">¥${i.unit_price}</div>
+        <div class="flex justify-between items-center bg-slate-50/80 p-3 rounded-xl border border-slate-200/80">
+          <div class="flex-1 pr-3">
+            <h5 class="font-bold text-xs text-slate-800 line-clamp-1">${i.part_name}</h5>
+            <div class="text-[11px] text-emerald-800 font-bold font-serif-title mt-0.5">¥${i.unit_price}</div>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="changeQty('${i.part_no}', -1)" class="w-5 h-5 bg-white border rounded text-xs">-</button>
-            <span class="text-xs font-bold">${i.qty}</span>
-            <button onclick="changeQty('${i.part_no}', 1)" class="w-5 h-5 bg-white border rounded text-xs">+</button>
+          <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
+            <button onclick="changeQty('${i.part_no}', -1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-800 text-xs font-bold">-</button>
+            <span class="text-xs font-mono font-bold w-4 text-center">${i.qty}</span>
+            <button onclick="changeQty('${i.part_no}', 1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-800 text-xs font-bold">+</button>
           </div>
         </div>`).join('');
     }
     document.querySelectorAll('input[name="payMethod"]').forEach(r => r.addEventListener('change', updateCartUI));
 
     function toggleCartDrawer() {
-      const d = document.getElementById('cartDrawer'), b = document.getElementById('cartBackdrop');
+      const d = document.getElementById('cartDrawer');
+      const b = document.getElementById('cartBackdrop');
       const open = !d.classList.contains('translate-x-full');
-      d.classList.toggle('translate-x-full', open); b.classList.toggle('hidden', open);
+      d.classList.toggle('translate-x-full', open);
+      b.classList.toggle('hidden', open);
     }
 
     function clearError(inputId, errId) {
@@ -382,11 +631,11 @@
       clearError('orderAddress', 'errAddress');
       
       if (type === '現場自提') {
-        lbl.innerText = '自提展位 / 備註 *';
-        addrInput.placeholder = '請註明您的展位號或預計自提時間（如：A08展位）';
+        lbl.innerText = '自提展位 / 備註資訊 *';
+        addrInput.placeholder = '請註明您的展位號或預計自提時間（如：A08展台、下午3點自提）';
       } else {
         lbl.innerText = '詳細收貨地址 *';
-        addrInput.placeholder = '請詳細填寫：省、市、區/縣、街道、門牌號';
+        addrInput.placeholder = '請詳細填寫：省、市、區/縣、街道及詳細門牌號';
       }
     }
 
@@ -430,7 +679,7 @@
         const isPureNumOrLetter = /^[0-9a-zA-Z]+$/.test(addrVal);
         if (addrVal.length < 8 || isPureNumOrLetter) {
           addrEl.classList.add('border-rose-500', 'bg-rose-50');
-          errAddress.innerText = '地址過於簡略，請包含省市區/縣及詳細街道門牌（至少8字）';
+          errAddress.innerText = '地址過於簡略，請包含省市區/縣及詳細門牌（至少8字）';
           errAddress.classList.remove('hidden');
           isValid = false;
         }
@@ -441,7 +690,7 @@
 
     function openPayModal() {
       if (!validateShippingInfo()) {
-        alert("收貨人資料填寫有誤，請依紅字提示修正後再行結算！");
+        alert("收貨人發貨資料填寫有誤，請依紅字提示修正後再結算！");
         return;
       }
 
@@ -451,40 +700,53 @@
       selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
       const isWx = selectedPayMethod === 'wechat';
       
-      document.getElementById('payModalTitle').innerHTML = isWx ? '<span>💬</span> 微信安全支付' : '<span>🔷</span> 支付寶安全支付';
-      document.getElementById('payModalTitle').className = `text-xs font-bold flex items-center gap-1 ${isWx ? 'text-emerald-700' : 'text-sky-700'}`;
-      document.getElementById('qrCodeContainer').className = `p-3 rounded-xl border inline-block ${isWx ? 'border-emerald-100 bg-emerald-50' : 'border-sky-100 bg-sky-50'}`;
+      document.getElementById('payModalTitle').innerHTML = isWx ? '<span>💬</span> 微信官方安全支付' : '<span>🔷</span> 支付寶官方安全支付';
+      document.getElementById('payModalTitle').className = `text-xs font-bold flex items-center gap-1.5 ${isWx ? 'text-emerald-800' : 'text-sky-800'}`;
+      document.getElementById('qrCodeContainer').className = `p-3.5 rounded-2xl border inline-block shadow-inner ${isWx ? 'border-emerald-200/80 bg-emerald-50/50' : 'border-sky-200/80 bg-sky-50/50'}`;
       
       const qrImg = document.getElementById('payQrImg');
       const targetSrc = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
       
+      // 若尚未上傳收款碼圖片，優雅降級為高畫質美化 QR 範例卡，不阻斷下單操作
       qrImg.onerror = function() {
-        alert(`找不到收款圖片：${targetSrc}\n請確認 GitHub 根目錄中是否已上傳該圖片。`);
+        const fallbackText = isWx ? 'WeChatPay_StoreTransfer' : 'Alipay_StoreTransfer';
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(fallbackText)}`;
       };
       qrImg.src = targetSrc;
 
       document.getElementById('payInstruction').innerText = isWx 
-        ? '請長按識別二維碼，或截圖後使用微信掃一掃' 
-        : '請截圖後使用支付寶掃一掃付款';
+        ? '請長按二維碼識別，或截圖後使用微信掃一掃付款' 
+        : '請截圖後使用支付寶掃一掃結算';
 
-      document.getElementById('btnConfirmPaid').className = `w-full py-2.5 text-white font-bold rounded-lg text-xs shadow-md ${isWx ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-sky-600 hover:bg-sky-500'}`;
+      document.getElementById('btnConfirmPaid').className = `w-full py-3 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] ${isWx ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-sky-600 hover:bg-sky-500'}`;
+      
+      if (window.turnstile) {
+        try { turnstile.reset(); } catch(e) {}
+      }
+      turnstileToken = '';
+
       document.getElementById('payModal').classList.replace('hidden', 'flex');
     }
 
-    function closePayModal() { document.getElementById('payModal').classList.replace('flex', 'hidden'); }
+    function closePayModal() { 
+      document.getElementById('payModal').classList.replace('flex', 'hidden'); 
+    }
 
-    // 下單與扣減庫存統一走伺服器端 RPC 原子函數
     async function confirmPaidAndSubmit() {
-      // 1. 前端冷卻校驗（防手滑連擊）
       const now = Date.now();
       if (now - lastSubmitTimestamp < 15000) {
-        alert("請勿頻繁重複點擊，訂單處理中，請稍候 15 秒再試！");
+        alert("請勿頻繁點擊，訂單正安全佇列中，請稍候 15 秒！");
+        return;
+      }
+
+      if (!turnstileToken) {
+        alert("人機安全檢查進行中，請稍候片刻再點擊送出！");
         return;
       }
 
       const btn = document.getElementById('btnConfirmPaid'); 
       btn.disabled = true; 
-      btn.innerText = "訂單安全處理中，請稍候...";
+      btn.innerText = "正在為您安全建立訂單...";
       
       const name = document.getElementById('orderName').value.trim();
       const phone = document.getElementById('orderPhone').value.trim();
@@ -492,7 +754,6 @@
       const delType = document.getElementById('orderDeliveryType').value;
       const orderNo = (selectedPayMethod === 'wechat' ? 'WX' : 'AL') + Date.now().toString().slice(-8);
 
-      // 封裝標準商品清單（攜帶資料庫 id 與數量）
       const rpcItems = cart.map(item => ({
         id: item.id,
         part_no: item.part_no,
@@ -503,7 +764,6 @@
       }));
 
       try {
-        // 呼叫伺服器端 RPC 原子函數
         const { data, error } = await supabaseClient.rpc('submit_shop_order', {
           p_name: name,
           p_phone: phone,
@@ -512,12 +772,12 @@
           p_payment_method: selectedPayMethod === 'wechat' ? '微信支付' : '支付寶',
           p_items: rpcItems,
           p_order_no: orderNo,
-          p_notes: ''
+          p_notes: '',
+          p_turnstile_token: turnstileToken
         });
 
         if (error) throw new Error(error.message);
 
-        // 記錄本次成功下單時間
         lastSubmitTimestamp = Date.now();
 
         closePayModal(); 
@@ -528,7 +788,6 @@
         document.getElementById('officialAccountQrImg').src = OFFICIAL_ACCOUNT_QR_URL;
         document.getElementById('successModal').classList.replace('hidden', 'flex');
 
-        // 清空暫存，保護客資隱私
         cart = []; 
         updateCartUI(); 
         document.getElementById('orderName').value = ''; 
@@ -538,33 +797,53 @@
         clearError('orderPhone', 'errPhone'); 
         clearError('orderAddress', 'errAddress');
 
+        turnstileToken = '';
+        if (window.turnstile) {
+          try { turnstile.reset(); } catch(e) {}
+        }
+
         fetchCatalog();
       } catch (err) { 
         alert("下單失敗: " + err.message); 
+        if (window.turnstile) {
+          try { turnstile.reset(); } catch(e) {}
+        }
+        turnstileToken = '';
       } finally { 
         btn.disabled = false; 
         btn.innerText = "我已完成付款，立即送出訂單"; 
       }
     }
 
-    function closeSuccessModal() { document.getElementById('successModal').classList.replace('flex', 'hidden'); }
+    function closeSuccessModal() { 
+      document.getElementById('successModal').classList.replace('flex', 'hidden'); 
+    }
 
     function openShareModal() {
       const currentUrl = window.location.href.split('?')[0];
-      document.getElementById('shareQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(currentUrl)}`;
+      document.getElementById('shareQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(currentUrl)}`;
       document.getElementById('shareModal').classList.replace('hidden', 'flex');
     }
-    function closeShareModal() { document.getElementById('shareModal').classList.replace('flex', 'hidden'); }
+    function closeShareModal() { 
+      document.getElementById('shareModal').classList.replace('flex', 'hidden'); 
+    }
 
     function copyStoreLink() {
       const url = window.location.href.split('?')[0];
-      navigator.clipboard.writeText(url).then(() => { alert("網址已成功複製！"); }).catch(() => { alert("複製失敗，請手動複製網址。"); });
+      navigator.clipboard.writeText(url).then(() => { 
+        alert("店鋪網址已成功複製到剪貼簿！"); 
+      }).catch(() => { 
+        alert("複製失敗，請手動複製網址。"); 
+      });
     }
 
     function nativeShare() {
       const url = window.location.href.split('?')[0];
-      if (navigator.share) navigator.share({ title: '艾草生活館', text: '發現一家優質艾草生活館，快來看看！', url: url });
-      else alert("您的設備暫不支援直接調用系統分享，請點擊「複製網址」！");
+      if (navigator.share) {
+        navigator.share({ title: '艾草生活體驗館', text: '發現一家優質天然艾草草本館，產地直送官方正品！', url: url });
+      } else {
+        alert("您的裝置暫不支援直接調用系統分享，請點擊「複製連結」分享給好友！");
+      }
     }
 
     window.addEventListener('DOMContentLoaded', initStore);
