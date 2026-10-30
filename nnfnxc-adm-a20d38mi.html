@@ -208,19 +208,36 @@
   let currentTab = 'table';
   let currentUser = null;
   let targetPartNoForUpload = null;
+  let idleTimer = null;
 
+  // ========== 全域安全性輔助函數 (防範儲存型 XSS 攻擊) ==========
+  function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // 登入狀態監聽
   supabaseClient.auth.onAuthStateChange((event, session) => {
     currentUser = session ? session.user : null;
     document.getElementById('authOverlay').classList.toggle('hidden', !!currentUser);
-    document.getElementById('userEmailLabel').innerText = currentUser ? `👤 ${currentUser.email}` : '未登入';
+    document.getElementById('userEmailLabel').innerText = currentUser ? `👤 ${escapeHtml(currentUser.email)}` : '未登入';
     document.getElementById('btnLoginOut').innerText = currentUser ? '登出' : '登入';
     
-    // 如果登出，停止計時器
-    if (!currentUser) clearTimeout(idleTimer);
+    if (currentUser) {
+      resetIdleTimer();
+    } else if (idleTimer) {
+      clearTimeout(idleTimer);
+    }
   });
   
   function toggleLogin() { currentUser ? supabaseClient.auth.signOut() : document.getElementById('authModal').classList.replace('hidden', 'flex'); }
   function closeAuthModal() { document.getElementById('authModal').classList.replace('flex', 'hidden'); }
+  
   async function performLogin() {
     const { error } = await supabaseClient.auth.signInWithPassword({
       email: document.getElementById('authEmail').value,
@@ -228,24 +245,23 @@
     });
     if (error) alert("登入失敗：" + error.message);
     else {
-        closeAuthModal();
-        resetIdleTimer(); // 登入成功後開始防呆計時
+      closeAuthModal();
+      resetIdleTimer();
     }
   }
 
-  // 展場設備安全防護：閒置 15 分鐘強制自動登出
-  let idleTimer;
+  // ========== 展場設備安全防護：閒置 15 分鐘強制自動登出 ==========
   function resetIdleTimer() {
-    clearTimeout(idleTimer);
-    // 只有在已登入狀態才需要倒數計時登出
+    if (idleTimer) clearTimeout(idleTimer);
     if (currentUser) {
-        idleTimer = setTimeout(() => {
-            supabaseClient.auth.signOut();
-            alert("為確保設備安全，系統已因閒置超過 15 分鐘自動登出，請重新登入！");
-            location.reload();
-        }, 15 * 60 * 1000);
+      idleTimer = setTimeout(() => {
+        supabaseClient.auth.signOut();
+        alert("為確保設備與後台安全，系統因閒置超過 15 分鐘已自動登出！");
+        location.reload();
+      }, 15 * 60 * 1000);
     }
   }
+
   ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
     window.addEventListener(evt, resetIdleTimer, false);
   });
@@ -265,7 +281,7 @@
     if (categoryList.length === 0) {
       select.innerHTML = '<option value="未分類">未分類</option>';
     } else {
-      select.innerHTML = categoryList.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+      select.innerHTML = categoryList.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
     }
     renderCategoriesTable();
   }
@@ -280,13 +296,14 @@
     const tbody = document.getElementById('categoryTableBody');
     tbody.innerHTML = categoryList.map(c => {
       const count = inventoryList.filter(i => i.category === c.name).length;
+      const safeName = escapeHtml(c.name);
       return `
         <tr class="hover:bg-slate-800/40">
-          <td class="p-2.5 font-mono text-slate-400">#${c.id}</td>
-          <td class="p-2.5 font-bold text-emerald-400">${c.name}</td>
+          <td class="p-2.5 font-mono text-slate-400">#${Number(c.id)}</td>
+          <td class="p-2.5 font-bold text-emerald-400">${safeName}</td>
           <td class="p-2.5 text-slate-300">${count} 件商品</td>
           <td class="p-2.5 text-right">
-            <button onclick="deleteCategory(${c.id}, '${c.name}', ${count})" class="px-2 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/40 rounded text-xs transition">刪除</button>
+            <button onclick="deleteCategory(${Number(c.id)}, '${safeName.replace(/'/g, "\\'")}', ${count})" class="px-2 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/40 rounded text-xs transition">刪除</button>
           </td>
         </tr>
       `;
@@ -333,31 +350,37 @@
     document.getElementById('kpiZeroStock').innerText = zeroCount;
 
     const tbody = document.getElementById('inventoryTableBody');
-    tbody.innerHTML = inventoryList.filter(i => i.part_no.toLowerCase().includes(kwd) || i.part_name.toLowerCase().includes(kwd) || (i.category||'').toLowerCase().includes(kwd)).map(i => {
-      const imgDisplay = i.image_url 
-        ? `<img src="${i.image_url}" class="w-10 h-10 object-cover rounded shadow border border-slate-700">` 
+    tbody.innerHTML = inventoryList.filter(i => (i.part_no||'').toLowerCase().includes(kwd) || (i.part_name||'').toLowerCase().includes(kwd) || (i.category||'').toLowerCase().includes(kwd)).map(i => {
+      const safePartNo = escapeHtml(i.part_no);
+      const safePartName = escapeHtml(i.part_name);
+      const safeCategory = escapeHtml(i.category || '未分類');
+      const safeBin = escapeHtml(i.bin_location || '');
+      const safeImg = i.image_url ? escapeHtml(i.image_url) : '';
+
+      const imgDisplay = safeImg 
+        ? `<img src="${safeImg}" class="w-10 h-10 object-cover rounded shadow border border-slate-700">` 
         : `<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center text-[10px] text-slate-500">無圖</div>`;
 
       return `
         <tr class="hover:bg-slate-800/40">
           <td class="p-2.5 flex justify-center">${imgDisplay}</td>
           <td class="p-2.5 leading-tight">
-            <span class="font-mono text-sky-400 font-bold">${i.part_no}</span><br>
-            <span class="text-[11px] text-slate-300">${i.part_name}</span>
+            <span class="font-mono text-sky-400 font-bold">${safePartNo}</span><br>
+            <span class="text-[11px] text-slate-300">${safePartName}</span>
           </td>
           <td class="p-2.5">
-            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 border border-theme text-emerald-400 font-medium">${i.category || '未分類'}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 border border-theme text-emerald-400 font-medium">${safeCategory}</span>
           </td>
           <td class="p-2.5 leading-tight">
-            <span class="${i.stock===0?'text-rose-400':'text-emerald-400'} font-bold">${i.stock} ${i.unit||'件'}</span><br>
-            <span class="font-mono text-amber-300 text-[10px]">儲位: ${i.bin_location}</span>
+            <span class="${i.stock===0?'text-rose-400':'text-emerald-400'} font-bold">${i.stock} ${escapeHtml(i.unit||'件')}</span><br>
+            <span class="font-mono text-amber-300 text-[10px]">儲位: ${safeBin}</span>
           </td>
           <td class="p-2.5 leading-tight">
             ¥${i.unit_price}<br>
             <span class="text-slate-500 text-[10px]">總額 ¥${(i.stock * i.unit_price)}</span>
           </td>
           <td class="p-2.5">
-            <button onclick="triggerImageUpload('${i.part_no}')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white transition flex items-center gap-1">
+            <button onclick="triggerImageUpload('${safePartNo.replace(/'/g, "\\'")}')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white transition flex items-center gap-1">
               📷 換圖
             </button>
           </td>
@@ -397,29 +420,29 @@
     }
   }
 
-  // 訂單管理：已修復讀取欄位名稱，對齊前台 RPC 新增的 recipient_name 等欄位
+  // 訂單管理：全面採用 escapeHtml 防止惡意收件資料發動 Stored XSS
   async function fetchShopOrders() {
     const { data } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
     if (!data) return;
     let pendingCount = 0;
     
     document.getElementById('ordersTableBody').innerHTML = data.map(o => {
-      // 狀態計數
       const isShipped = o.order_status === 'SHIPPED' || o.shipping_status === '已發貨';
       if (!isShipped) pendingCount++;
 
-      // 優先顯示 order_no，沒有則顯示 id (相容舊資料)
-      const displayOrderNo = o.order_no || o.id;
+      const rawOrderNo = String(o.order_no || o.id || '');
+      const displayOrderNo = escapeHtml(rawOrderNo);
 
-      // 提取正確的收件人欄位 (相容舊版 customer_name 與新版 recipient_name)
-      const rName = o.recipient_name || o.customer_name || '未填寫';
-      const rPhone = o.recipient_phone || o.customer_phone || '未填寫';
-      const rAddr = o.shipping_address || o.customer_address || '未填寫';
-      
-      const pMethod = o.payment_method || '未知';
-      const sMethod = o.shipping_method || '未知';
+      const rName = escapeHtml(o.recipient_name || o.customer_name || '未填寫');
+      const rPhone = escapeHtml(o.recipient_phone || o.customer_phone || '未填寫');
+      const rAddr = escapeHtml(o.shipping_address || o.customer_address || '未填寫');
+      const pMethod = escapeHtml(o.payment_method || '未知');
+      const sMethod = escapeHtml(o.shipping_method || '未知');
+      const trackingNo = escapeHtml(o.tracking_no || '');
 
-      const itemsHtml = (o.items || []).map(i => `${i.part_name || '商品'} x${i.quantity || i.qty || 1}`).join('<br>');
+      const itemsHtml = (o.items || []).map(i => 
+        `${escapeHtml(i.part_name || '商品')} x${Number(i.quantity || i.qty || 1)}`
+      ).join('<br>');
 
       return `
         <tr class="hover:bg-slate-800/40">
@@ -432,11 +455,11 @@
             <br><span class="text-[9px] text-amber-300">配送: ${sMethod} | 支付: ${pMethod}</span>
           </td>
           <td class="p-2.5 text-[10px] text-slate-300">${itemsHtml}</td>
-          <td class="p-2.5 font-bold text-emerald-400">¥${o.total_amount || 0}</td>
+          <td class="p-2.5 font-bold text-emerald-400">¥${Number(o.total_amount || 0)}</td>
           <td class="p-2.5">
             ${isShipped 
-              ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">已出貨</span><br><span class="text-[10px] text-slate-500">${o.tracking_no || ''}</span>`
-              : `<button onclick="shipOrder('${displayOrderNo}')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold">點擊發貨</button>`}
+              ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">已出貨</span><br><span class="text-[10px] text-slate-500">${trackingNo}</span>`
+              : `<button onclick="shipOrder('${rawOrderNo.replace(/'/g, "\\'")}')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold">點擊發貨</button>`}
           </td>
         </tr>`;
     }).join('');
@@ -448,10 +471,9 @@
     const track = prompt("請填寫快遞單號 (可選填)：");
     if (track === null) return;
 
-    // 同步更新 order_status 與 shipping_status 以防欄位混淆
     await supabaseClient
       .from('shop_orders')
-      .update({ order_status: 'SHIPPED', shipping_status: '已發貨', tracking_no: track })
+      .update({ order_status: 'SHIPPED', shipping_status: '已發貨', tracking_no: track.trim() })
       .or(`order_no.eq.${orderIdOrNo},id.eq.${orderIdOrNo}`);
       
     fetchShopOrders();
@@ -468,7 +490,15 @@
     if(tab==='categories') renderCategoriesTable();
     if(tab==='orders') fetchShopOrders();
     if(tab==='logs') supabaseClient.from('inventory_transactions').select('*').order('created_at',{ascending:false}).limit(50).then(({data}) => {
-      document.getElementById('logsTableBody').innerHTML = (data||[]).map(l => `<tr class="hover:bg-slate-800/40"><td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td><td class="p-2.5 text-indigo-300 text-[11px]">${l.operator||'-'}</td><td class="p-2.5 font-mono text-sky-400 text-xs">${l.part_no}</td><td class="p-2.5 text-xs ${l.trans_type==='IN'?'text-emerald-400':'text-amber-400'}">${l.trans_type}</td><td class="p-2.5 font-bold">${l.qty}</td></tr>`).join('');
+      document.getElementById('logsTableBody').innerHTML = (data||[]).map(l => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td>
+          <td class="p-2.5 text-indigo-300 text-[11px]">${escapeHtml(l.operator||'-')}</td>
+          <td class="p-2.5 font-mono text-sky-400 text-xs">${escapeHtml(l.part_no||'')}</td>
+          <td class="p-2.5 text-xs ${l.trans_type==='IN'?'text-emerald-400':'text-amber-400'}">${escapeHtml(l.trans_type||'')}</td>
+          <td class="p-2.5 font-bold">${Number(l.qty||0)}</td>
+        </tr>
+      `).join('');
     });
   }
 
@@ -476,15 +506,15 @@
   
   async function executeTransaction() {
     if (!currentUser) return alert("無權限！請先登入");
-    const t = document.getElementById('transType').value, p = document.getElementById('partNo').value.toUpperCase(), q = parseInt(document.getElementById('transQty').value), b = document.getElementById('binLocation').value.toUpperCase();
-    if(!p || isNaN(q)) return alert("欄位錯誤");
+    const t = document.getElementById('transType').value, p = document.getElementById('partNo').value.toUpperCase().trim(), q = parseInt(document.getElementById('transQty').value), b = document.getElementById('binLocation').value.toUpperCase().trim();
+    if(!p || isNaN(q) || q <= 0) return alert("數量必須大於 0 且品號不能為空！");
     const i = inventoryList.find(x => x.part_no === p);
-    if(t==='NEW' && i) return alert("已存在");
-    if(t!=='NEW' && !i) return alert("品號不存在");
+    if(t==='NEW' && i) return alert("該品號已存在！");
+    if(t!=='NEW' && !i) return alert("品號不存在！");
     
-    if(t==='NEW') await supabaseClient.from('products').insert([{part_no:p, part_name:document.getElementById('partName').value, category:document.getElementById('partCategory').value, stock:q, bin_location:b, unit_price:document.getElementById('unitPrice').value||0, safety_stock:document.getElementById('safetyStock').value||0}]);
+    if(t==='NEW') await supabaseClient.from('products').insert([{part_no:p, part_name:document.getElementById('partName').value.trim(), category:document.getElementById('partCategory').value, stock:q, bin_location:b, unit_price:document.getElementById('unitPrice').value||0, safety_stock:document.getElementById('safetyStock').value||0}]);
     else if(t==='IN') await supabaseClient.from('products').update({stock:i.stock+q, bin_location:b||i.bin_location}).eq('part_no',p);
-    else if(t==='OUT'){ if(i.stock<q) return alert("庫存不足"); await supabaseClient.from('products').update({stock:i.stock-q}).eq('part_no',p); }
+    else if(t==='OUT'){ if(i.stock<q) return alert("庫存不足！"); await supabaseClient.from('products').update({stock:i.stock-q}).eq('part_no',p); }
     
     await supabaseClient.from('inventory_transactions').insert([{part_no:p, trans_type:t, qty:q, bin_location:b, operator:currentUser.email}]);
     document.getElementById('transQty').value='';
@@ -492,13 +522,20 @@
     alert("更新成功");
   }
 
+  // 匯出台帳：過濾潛在 CSV 公式注入符號 (=, +, -, @)
   function exportCSV() {
-    let csv = "﻿品號,品名規格,類別,儲位,現存量,安全水位,單價,總值
-";
-    inventoryList.forEach(i => { csv += `"${i.part_no}","${i.part_name}","${i.category}","${i.bin_location}",${i.stock},${i.safety_stock},${i.unit_price},${i.stock * i.unit_price}
-`; });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    a.download = `艾產品台帳_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+    let csv = "\uFEFF品號,品名規格,類別,儲位,現存量,安全水位,單價,總值\n";
+    inventoryList.forEach(i => {
+      const cleanNo = String(i.part_no || '').replace(/^[=+\-@]/, "'");
+      const cleanName = String(i.part_name || '').replace(/^[=+\-@]/, "'").replace(/"/g, '""');
+      const cleanCat = String(i.category || '').replace(/^[=+\-@]/, "'").replace(/"/g, '""');
+      const cleanBin = String(i.bin_location || '').replace(/^[=+\-@]/, "'").replace(/"/g, '""');
+      csv += `"${cleanNo}","${cleanName}","${cleanCat}","${cleanBin}",${Number(i.stock||0)},${Number(i.safety_stock||0)},${Number(i.unit_price||0)},${Number(i.stock * i.unit_price || 0)}\n`;
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    a.download = `艾產品台帳_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
   }
 
   fetchAllData();
