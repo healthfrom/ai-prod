@@ -61,19 +61,19 @@
     <div class="flex-1 overflow-y-auto p-4 space-y-4">
       <div id="cartItemList" class="space-y-2"></div>
 
-      <!-- 發貨資料填寫區 (含即時驗證紅字提示) -->
+      <!-- 發貨資料填寫區 (加入 autocomplete="off" 防止展場設備記憶客資) -->
       <div class="border-t border-slate-200 pt-3 space-y-2.5">
         <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1"><span>📦</span> 收件人發貨資料</h3>
         
         <div class="grid grid-cols-2 gap-2 text-xs items-start">
           <div>
             <label class="block text-slate-500 mb-1">收件人姓名 *</label>
-            <input type="text" id="orderName" placeholder="如：張先生 / 李華" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderName', 'errName')">
+            <input type="text" id="orderName" autocomplete="off" autocorrect="off" placeholder="如：張先生 / 李華" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderName', 'errName')">
             <p id="errName" class="text-[10px] text-rose-500 hidden mt-1">請輸入真實姓名 (2~15字)</p>
           </div>
           <div>
             <label class="block text-slate-500 mb-1">聯絡電話 *</label>
-            <input type="tel" id="orderPhone" maxlength="11" placeholder="11位手機號" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderPhone', 'errPhone')">
+            <input type="tel" id="orderPhone" autocomplete="off" autocorrect="off" maxlength="11" placeholder="11位手機號" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderPhone', 'errPhone')">
             <p id="errPhone" class="text-[10px] text-rose-500 hidden mt-1">請輸入有效手機號</p>
           </div>
         </div>
@@ -88,7 +88,7 @@
 
         <div class="text-xs">
           <label class="block text-slate-500 mb-1" id="lblAddress">詳細收貨地址 *</label>
-          <textarea id="orderAddress" rows="2" placeholder="請詳細填寫：省、市、區/縣、街道、門牌號" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderAddress', 'errAddress')"></textarea>
+          <textarea id="orderAddress" autocomplete="off" autocorrect="off" rows="2" placeholder="請詳細填寫：省、市、區/縣、街道、門牌號" class="w-full bg-slate-50 border border-slate-200 rounded p-2 outline-none text-xs transition" oninput="clearError('orderAddress', 'errAddress')"></textarea>
           <p id="errAddress" class="text-[10px] text-rose-500 hidden mt-1">地址過於簡略，請填寫完整門牌 (至少8字)</p>
         </div>
       </div>
@@ -447,35 +447,34 @@
       } catch (e) { console.error("微信推送失敗:", e); }
     }
 
+    // 將下單與扣減庫存邏輯改為呼叫後端安全的 RPC，杜絕前端篡改金額與超賣風險
     async function confirmPaidAndSubmit() {
       const btn = document.getElementById('btnConfirmPaid'); 
-      btn.disabled = true; btn.innerText = "訂單處理中...";
+      btn.disabled = true; 
+      btn.innerText = "訂單安全處理中...";
       
       const name = document.getElementById('orderName').value.trim();
       const phone = document.getElementById('orderPhone').value.trim();
       const addr = document.getElementById('orderAddress').value.trim();
       const delType = document.getElementById('orderDeliveryType').value;
-      const total = cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0);
       const orderNo = (selectedPayMethod === 'wechat' ? 'WX' : 'AL') + Date.now().toString().slice(-8);
 
       try {
-        await supabaseClient.from('shop_orders').insert([{ 
-          order_no: orderNo, customer_name: name, customer_phone: phone, customer_address: addr, 
-          delivery_type: delType, total_amount: total, items: cart, pay_status: '已付款(待核對)', shipping_status: '待發貨' 
-        }]);
+        // 呼叫伺服器端 RPC 原子函數 (需先在 Supabase SQL Editor 執行建立 submit_shop_order 函數)
+        const { data, error } = await supabaseClient.rpc('submit_shop_order', {
+          p_order_no: orderNo,
+          p_name: name,
+          p_phone: phone,
+          p_address: addr,
+          p_delivery_type: delType,
+          p_pay_method: selectedPayMethod === 'wechat' ? '微信' : '支付寶',
+          p_items: cart
+        });
 
-        for (const item of cart) {
-          const product = catalogProducts.find(p => p.part_no === item.part_no);
-          if (product) {
-            await supabaseClient.from('products').update({ stock: product.stock - item.qty }).eq('part_no', item.part_no);
-            await supabaseClient.from('inventory_transactions').insert([{ 
-              part_no: item.part_no, trans_type: 'OUT', qty: item.qty, bin_location: product.bin_location, 
-              operator: `${selectedPayMethod==='wechat'?'微信':'支付寶'}訂單(${orderNo})` 
-            }]);
-          }
-        }
-        
-        await sendWechatPush(orderNo, name, total);
+        if (error) throw new Error(error.message);
+
+        // 發送微信店長通知 (傳遞伺服器核對後的正確金額 data.verified_total)
+        await sendWechatPush(orderNo, name, data.verified_total);
 
         closePayModal(); 
         toggleCartDrawer();
@@ -484,13 +483,23 @@
         document.getElementById('officialAccountQrImg').src = OFFICIAL_ACCOUNT_QR_URL;
         document.getElementById('successModal').classList.replace('hidden', 'flex');
 
-        cart = []; updateCartUI(); 
-        document.getElementById('orderName').value = ''; document.getElementById('orderPhone').value = ''; document.getElementById('orderAddress').value = '';
-        clearError('orderName', 'errName'); clearError('orderPhone', 'errPhone'); clearError('orderAddress', 'errAddress');
+        // 徹底清空快取變數，防止展場平板遺留個資
+        cart = []; 
+        updateCartUI(); 
+        document.getElementById('orderName').value = ''; 
+        document.getElementById('orderPhone').value = ''; 
+        document.getElementById('orderAddress').value = '';
+        clearError('orderName', 'errName'); 
+        clearError('orderPhone', 'errPhone'); 
+        clearError('orderAddress', 'errAddress');
 
         fetchCatalog();
-      } catch (err) { alert("失敗: " + err.message); } 
-      finally { btn.disabled = false; btn.innerText = "我已完成付款，立即送出訂單"; }
+      } catch (err) { 
+        alert("下單失敗: " + err.message); 
+      } finally { 
+        btn.disabled = false; 
+        btn.innerText = "我已完成付款，立即送出訂單"; 
+      }
     }
 
     function closeSuccessModal() { document.getElementById('successModal').classList.replace('flex', 'hidden'); }
