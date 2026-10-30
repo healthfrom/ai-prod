@@ -113,7 +113,7 @@
         </div>
       </div>
 
-      <!-- 視圖 1：台帳列表 (含更換圖片) -->
+      <!-- 視圖 1：台帳列表 -->
       <div id="viewTable" class="overflow-x-auto border border-theme rounded">
         <table class="w-full text-left text-xs min-w-[700px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
@@ -130,7 +130,7 @@
         </table>
       </div>
 
-      <!-- 視圖 2：分類管理 (自定義前台菜單) -->
+      <!-- 視圖 2：分類管理 -->
       <div id="viewCategories" class="hidden space-y-4">
         <div class="bg-sub border border-theme rounded-lg p-3">
           <h3 class="text-xs font-bold text-sky-400 mb-2">➕ 新增自定義類別 (將即時顯示在前台頂部菜單)</h3>
@@ -198,6 +198,7 @@
 </div>
 
 <script>
+  // 嚴格僅使用受 RLS 約束的 Publishable key
   const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
   const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
 
@@ -237,7 +238,6 @@
     categoryList = data || [];
     document.getElementById('kpiCategoryTotal').innerText = categoryList.length;
 
-    // 更新左側建檔的分類下拉選單
     const select = document.getElementById('partCategory');
     if (categoryList.length === 0) {
       select.innerHTML = '<option value="未分類">未分類</option>';
@@ -374,39 +374,63 @@
     }
   }
 
+  // 訂單管理：已修復讀取欄位名稱，對齊前台 RPC 新增的 recipient_name 等欄位
   async function fetchShopOrders() {
     const { data } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
     if (!data) return;
     let pendingCount = 0;
     
     document.getElementById('ordersTableBody').innerHTML = data.map(o => {
-      if (o.shipping_status !== '已發貨') pendingCount++;
+      // 狀態計數
+      const isShipped = o.order_status === 'SHIPPED' || o.shipping_status === '已發貨';
+      if (!isShipped) pendingCount++;
+
+      // 優先顯示 order_no，沒有則顯示 id (相容舊資料)
+      const displayOrderNo = o.order_no || o.id;
+
+      // 提取正確的收件人欄位 (相容舊版 customer_name 與新版 recipient_name)
+      const rName = o.recipient_name || o.customer_name || '未填寫';
+      const rPhone = o.recipient_phone || o.customer_phone || '未填寫';
+      const rAddr = o.shipping_address || o.customer_address || '未填寫';
+      
+      const pMethod = o.payment_method || '未知';
+      const sMethod = o.shipping_method || '未知';
+
+      const itemsHtml = (o.items || []).map(i => `${i.part_name || '商品'} x${i.quantity || i.qty || 1}`).join('<br>');
+
       return `
         <tr class="hover:bg-slate-800/40">
           <td class="p-2.5 text-[11px] font-mono text-slate-400">
-            <span class="text-sky-400 font-bold">${o.order_no}</span><br>${new Date(o.created_at).toLocaleString('zh-TW',{hour12:false})}
+            <span class="text-sky-400 font-bold">${displayOrderNo}</span><br>${new Date(o.created_at).toLocaleString('zh-TW',{hour12:false})}
           </td>
           <td class="p-2.5 leading-tight">
-            <strong class="text-white">${o.customer_name}</strong> (${o.customer_phone})<br>
-            <span class="text-slate-400 text-[10px] break-words max-w-[200px] inline-block">${o.customer_address}</span>
+            <strong class="text-white">${rName}</strong> (${rPhone})<br>
+            <span class="text-slate-400 text-[10px] break-words max-w-[200px] inline-block">${rAddr}</span>
+            <br><span class="text-[9px] text-amber-300">配送: ${sMethod} | 支付: ${pMethod}</span>
           </td>
-          <td class="p-2.5 text-[10px] text-slate-300">${o.items.map(i=>`${i.part_name} x${i.qty}`).join('<br>')}</td>
-          <td class="p-2.5 font-bold text-emerald-400">¥${o.total_amount}</td>
+          <td class="p-2.5 text-[10px] text-slate-300">${itemsHtml}</td>
+          <td class="p-2.5 font-bold text-emerald-400">¥${o.total_amount || 0}</td>
           <td class="p-2.5">
-            ${o.shipping_status === '已發貨' 
-              ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">已出貨</span><br><span class="text-[10px] text-slate-500">${o.tracking_no}</span>`
-              : `<button onclick="shipOrder('${o.order_no}')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold">點擊發貨</button>`}
+            ${isShipped 
+              ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">已出貨</span><br><span class="text-[10px] text-slate-500">${o.tracking_no || ''}</span>`
+              : `<button onclick="shipOrder('${displayOrderNo}')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold">點擊發貨</button>`}
           </td>
         </tr>`;
     }).join('');
     document.getElementById('kpiPendingOrder').innerText = pendingCount;
   }
 
-  async function shipOrder(orderNo) {
+  async function shipOrder(orderIdOrNo) {
     if(!currentUser) return alert("請先登入！");
     const track = prompt("請填寫快遞單號 (可選填)：");
     if (track === null) return;
-    await supabaseClient.from('shop_orders').update({ shipping_status: '已發貨', tracking_no: track }).eq('order_no', orderNo);
+
+    // 同步更新 order_status 與 shipping_status 以防欄位混淆
+    await supabaseClient
+      .from('shop_orders')
+      .update({ order_status: 'SHIPPED', shipping_status: '已發貨', tracking_no: track })
+      .or(`order_no.eq.${orderIdOrNo},id.eq.${orderIdOrNo}`);
+      
     fetchShopOrders();
   }
 
