@@ -4,10 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="Content-Security-Policy" content="
-  default-src 'self' 'unsafe-inline' https:;
-  connect-src 'self' https://xayagdicjwexwtehdjby.supabase.co https://api.qrserver.com;
-  img-src 'self' data: https: blob:;
-">
+    default-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
+    style-src 'self' 'unsafe-inline' https:;
+    connect-src 'self' https://xayagdicjwexwtehdjby.supabase.co wss://xayagdicjwexwtehdjby.supabase.co https://api.qrserver.com;
+    img-src 'self' data: https: blob:;
+    font-src 'self' data: https:;
+  ">
   <title>艾產品管理系統 - 多端中台版</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -180,7 +183,13 @@
       <div id="viewLogs" class="hidden overflow-x-auto border border-theme rounded">
         <table class="w-full text-left text-xs min-w-[600px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
-            <tr><th class="p-2.5">時間</th><th class="p-2.5">操作者</th><th class="p-2.5">品號</th><th class="p-2.5">動作</th><th class="p-2.5">數量</th></tr>
+            <tr>
+              <th class="p-2.5">時間</th>
+              <th class="p-2.5">操作者</th>
+              <th class="p-2.5">品號 / 項目</th>
+              <th class="p-2.5">動作</th>
+              <th class="p-2.5">數量</th>
+            </tr>
           </thead>
           <tbody id="logsTableBody" class="divide-y divide-theme"></tbody>
         </table>
@@ -196,9 +205,12 @@
 <div id="authModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
   <div class="bg-panel border border-theme rounded-lg p-5 max-w-sm w-full space-y-3">
     <h3 class="font-bold text-indigo-400 text-center">🔐 系統登入</h3>
-    <input type="email" id="authEmail" placeholder="Email" class="w-full bg-sub border border-theme rounded p-2 text-slate-200 text-xs">
-    <input type="password" id="authPassword" placeholder="Password" class="w-full bg-sub border border-theme rounded p-2 text-slate-200 text-xs">
-    <div class="flex gap-2"><button onclick="closeAuthModal()" class="flex-1 py-1.5 rounded text-xs bg-slate-800">取消</button><button onclick="performLogin()" class="flex-1 py-1.5 rounded text-xs bg-indigo-600 font-bold">登入</button></div>
+    <input type="email" id="authEmail" placeholder="Email" class="w-full bg-sub border border-theme rounded p-2 text-slate-200 text-xs outline-none">
+    <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter') performLogin()" class="w-full bg-sub border border-theme rounded p-2 text-slate-200 text-xs outline-none">
+    <div class="flex gap-2">
+      <button onclick="closeAuthModal()" class="flex-1 py-1.5 rounded text-xs bg-slate-800 hover:bg-slate-700 transition">取消</button>
+      <button onclick="performLogin()" class="flex-1 py-1.5 rounded text-xs bg-indigo-600 hover:bg-indigo-500 font-bold transition">登入</button>
+    </div>
   </div>
 </div>
 
@@ -240,16 +252,25 @@
     }
   });
   
-  function toggleLogin() { currentUser ? supabaseClient.auth.signOut() : document.getElementById('authModal').classList.replace('hidden', 'flex'); }
-  function closeAuthModal() { document.getElementById('authModal').classList.replace('flex', 'hidden'); }
+  function toggleLogin() { 
+    currentUser ? supabaseClient.auth.signOut() : document.getElementById('authModal').classList.replace('hidden', 'flex'); 
+  }
+  function closeAuthModal() { 
+    document.getElementById('authModal').classList.replace('flex', 'hidden'); 
+  }
   
   async function performLogin() {
+    const emailVal = document.getElementById('authEmail').value.trim();
+    const passVal = document.getElementById('authPassword').value;
+    if (!emailVal || !passVal) return alert("請輸入 Email 與密碼！");
+
     const { error } = await supabaseClient.auth.signInWithPassword({
-      email: document.getElementById('authEmail').value,
-      password: document.getElementById('authPassword').value
+      email: emailVal,
+      password: passVal
     });
-    if (error) alert("登入失敗：" + error.message);
-    else {
+    if (error) {
+      alert("登入失敗：" + error.message);
+    } else {
       closeAuthModal();
       resetIdleTimer();
     }
@@ -278,7 +299,8 @@
   }
 
   async function fetchCategories() {
-    const { data } = await supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
+    const { data, error } = await supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
+    if (error) console.error("獲取分類失敗:", error.message);
     categoryList = data || [];
     document.getElementById('kpiCategoryTotal').innerText = categoryList.length;
 
@@ -292,7 +314,8 @@
   }
 
   async function fetchProducts() {
-    const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+    if (error) console.error("獲取商品失敗:", error.message);
     inventoryList = data || [];
     renderViews();
   }
@@ -301,14 +324,13 @@
     const tbody = document.getElementById('categoryTableBody');
     tbody.innerHTML = categoryList.map(c => {
       const count = inventoryList.filter(i => i.category === c.name).length;
-      const safeName = escapeHtml(c.name);
       return `
         <tr class="hover:bg-slate-800/40">
           <td class="p-2.5 font-mono text-slate-400">#${Number(c.id)}</td>
-          <td class="p-2.5 font-bold text-emerald-400">${safeName}</td>
+          <td class="p-2.5 font-bold text-emerald-400">${escapeHtml(c.name)}</td>
           <td class="p-2.5 text-slate-300">${count} 件商品</td>
           <td class="p-2.5 text-right">
-            <button onclick="deleteCategory(${Number(c.id)}, '${safeName.replace(/'/g, "\\'")}', ${count})" class="px-2 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/40 rounded text-xs transition">刪除</button>
+            <button onclick="deleteCategory(${Number(c.id)})" class="px-2 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/40 rounded text-xs transition">刪除</button>
           </td>
         </tr>
       `;
@@ -324,38 +346,54 @@
     if (exists) return alert("該分類已存在！");
 
     const { error } = await supabaseClient.from('product_categories').insert([{ name }]);
-    if (error) alert("新增失敗: " + error.message);
-    else {
+    if (error) {
+      alert("新增失敗: " + error.message);
+    } else {
       document.getElementById('newCategoryName').value = '';
-      fetchCategories();
+      await fetchCategories();
       alert(`分類「${name}」已新增，前台選單已同步！`);
     }
   }
 
-  async function deleteCategory(id, name, count) {
+  async function deleteCategory(id) {
     if (!currentUser) return alert("請先登入！");
+    const cat = categoryList.find(c => c.id === id);
+    const catName = cat ? cat.name : `ID #${id}`;
+    const count = inventoryList.filter(i => i.category === (cat ? cat.name : '')).length;
+
     if (count > 0) {
-      if (!confirm(`類別「${name}」下還有 ${count} 件商品，刪除後這些商品在前台將歸入未分類，確定刪除嗎？`)) return;
+      if (!confirm(`類別「${catName}」下還有 ${count} 件商品，刪除後這些商品在前台將歸入未分類，確定刪除嗎？`)) return;
     } else {
-      if (!confirm(`確定要刪除類別「${name}」嗎？`)) return;
+      if (!confirm(`確定要刪除類別「${catName}」嗎？`)) return;
     }
 
     const { error } = await supabaseClient.from('product_categories').delete().eq('id', id);
-    if (error) alert("刪除失敗: " + error.message);
-    else fetchCategories();
+    if (error) {
+      alert("刪除失敗: " + error.message);
+    } else {
+      await fetchCategories();
+    }
   }
 
   function renderViews() {
     const kwd = document.getElementById('searchKwd').value.toLowerCase();
     
     let totalVal = 0, lowCount = 0, zeroCount = 0;
-    inventoryList.forEach(i => { totalVal += i.stock * i.unit_price; if (i.stock === 0) zeroCount++; else if (i.stock <= i.safety_stock) lowCount++; });
+    inventoryList.forEach(i => { 
+      totalVal += (i.stock || 0) * (i.unit_price || 0); 
+      if (i.stock === 0) zeroCount++; 
+      else if (i.stock <= i.safety_stock) lowCount++; 
+    });
     document.getElementById('kpiSkuTotal').innerText = inventoryList.length;
     document.getElementById('kpiTotalValue').innerText = `¥${totalVal.toLocaleString()}`;
     document.getElementById('kpiZeroStock').innerText = zeroCount;
 
     const tbody = document.getElementById('inventoryTableBody');
-    tbody.innerHTML = inventoryList.filter(i => (i.part_no||'').toLowerCase().includes(kwd) || (i.part_name||'').toLowerCase().includes(kwd) || (i.category||'').toLowerCase().includes(kwd)).map(i => {
+    tbody.innerHTML = inventoryList.filter(i => 
+      (i.part_no||'').toLowerCase().includes(kwd) || 
+      (i.part_name||'').toLowerCase().includes(kwd) || 
+      (i.category||'').toLowerCase().includes(kwd)
+    ).map(i => {
       const safePartNo = escapeHtml(i.part_no);
       const safePartName = escapeHtml(i.part_name);
       const safeCategory = escapeHtml(i.category || '未分類');
@@ -385,7 +423,7 @@
             <span class="text-slate-500 text-[10px]">總額 ¥${(i.stock * i.unit_price)}</span>
           </td>
           <td class="p-2.5">
-            <button onclick="triggerImageUpload('${safePartNo.replace(/'/g, "\\'")}')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white transition flex items-center gap-1">
+            <button onclick="triggerImageUpload('${encodeURIComponent(i.part_no)}')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white transition flex items-center gap-1">
               📷 換圖
             </button>
           </td>
@@ -394,9 +432,9 @@
     }).join('');
   }
 
-  function triggerImageUpload(partNo) {
+  function triggerImageUpload(encodedPartNo) {
     if (!currentUser) return alert("請先登入系統才能更換圖片！");
-    targetPartNoForUpload = partNo;
+    targetPartNoForUpload = decodeURIComponent(encodedPartNo);
     document.getElementById('imageUploader').click();
   }
 
@@ -407,37 +445,39 @@
 
     const fileExt = file.name.split('.').pop();
     const filePath = `images/${targetPartNoForUpload}_${Date.now()}.${fileExt}`;
-    alert("圖片上傳中，請稍候...");
 
     try {
       const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, file);
       if (upErr) throw upErr;
 
       const { data: pData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
-      await supabaseClient.from('products').update({ image_url: pData.publicUrl }).eq('part_no', targetPartNoForUpload);
+      const { error: dbErr } = await supabaseClient.from('products').update({ image_url: pData.publicUrl }).eq('part_no', targetPartNoForUpload);
+      if (dbErr) throw dbErr;
 
       alert("圖片更新成功！");
-      fetchProducts();
-    } catch (err) { alert("上傳失敗: " + err.message); } 
-    finally {
+      await fetchProducts();
+    } catch (err) { 
+      alert("上傳失敗: " + err.message); 
+    } finally {
       document.getElementById('imageUploader').value = '';
       targetPartNoForUpload = null;
     }
   }
 
-  // 訂單管理：全面採用 escapeHtml 防止惡意收件資料發動 Stored XSS
+  // 訂單管理：全面採用 escapeHtml 防止 Stored XSS，並綁定精準 ID 發貨
   async function fetchShopOrders() {
-    const { data } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
-    if (!data) return;
+    const { data, error } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.error("獲取訂單失敗:", error.message);
+      return;
+    }
     let pendingCount = 0;
     
-    document.getElementById('ordersTableBody').innerHTML = data.map(o => {
+    document.getElementById('ordersTableBody').innerHTML = (data || []).map(o => {
       const isShipped = o.order_status === 'SHIPPED' || o.shipping_status === '已發貨';
       if (!isShipped) pendingCount++;
 
-      const rawOrderNo = String(o.order_no || o.id || '');
-      const displayOrderNo = escapeHtml(rawOrderNo);
-
+      const displayOrderNo = escapeHtml(String(o.order_no || o.id || ''));
       const rName = escapeHtml(o.recipient_name || o.customer_name || '未填寫');
       const rPhone = escapeHtml(o.recipient_phone || o.customer_phone || '未填寫');
       const rAddr = escapeHtml(o.shipping_address || o.customer_address || '未填寫');
@@ -445,9 +485,15 @@
       const sMethod = escapeHtml(o.shipping_method || '未知');
       const trackingNo = escapeHtml(o.tracking_no || '');
 
-      const itemsHtml = (o.items || []).map(i => 
+      let orderItems = o.items;
+      if (typeof orderItems === 'string') {
+        try { orderItems = JSON.parse(orderItems); } catch(e) { orderItems = []; }
+      }
+      if (!Array.isArray(orderItems)) orderItems = [];
+
+      const itemsHtml = orderItems.map(i => 
         `${escapeHtml(i.part_name || '商品')} x${Number(i.quantity || i.qty || 1)}`
-      ).join('<br>');
+      ).join('<br>') || '<span class="text-slate-500">無品項資料</span>';
 
       return `
         <tr class="hover:bg-slate-800/40">
@@ -464,24 +510,35 @@
           <td class="p-2.5">
             ${isShipped 
               ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">已出貨</span><br><span class="text-[10px] text-slate-500">${trackingNo}</span>`
-              : `<button onclick="shipOrder('${rawOrderNo.replace(/'/g, "\\'")}')" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold">點擊發貨</button>`}
+              : `<button onclick="shipOrder(${Number(o.id)})" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold transition">點擊發貨</button>`}
           </td>
         </tr>`;
     }).join('');
     document.getElementById('kpiPendingOrder').innerText = pendingCount;
   }
 
-  async function shipOrder(orderIdOrNo) {
-    if(!currentUser) return alert("請先登入！");
+  // 發貨更新：以主鍵 ID 精準定位，避免非數值字串與 bigint 產生語法型別崩潰
+  async function shipOrder(orderId) {
+    if (!currentUser) return alert("請先登入！");
     const track = prompt("請填寫快遞單號 (可選填)：");
     if (track === null) return;
 
-    await supabaseClient
-      .from('shop_orders')
-      .update({ order_status: 'SHIPPED', shipping_status: '已發貨', tracking_no: track.trim() })
-      .or(`order_no.eq.${orderIdOrNo},id.eq.${orderIdOrNo}`);
-      
-    fetchShopOrders();
+    try {
+      const { error } = await supabaseClient
+        .from('shop_orders')
+        .update({ 
+          order_status: 'SHIPPED', 
+          shipping_status: '已發貨', 
+          tracking_no: track.trim() 
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+      alert("發貨狀態已成功更新！");
+      await fetchShopOrders();
+    } catch (err) {
+      alert("發貨更新失敗：" + err.message);
+    }
   }
 
   function switchView(tab) {
@@ -492,55 +549,113 @@
         ? 'px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold' 
         : 'px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme';
     });
-    if(tab==='categories') renderCategoriesTable();
-    if(tab==='orders') fetchShopOrders();
-    if(tab==='logs') supabaseClient.from('inventory_transactions').select('*').order('created_at',{ascending:false}).limit(50).then(({data}) => {
-      document.getElementById('logsTableBody').innerHTML = (data||[]).map(l => `
-        <tr class="hover:bg-slate-800/40">
-          <td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td>
-          <td class="p-2.5 text-indigo-300 text-[11px]">${escapeHtml(l.operator||'-')}</td>
-          <td class="p-2.5 font-mono text-sky-400 text-xs">${escapeHtml(l.part_no||'')}</td>
-          <td class="p-2.5 text-xs ${l.trans_type==='IN'?'text-emerald-400':'text-amber-400'}">${escapeHtml(l.trans_type||'')}</td>
-          <td class="p-2.5 font-bold">${Number(l.qty||0)}</td>
-        </tr>
-      `).join('');
-    });
+
+    if (tab === 'categories') renderCategoriesTable();
+    if (tab === 'orders') fetchShopOrders();
+    if (tab === 'logs') {
+      supabaseClient.from('inventory_transactions').select('*').order('created_at', { ascending: false }).limit(50).then(({ data, error }) => {
+        if (error) {
+          document.getElementById('logsTableBody').innerHTML = `<tr><td colspan="5" class="p-3 text-center text-rose-400">讀取日誌失敗: ${escapeHtml(error.message)}</td></tr>`;
+          return;
+        }
+        document.getElementById('logsTableBody').innerHTML = (data || []).map(l => {
+          const rawPartNo = l.part_no || (l.product_id ? `商品 #${l.product_id}` : '-');
+          const rawType = l.trans_type || l.change_type || '-';
+          const rawQty = (l.qty !== undefined && l.qty !== null) ? l.qty : (l.change_amount !== undefined ? l.change_amount : 0);
+          const rawOp = l.operator || (l.change_type === 'SALE' ? '線上商城' : '系統');
+          const isPositive = Number(rawQty) > 0 || rawType === 'IN';
+
+          return `
+            <tr class="hover:bg-slate-800/40">
+              <td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td>
+              <td class="p-2.5 text-indigo-300 text-[11px]">${escapeHtml(rawOp)}</td>
+              <td class="p-2.5 font-mono text-sky-400 text-xs">${escapeHtml(rawPartNo)}</td>
+              <td class="p-2.5 text-xs ${isPositive ? 'text-emerald-400' : 'text-amber-400'}">${escapeHtml(rawType)}</td>
+              <td class="p-2.5 font-bold">${Number(rawQty)}</td>
+            </tr>
+          `;
+        }).join('');
+      });
+    }
   }
 
-  function toggleTransFields() { document.getElementById('newSkuFields').className = document.getElementById('transType').value === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden'; }
+  function toggleTransFields() { 
+    document.getElementById('newSkuFields').className = document.getElementById('transType').value === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden'; 
+  }
   
+  // 異動登記：加上嚴格例外捕捉與回傳驗證
   async function executeTransaction() {
     if (!currentUser) return alert("無權限！請先登入");
-    const t = document.getElementById('transType').value, p = document.getElementById('partNo').value.toUpperCase().trim(), q = parseInt(document.getElementById('transQty').value), b = document.getElementById('binLocation').value.toUpperCase().trim();
-    if(!p || isNaN(q) || q <= 0) return alert("數量必須大於 0 且品號不能為空！");
+    const t = document.getElementById('transType').value;
+    const p = document.getElementById('partNo').value.toUpperCase().trim();
+    const q = parseInt(document.getElementById('transQty').value);
+    const b = document.getElementById('binLocation').value.toUpperCase().trim();
+
+    if (!p || isNaN(q) || q <= 0) return alert("數量必須大於 0 且品號不能為空！");
     const i = inventoryList.find(x => x.part_no === p);
-    if(t==='NEW' && i) return alert("該品號已存在！");
-    if(t!=='NEW' && !i) return alert("品號不存在！");
+    if (t === 'NEW' && i) return alert("該品號已存在！");
+    if (t !== 'NEW' && !i) return alert("品號不存在！");
     
-    if(t==='NEW') await supabaseClient.from('products').insert([{part_no:p, part_name:document.getElementById('partName').value.trim(), category:document.getElementById('partCategory').value, stock:q, bin_location:b, unit_price:document.getElementById('unitPrice').value||0, safety_stock:document.getElementById('safetyStock').value||0}]);
-    else if(t==='IN') await supabaseClient.from('products').update({stock:i.stock+q, bin_location:b||i.bin_location}).eq('part_no',p);
-    else if(t==='OUT'){ if(i.stock<q) return alert("庫存不足！"); await supabaseClient.from('products').update({stock:i.stock-q}).eq('part_no',p); }
-    
-    await supabaseClient.from('inventory_transactions').insert([{part_no:p, trans_type:t, qty:q, bin_location:b, operator:currentUser.email}]);
-    document.getElementById('transQty').value='';
-    fetchProducts();
-    alert("更新成功");
+    try {
+      let res;
+      if (t === 'NEW') {
+        res = await supabaseClient.from('products').insert([{
+          part_no: p,
+          part_name: document.getElementById('partName').value.trim(),
+          category: document.getElementById('partCategory').value,
+          stock: q,
+          bin_location: b,
+          unit_price: parseFloat(document.getElementById('unitPrice').value) || 0,
+          safety_stock: parseInt(document.getElementById('safetyStock').value) || 0
+        }]);
+      } else if (t === 'IN') {
+        res = await supabaseClient.from('products').update({
+          stock: i.stock + q,
+          bin_location: b || i.bin_location
+        }).eq('part_no', p);
+      } else if (t === 'OUT') {
+        if (i.stock < q) return alert("庫存不足！");
+        res = await supabaseClient.from('products').update({
+          stock: i.stock - q
+        }).eq('part_no', p);
+      }
+
+      if (res && res.error) throw res.error;
+
+      // 寫入台帳審計流水
+      const { error: logErr } = await supabaseClient.from('inventory_transactions').insert([{
+        part_no: p,
+        trans_type: t,
+        qty: q,
+        bin_location: b,
+        operator: currentUser.email
+      }]);
+      if (logErr) console.warn("日誌記錄提示:", logErr.message);
+
+      document.getElementById('transQty').value = '';
+      await fetchProducts();
+      alert("庫存異動更新成功！");
+    } catch (err) {
+      alert("更新失敗：" + err.message);
+    }
   }
 
   // 匯出台帳：過濾潛在 CSV 公式注入符號 (=, +, -, @)
   function exportCSV() {
     let csv = "\uFEFF品號,品名規格,類別,儲位,現存量,安全水位,單價,總值\n";
     inventoryList.forEach(i => {
-      const cleanNo = String(i.part_no || '').replace(/^[=+\-@]/, "'");
-      const cleanName = String(i.part_name || '').replace(/^[=+\-@]/, "'").replace(/"/g, '""');
-      const cleanCat = String(i.category || '').replace(/^[=+\-@]/, "'").replace(/"/g, '""');
-      const cleanBin = String(i.bin_location || '').replace(/^[=+\-@]/, "'").replace(/"/g, '""');
-      csv += `"${cleanNo}","${cleanName}","${cleanCat}","${cleanBin}",${Number(i.stock||0)},${Number(i.safety_stock||0)},${Number(i.unit_price||0)},${Number(i.stock * i.unit_price || 0)}\n`;
+      const cleanNo = String(i.part_no || '').replace(/^[=+\-@\t\r]/, "'");
+      const cleanName = String(i.part_name || '').replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
+      const cleanCat = String(i.category || '').replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
+      const cleanBin = String(i.bin_location || '').replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
+      csv += `"${cleanNo}","${cleanName}","${cleanCat}","${cleanBin}",${Number(i.stock||0)},${Number(i.safety_stock||0)},${Number(i.unit_price||0)},${Number((i.stock||0) * (i.unit_price||0))}\n`;
     });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    a.href = URL.createObjectURL(blob);
     a.download = `艾產品台帳_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   fetchAllData();
