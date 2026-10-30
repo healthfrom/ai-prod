@@ -199,14 +199,15 @@
   </div>
 
   <script>
-    // ========== ⚠️ 重要設定區 ⚠️ ==========
+    // ========== ⚠️ 安全設定區 ⚠️ ==========
+    // 嚴格僅使用受到資料庫 RLS 保護的公開金鑰 (Publishable Key)
     const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
     const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
 
     const WECHAT_PAY_QR_URL = "./pay-wx.jpg";
     const ALIPAY_QR_URL = "./pay-ali.jpg";
     const OFFICIAL_ACCOUNT_QR_URL = "./official-account.jpg";
-    const PUSHPLUS_TOKEN = "4c5528d6f3c142df86875e0e7c63a5ac"; 
+    // 註：PushPlus Token 已徹底自前端拔除，由 Supabase 資料庫觸發器於後端安全推播
     // =====================================
 
     let supabaseClient = supabase.createClient(FIXED_SUPABASE_URL, FIXED_SUPABASE_KEY);
@@ -215,6 +216,7 @@
     let cart = [];
     let currentCategory = 'ALL';
     let selectedPayMethod = 'wechat';
+    let lastSubmitTimestamp = 0; // 前端防刷單冷卻時間戳
 
     async function initStore() {
       await fetchCategories();
@@ -223,7 +225,11 @@
 
     // 1. 動態從資料庫獲取分類並渲染頂部菜單按鈕
     async function fetchCategories() {
-      const { data } = await supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
+      const { data } = await supabaseClient
+        .from('product_categories')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true });
       dynamicCategories = data || [];
       renderCategoryMenu();
     }
@@ -251,7 +257,10 @@
 
     // 2. 獲取產品列表
     async function fetchCatalog() {
-      const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+      const { data } = await supabaseClient
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
       catalogProducts = data || [];
       renderProducts();
     }
@@ -293,12 +302,24 @@
       renderProducts();
     }
 
+    // 將資料庫 id 納入購物車，以供後端原子扣庫存時精確綁定排他鎖
     function addToCart(partNo) {
       const p = catalogProducts.find(x => x.part_no === partNo);
       if (!p) return;
       const c = cart.find(i => i.part_no === partNo);
-      if (c) { if (c.qty + 1 > p.stock) return alert(`庫存僅剩 ${p.stock} 件！`); c.qty++; } 
-      else cart.push({ part_no: p.part_no, part_name: p.part_name, unit_price: p.unit_price, maxStock: p.stock, qty: 1 });
+      if (c) { 
+        if (c.qty + 1 > p.stock) return alert(`庫存僅剩 ${p.stock} 件！`); 
+        c.qty++; 
+      } else {
+        cart.push({ 
+          id: p.id, 
+          part_no: p.part_no, 
+          part_name: p.part_name, 
+          unit_price: p.unit_price, 
+          maxStock: p.stock, 
+          qty: 1 
+        });
+      }
       updateCartUI();
     }
 
@@ -317,11 +338,24 @@
       
       selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
       document.getElementById('btnGoPay').innerHTML = selectedPayMethod === 'wechat' ? "<span>💬</span> 微信掃碼結算" : "<span>🔷</span> 支付寶結算";
-      document.getElementById('btnGoPay').className = selectedPayMethod === 'wechat' ? "w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-md flex items-center justify-center gap-2 text-sm disabled:bg-slate-300" : "w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg shadow-md flex items-center justify-center gap-2 text-sm disabled:bg-slate-300";
+      document.getElementById('btnGoPay').className = selectedPayMethod === 'wechat' 
+        ? "w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-md flex items-center justify-center gap-2 text-sm disabled:bg-slate-300" 
+        : "w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg shadow-md flex items-center justify-center gap-2 text-sm disabled:bg-slate-300";
 
       const box = document.getElementById('cartItemList');
       if (cart.length === 0) return box.innerHTML = '<div class="text-center text-slate-400 py-6 text-xs">購物車是空的</div>';
-      box.innerHTML = cart.map(i => `<div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100"><div class="flex-1 pr-2"><h4 class="font-bold text-xs text-slate-800 line-clamp-1">${i.part_name}</h4><div class="text-[11px] text-emerald-800 font-semibold">¥${i.unit_price}</div></div><div class="flex items-center gap-2"><button onclick="changeQty('${i.part_no}', -1)" class="w-5 h-5 bg-white border rounded text-xs">-</button><span class="text-xs font-bold">${i.qty}</span><button onclick="changeQty('${i.part_no}', 1)" class="w-5 h-5 bg-white border rounded text-xs">+</button></div></div>`).join('');
+      box.innerHTML = cart.map(i => `
+        <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+          <div class="flex-1 pr-2">
+            <h4 class="font-bold text-xs text-slate-800 line-clamp-1">${i.part_name}</h4>
+            <div class="text-[11px] text-emerald-800 font-semibold">¥${i.unit_price}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="changeQty('${i.part_no}', -1)" class="w-5 h-5 bg-white border rounded text-xs">-</button>
+            <span class="text-xs font-bold">${i.qty}</span>
+            <button onclick="changeQty('${i.part_no}', 1)" class="w-5 h-5 bg-white border rounded text-xs">+</button>
+          </div>
+        </div>`).join('');
     }
     document.querySelectorAll('input[name="payMethod"]').forEach(r => r.addEventListener('change', updateCartUI));
 
@@ -428,30 +462,24 @@
         ? '請長按識別二維碼，或截圖後使用微信掃一掃' 
         : '請截圖後使用支付寶掃一掃付款';
 
-      document.getElementById('btnConfirmPaid').className = `w-full py-2.5 text-white font-bold rounded-lg text-xs shadow-md ${isWx ? 'bg-emerald-600' : 'bg-sky-600'}`;
+      document.getElementById('btnConfirmPaid').className = `w-full py-2.5 text-white font-bold rounded-lg text-xs shadow-md ${isWx ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-sky-600 hover:bg-sky-500'}`;
       document.getElementById('payModal').classList.replace('hidden', 'flex');
     }
 
     function closePayModal() { document.getElementById('payModal').classList.replace('flex', 'hidden'); }
 
-    async function sendWechatPush(orderNo, name, amount) {
-      if (!PUSHPLUS_TOKEN || PUSHPLUS_TOKEN.includes("請在此貼上")) return;
-      const title = `🌿 艾草館新訂單通知：${orderNo}`;
-      const content = `顧客 **${name}** 剛下了一筆訂單！\n\n- 訂單金額：¥${amount}\n- 支付方式：${selectedPayMethod === 'wechat' ? '微信' : '支付寶'}\n- 時間：${new Date().toLocaleString()}\n\n請登入電腦後台 (ai-admin.html) 查看發貨地址與明細。`;
-      try {
-        await fetch(`https://www.pushplus.plus/send`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: PUSHPLUS_TOKEN, title: title, content: content, template: "markdown" })
-        });
-      } catch (e) { console.error("微信推送失敗:", e); }
-    }
-
-    // 將下單與扣減庫存邏輯改為呼叫後端安全的 RPC，杜絕前端篡改金額與超賣風險
+    // 下單與扣減庫存統一走伺服器端 RPC 原子函數
     async function confirmPaidAndSubmit() {
+      // 1. 前端冷卻校驗（防手滑連擊）
+      const now = Date.now();
+      if (now - lastSubmitTimestamp < 15000) {
+        alert("請勿頻繁重複點擊，訂單處理中，請稍候 15 秒再試！");
+        return;
+      }
+
       const btn = document.getElementById('btnConfirmPaid'); 
       btn.disabled = true; 
-      btn.innerText = "訂單安全處理中...";
+      btn.innerText = "訂單安全處理中，請稍候...";
       
       const name = document.getElementById('orderName').value.trim();
       const phone = document.getElementById('orderPhone').value.trim();
@@ -459,31 +487,43 @@
       const delType = document.getElementById('orderDeliveryType').value;
       const orderNo = (selectedPayMethod === 'wechat' ? 'WX' : 'AL') + Date.now().toString().slice(-8);
 
+      // 封裝標準商品清單（攜帶資料庫 id 與數量）
+      const rpcItems = cart.map(item => ({
+        id: item.id,
+        part_no: item.part_no,
+        part_name: item.part_name,
+        quantity: item.qty,
+        qty: item.qty,
+        unit_price: item.unit_price
+      }));
+
       try {
-        // 呼叫伺服器端 RPC 原子函數 (需先在 Supabase SQL Editor 執行建立 submit_shop_order 函數)
+        // 呼叫伺服器端 RPC 原子函數
         const { data, error } = await supabaseClient.rpc('submit_shop_order', {
-          p_order_no: orderNo,
           p_name: name,
           p_phone: phone,
           p_address: addr,
-          p_delivery_type: delType,
-          p_pay_method: selectedPayMethod === 'wechat' ? '微信' : '支付寶',
-          p_items: cart
+          p_shipping_method: delType,
+          p_payment_method: selectedPayMethod === 'wechat' ? '微信支付' : '支付寶',
+          p_items: rpcItems,
+          p_order_no: orderNo,
+          p_notes: ''
         });
 
         if (error) throw new Error(error.message);
 
-        // 發送微信店長通知 (傳遞伺服器核對後的正確金額 data.verified_total)
-        await sendWechatPush(orderNo, name, data.verified_total);
+        // 記錄本次成功下單時間
+        lastSubmitTimestamp = Date.now();
 
         closePayModal(); 
         toggleCartDrawer();
 
-        document.getElementById('orderNumberShow').innerText = orderNo;
+        const displayOrderNo = (data && data.order_no) ? data.order_no : orderNo;
+        document.getElementById('orderNumberShow').innerText = displayOrderNo;
         document.getElementById('officialAccountQrImg').src = OFFICIAL_ACCOUNT_QR_URL;
         document.getElementById('successModal').classList.replace('hidden', 'flex');
 
-        // 徹底清空快取變數，防止展場平板遺留個資
+        // 清空暫存，保護客資隱私
         cart = []; 
         updateCartUI(); 
         document.getElementById('orderName').value = ''; 
