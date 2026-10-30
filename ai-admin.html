@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>艾產品管理系統 (雲端 SQL 聯網版) - 含發貨與圖片管理</title>
+  <title>艾產品管理系統 - 多端中台版</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -11,7 +11,6 @@
     .bg-panel { background-color: #141e33; }
     .bg-sub { background-color: #0d1527; }
     .border-theme { border-color: #223254; }
-    /* 自訂卷軸 */
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
   </style>
@@ -24,9 +23,9 @@
     <div>
       <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2 text-white">
         🌿 艾產品管理系統
-        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">多端中台版</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">分類自定義版</span>
       </h1>
-      <p class="text-xs text-slate-400 mt-1">含展銷發貨、圖庫管理、權限控制</p>
+      <p class="text-xs text-slate-400 mt-1">即時同步前台菜單、發貨、圖庫與庫存中台</p>
     </div>
     
     <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
@@ -34,7 +33,6 @@
          <span id="userEmailLabel" class="text-xs text-slate-400">未登入</span>
          <button id="btnLoginOut" onclick="toggleLogin()" class="px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-bold">登入</button>
       </div>
-      <button onclick="openShortageModal()" class="px-3 py-1.5 rounded bg-amber-600/20 text-amber-400 text-xs border border-amber-500/40">📢 催辦</button>
       <button onclick="exportCSV()" class="px-3 py-1.5 rounded bg-sky-500 text-slate-900 font-bold text-xs">📤 匯出台帳</button>
     </div>
   </header>
@@ -51,7 +49,7 @@
       <div class="text-xs text-slate-400">待發貨訂單</div><div class="text-xl font-bold text-indigo-400 mt-1" id="kpiPendingOrder">0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3">
-      <div class="text-xs text-slate-400">安全水位告警</div><div class="text-xl font-bold text-amber-400 mt-1" id="kpiLowStock">0</div>
+      <div class="text-xs text-slate-400">有效自定義類別</div><div class="text-xl font-bold text-emerald-400 mt-1" id="kpiCategoryTotal">0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3 col-span-2 md:col-span-1">
       <div class="text-xs text-slate-400">零庫存斷貨品項</div><div class="text-xl font-bold text-rose-500 mt-1" id="kpiZeroStock">0</div>
@@ -63,7 +61,7 @@
     <!-- 左側：異動登記 -->
     <div class="lg:col-span-4 bg-panel border border-theme rounded-lg p-4 relative">
       <div id="authOverlay" class="absolute inset-0 bg-panel/90 backdrop-blur z-10 flex flex-col items-center justify-center rounded-lg">
-        <span class="text-4xl mb-2">🔒</span><p class="text-indigo-300 font-bold mb-3">請登入系統</p>
+        <span class="text-4xl mb-2">🔒</span><p class="text-indigo-300 font-bold mb-3">請登入系統進行異動</p>
         <button onclick="toggleLogin()" class="px-4 py-2 bg-indigo-600 rounded text-white text-xs font-bold shadow">前往登入</button>
       </div>
 
@@ -83,43 +81,46 @@
         </div>
 
         <div id="newSkuFields" class="hidden space-y-2 border-l-2 border-sky-500 pl-2">
-          <input type="text" id="partName" placeholder="產品品名" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
-          <select id="partCategory" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
-            <option>傳統灸條/艾柱</option><option>艾絨原料</option><option>艾灸器具/儀器</option><option>草本貼膏/精油</option><option>日用洗沐衍生品</option>
-          </select>
+          <input type="text" id="partName" placeholder="產品品名規格" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">所屬自定義類別</label>
+            <select id="partCategory" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200"></select>
+          </div>
           <div class="grid grid-cols-2 gap-2">
-            <input type="number" id="unitPrice" placeholder="單價" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
+            <input type="number" id="unitPrice" placeholder="單價 (¥)" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
             <input type="number" id="safetyStock" placeholder="安全水位" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <input type="number" id="transQty" placeholder="數量 *" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
-          <input type="text" id="binLocation" placeholder="儲位" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200 uppercase">
+          <input type="text" id="binLocation" placeholder="乾燥儲位" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200 uppercase">
         </div>
         <button onclick="executeTransaction()" class="w-full mt-2 py-2.5 rounded bg-sky-500 hover:bg-sky-400 text-slate-900 font-bold text-xs transition">💾 提交異動</button>
       </div>
     </div>
 
-    <!-- 右側：資料視圖 -->
+    <!-- 右側：資料視圖切換 -->
     <div class="lg:col-span-8 bg-panel border border-theme rounded-lg p-4">
       <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 mb-4">
         <input type="text" id="searchKwd" oninput="renderViews()" placeholder="🔍 搜尋品號、品名..." class="bg-sub border border-theme rounded px-3 py-1.5 text-xs text-slate-200 flex-1">
         
         <div class="flex gap-2 overflow-x-auto whitespace-nowrap">
           <button onclick="switchView('table')" id="btnTabTable" class="px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold">產品台帳</button>
+          <button onclick="switchView('categories')" id="btnTabCategories" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">🗂️ 菜單分類管理</button>
           <button onclick="switchView('orders')" id="btnTabOrders" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">📦 發貨訂單</button>
           <button onclick="switchView('logs')" id="btnTabLogs" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">📖 操作日誌</button>
         </div>
       </div>
 
-      <!-- 視圖 1：台帳列表 (含圖片上傳) -->
+      <!-- 視圖 1：台帳列表 (含更換圖片) -->
       <div id="viewTable" class="overflow-x-auto border border-theme rounded">
         <table class="w-full text-left text-xs min-w-[700px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
             <tr>
               <th class="p-2.5 w-16 text-center">圖片</th>
               <th class="p-2.5">品號 / 品名</th>
+              <th class="p-2.5">分類</th>
               <th class="p-2.5">庫存 / 儲位</th>
               <th class="p-2.5">單價 (總值)</th>
               <th class="p-2.5">圖片管理</th>
@@ -129,7 +130,32 @@
         </table>
       </div>
 
-      <!-- 視圖 2：發貨管理 -->
+      <!-- 視圖 2：分類管理 (自定義前台菜單) -->
+      <div id="viewCategories" class="hidden space-y-4">
+        <div class="bg-sub border border-theme rounded-lg p-3">
+          <h3 class="text-xs font-bold text-sky-400 mb-2">➕ 新增自定義類別 (將即時顯示在前台頂部菜單)</h3>
+          <div class="flex gap-2">
+            <input type="text" id="newCategoryName" placeholder="輸入新分類名稱 (如：薰香養生、特級艾絨條)" class="flex-1 bg-panel border border-theme rounded px-3 py-1.5 text-xs text-slate-200 outline-none">
+            <button onclick="addCategory()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded text-xs font-bold text-white transition">確認新增</button>
+          </div>
+        </div>
+
+        <div class="border border-theme rounded overflow-hidden">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900 text-slate-400 border-b border-theme">
+              <tr>
+                <th class="p-2.5">排序/ID</th>
+                <th class="p-2.5">前台菜單類別名稱</th>
+                <th class="p-2.5">當前納管產品數</th>
+                <th class="p-2.5 text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="categoryTableBody" class="divide-y divide-theme"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 視圖 3：發貨管理 -->
       <div id="viewOrders" class="hidden overflow-x-auto border border-theme rounded">
         <table class="w-full text-left text-xs min-w-[800px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
@@ -145,7 +171,7 @@
         </table>
       </div>
 
-      <!-- 視圖 3：日誌 -->
+      <!-- 視圖 4：日誌 -->
       <div id="viewLogs" class="hidden overflow-x-auto border border-theme rounded">
         <table class="w-full text-left text-xs min-w-[600px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
@@ -159,10 +185,9 @@
   </div>
 </div>
 
-<!-- 隱藏的檔案上傳輸入框 (用於上傳圖片) -->
 <input type="file" id="imageUploader" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
 
-<!-- Auth & Modal ... 保持簡化 ... -->
+<!-- 登入視窗 -->
 <div id="authModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
   <div class="bg-panel border border-theme rounded-lg p-5 max-w-sm w-full space-y-3">
     <h3 class="font-bold text-indigo-400 text-center">🔐 系統登入</h3>
@@ -178,11 +203,11 @@
 
   let supabaseClient = supabase.createClient(FIXED_SUPABASE_URL, FIXED_SUPABASE_KEY);
   let inventoryList = [];
+  let categoryList = [];
   let currentTab = 'table';
   let currentUser = null;
-  let targetPartNoForUpload = null; // 記錄目前要上傳圖片的品號
+  let targetPartNoForUpload = null;
 
-  // 初始化與登入
   supabaseClient.auth.onAuthStateChange((event, session) => {
     currentUser = session ? session.user : null;
     document.getElementById('authOverlay').classList.toggle('hidden', !!currentUser);
@@ -201,28 +226,91 @@
     else closeAuthModal();
   }
 
-  // 取資料
+  // 載入商品與分類
+  async function fetchAllData() {
+    await fetchCategories();
+    await fetchProducts();
+  }
+
+  async function fetchCategories() {
+    const { data } = await supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
+    categoryList = data || [];
+    document.getElementById('kpiCategoryTotal').innerText = categoryList.length;
+
+    // 更新左側建檔的分類下拉選單
+    const select = document.getElementById('partCategory');
+    if (categoryList.length === 0) {
+      select.innerHTML = '<option value="未分類">未分類</option>';
+    } else {
+      select.innerHTML = categoryList.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    }
+    renderCategoriesTable();
+  }
+
   async function fetchProducts() {
     const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
     inventoryList = data || [];
     renderViews();
   }
 
-  // 渲染台帳與圖片管理
+  function renderCategoriesTable() {
+    const tbody = document.getElementById('categoryTableBody');
+    tbody.innerHTML = categoryList.map(c => {
+      const count = inventoryList.filter(i => i.category === c.name).length;
+      return `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-2.5 font-mono text-slate-400">#${c.id}</td>
+          <td class="p-2.5 font-bold text-emerald-400">${c.name}</td>
+          <td class="p-2.5 text-slate-300">${count} 件商品</td>
+          <td class="p-2.5 text-right">
+            <button onclick="deleteCategory(${c.id}, '${c.name}', ${count})" class="px-2 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/40 rounded text-xs transition">刪除</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function addCategory() {
+    if (!currentUser) return alert("請先登入後台！");
+    const name = document.getElementById('newCategoryName').value.trim();
+    if (!name) return alert("請輸入類別名稱！");
+
+    const exists = categoryList.some(c => c.name === name);
+    if (exists) return alert("該分類已存在！");
+
+    const { error } = await supabaseClient.from('product_categories').insert([{ name }]);
+    if (error) alert("新增失敗: " + error.message);
+    else {
+      document.getElementById('newCategoryName').value = '';
+      fetchCategories();
+      alert(`分類「${name}」已新增，前台選單已同步！`);
+    }
+  }
+
+  async function deleteCategory(id, name, count) {
+    if (!currentUser) return alert("請先登入！");
+    if (count > 0) {
+      if (!confirm(`類別「${name}」下還有 ${count} 件商品，刪除後這些商品在前台將歸入未分類，確定刪除嗎？`)) return;
+    } else {
+      if (!confirm(`確定要刪除類別「${name}」嗎？`)) return;
+    }
+
+    const { error } = await supabaseClient.from('product_categories').delete().eq('id', id);
+    if (error) alert("刪除失敗: " + error.message);
+    else fetchCategories();
+  }
+
   function renderViews() {
     const kwd = document.getElementById('searchKwd').value.toLowerCase();
     
-    // KPI 計算
     let totalVal = 0, lowCount = 0, zeroCount = 0;
     inventoryList.forEach(i => { totalVal += i.stock * i.unit_price; if (i.stock === 0) zeroCount++; else if (i.stock <= i.safety_stock) lowCount++; });
     document.getElementById('kpiSkuTotal').innerText = inventoryList.length;
     document.getElementById('kpiTotalValue').innerText = `¥${totalVal.toLocaleString()}`;
-    document.getElementById('kpiLowStock').innerText = lowCount;
     document.getElementById('kpiZeroStock').innerText = zeroCount;
 
     const tbody = document.getElementById('inventoryTableBody');
-    tbody.innerHTML = inventoryList.filter(i => i.part_no.toLowerCase().includes(kwd) || i.part_name.toLowerCase().includes(kwd)).map(i => {
-      // 判斷有無圖片
+    tbody.innerHTML = inventoryList.filter(i => i.part_no.toLowerCase().includes(kwd) || i.part_name.toLowerCase().includes(kwd) || (i.category||'').toLowerCase().includes(kwd)).map(i => {
       const imgDisplay = i.image_url 
         ? `<img src="${i.image_url}" class="w-10 h-10 object-cover rounded shadow border border-slate-700">` 
         : `<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center text-[10px] text-slate-500">無圖</div>`;
@@ -234,6 +322,9 @@
             <span class="font-mono text-sky-400 font-bold">${i.part_no}</span><br>
             <span class="text-[11px] text-slate-300">${i.part_name}</span>
           </td>
+          <td class="p-2.5">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 border border-theme text-emerald-400 font-medium">${i.category || '未分類'}</span>
+          </td>
           <td class="p-2.5 leading-tight">
             <span class="${i.stock===0?'text-rose-400':'text-emerald-400'} font-bold">${i.stock} ${i.unit||'件'}</span><br>
             <span class="font-mono text-amber-300 text-[10px]">儲位: ${i.bin_location}</span>
@@ -244,7 +335,7 @@
           </td>
           <td class="p-2.5">
             <button onclick="triggerImageUpload('${i.part_no}')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white transition flex items-center gap-1">
-              📷 換圖片
+              📷 換圖
             </button>
           </td>
         </tr>
@@ -252,65 +343,40 @@
     }).join('');
   }
 
-  // ================= 圖片上傳核心邏輯 =================
   function triggerImageUpload(partNo) {
     if (!currentUser) return alert("請先登入系統才能更換圖片！");
     targetPartNoForUpload = partNo;
-    document.getElementById('imageUploader').click(); // 模擬點擊隱藏的上傳按鈕
+    document.getElementById('imageUploader').click();
   }
 
   async function handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file || !targetPartNoForUpload) return;
-    
-    // 限制 2MB
     if (file.size > 2 * 1024 * 1024) return alert("圖片太大！請選擇 2MB 以下的照片。");
 
-    // 1. 上傳檔案至 Supabase Storage (product-images 桶)
     const fileExt = file.name.split('.').pop();
-    const fileName = `${targetPartNoForUpload}_${Date.now()}.${fileExt}`; // 防止快取
-    const filePath = `images/${fileName}`;
-
+    const filePath = `images/${targetPartNoForUpload}_${Date.now()}.${fileExt}`;
     alert("圖片上傳中，請稍候...");
 
     try {
-      const { data, error } = await supabaseClient.storage
-        .from('product-images')
-        .upload(filePath, file);
+      const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, file);
+      if (upErr) throw upErr;
 
-      if (error) throw error;
+      const { data: pData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
+      await supabaseClient.from('products').update({ image_url: pData.publicUrl }).eq('part_no', targetPartNoForUpload);
 
-      // 2. 獲取檔案的公開網址 (Public URL)
-      const { data: publicUrlData } = supabaseClient.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-      
-      const imageUrl = publicUrlData.publicUrl;
-
-      // 3. 更新 products 表格的 image_url
-      const { error: updateErr } = await supabaseClient.from('products')
-        .update({ image_url: imageUrl })
-        .eq('part_no', targetPartNoForUpload);
-
-      if (updateErr) throw updateErr;
-
-      alert("圖片上傳與更新成功！");
-      fetchProducts(); // 刷新畫面
-
-    } catch (err) {
-      alert("上傳失敗: " + err.message);
-    } finally {
-      document.getElementById('imageUploader').value = ''; // 清空選擇
+      alert("圖片更新成功！");
+      fetchProducts();
+    } catch (err) { alert("上傳失敗: " + err.message); } 
+    finally {
+      document.getElementById('imageUploader').value = '';
       targetPartNoForUpload = null;
     }
   }
-  // ====================================================
 
-  // 發貨訂單處理
   async function fetchShopOrders() {
     const { data } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
     if (!data) return;
-    
     let pendingCount = 0;
     
     document.getElementById('ordersTableBody').innerHTML = data.map(o => {
@@ -333,7 +399,6 @@
           </td>
         </tr>`;
     }).join('');
-    
     document.getElementById('kpiPendingOrder').innerText = pendingCount;
   }
 
@@ -345,30 +410,30 @@
     fetchShopOrders();
   }
 
-  // 頁籤與基礎函數
   function switchView(tab) {
     currentTab = tab;
-    ['table', 'orders', 'logs'].forEach(t => {
-      document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? 'block overflow-x-auto border border-theme rounded' : 'hidden';
+    ['table', 'categories', 'orders', 'logs'].forEach(t => {
+      document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? 'block' : 'hidden';
       document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) 
         ? 'px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold' 
         : 'px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme';
     });
+    if(tab==='categories') renderCategoriesTable();
     if(tab==='orders') fetchShopOrders();
     if(tab==='logs') supabaseClient.from('inventory_transactions').select('*').order('created_at',{ascending:false}).limit(50).then(({data}) => {
-      document.getElementById('logsTableBody').innerHTML = data.map(l => `<tr class="hover:bg-slate-800/40"><td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td><td class="p-2.5 text-indigo-300 text-[11px]">${l.operator||'-'}</td><td class="p-2.5 font-mono text-sky-400 text-xs">${l.part_no}</td><td class="p-2.5 text-xs ${l.trans_type==='IN'?'text-emerald-400':'text-amber-400'}">${l.trans_type}</td><td class="p-2.5 font-bold">${l.qty}</td></tr>`).join('');
+      document.getElementById('logsTableBody').innerHTML = (data||[]).map(l => `<tr class="hover:bg-slate-800/40"><td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td><td class="p-2.5 text-indigo-300 text-[11px]">${l.operator||'-'}</td><td class="p-2.5 font-mono text-sky-400 text-xs">${l.part_no}</td><td class="p-2.5 text-xs ${l.trans_type==='IN'?'text-emerald-400':'text-amber-400'}">${l.trans_type}</td><td class="p-2.5 font-bold">${l.qty}</td></tr>`).join('');
     });
   }
 
   function toggleTransFields() { document.getElementById('newSkuFields').className = document.getElementById('transType').value === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden'; }
   
   async function executeTransaction() {
-    if (!currentUser) return alert("無權限！");
+    if (!currentUser) return alert("無權限！請先登入");
     const t = document.getElementById('transType').value, p = document.getElementById('partNo').value.toUpperCase(), q = parseInt(document.getElementById('transQty').value), b = document.getElementById('binLocation').value.toUpperCase();
     if(!p || isNaN(q)) return alert("欄位錯誤");
     const i = inventoryList.find(x => x.part_no === p);
     if(t==='NEW' && i) return alert("已存在");
-    if(t!=='NEW' && !i) return alert("不存在");
+    if(t!=='NEW' && !i) return alert("品號不存在");
     
     if(t==='NEW') await supabaseClient.from('products').insert([{part_no:p, part_name:document.getElementById('partName').value, category:document.getElementById('partCategory').value, stock:q, bin_location:b, unit_price:document.getElementById('unitPrice').value||0, safety_stock:document.getElementById('safetyStock').value||0}]);
     else if(t==='IN') await supabaseClient.from('products').update({stock:i.stock+q, bin_location:b||i.bin_location}).eq('part_no',p);
@@ -380,7 +445,14 @@
     alert("更新成功");
   }
 
-  fetchProducts();
+  function exportCSV() {
+    let csv = "\uFEFF品號,品名規格,類別,儲位,現存量,安全水位,單價,總值\n";
+    inventoryList.forEach(i => { csv += `"${i.part_no}","${i.part_name}","${i.category}","${i.bin_location}",${i.stock},${i.safety_stock},${i.unit_price},${i.stock * i.unit_price}\n`; });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    a.download = `艾產品台帳_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  }
+
+  fetchAllData();
 </script>
 </body>
 </html>
