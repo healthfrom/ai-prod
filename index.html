@@ -10,27 +10,27 @@
     frame-src 'self' https://challenges.cloudflare.com;
     connect-src 'self' https://xayagdicjwexwtehdjby.supabase.co wss://xayagdicjwexwtehdjby.supabase.co https://api.qrserver.com https://challenges.cloudflare.com;
     img-src 'self' data: https: blob:;
-    font-src 'self' data: https: https://fonts.gstatic.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' data: https:;
+    style-src 'self' 'unsafe-inline';
   ">
-  <title>艾草生活體驗館 - 官方正品展銷中心</title>
+  <title>伏牛仙草 · 艾生活體驗館 - 循天地仁心 · 傳艾草之溫</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-    
     :root {
-      --primary: #064e3b;
-      --primary-light: #047857;
-      --accent-gold: #b45309;
+      --primary: #3d5a14;
+      --primary-light: #527921;
+      --primary-dark: #283d0c;
+      --accent-gold: #c27803;
+      --bg-rice: #fcfaf2;
     }
     
     body {
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      background-color: #fbfaf6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Serif TC", sans-serif;
+      background-color: var(--bg-rice);
       color: #1e293b;
       -webkit-tap-highlight-color: transparent;
       -webkit-user-select: none;
@@ -46,108 +46,220 @@
       user-select: text !important;
     }
 
-    .font-serif-title { font-family: 'Noto Serif TC', serif; }
+    .font-serif-title { 
+      font-family: "Noto Serif TC", "Noto Serif SC", "Source Han Serif CN", "Songti SC", "SimSun", serif; 
+    }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    input[type="radio"]:checked + div { box-shadow: 0 4px 14px -2px rgba(6, 78, 59, 0.12); }
+    input[type="radio"]:checked + div { box-shadow: 0 4px 14px -2px rgba(61, 90, 20, 0.16); }
     .radio-wechat:checked + div { border-color: #059669; background-color: #ecfdf5; color: #065f46; }
     .radio-alipay:checked + div { border-color: #0284c7; background-color: #f0f9ff; color: #075985; }
 
-    /* 養生錦囊動態氣泡淡入淡出動畫 */
-    @keyframes socialToastIn {
-      0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+    @keyframes toastFade {
+      0% { opacity: 0; transform: translateY(16px) scale(0.96); }
       15% { opacity: 1; transform: translateY(0) scale(1); }
       85% { opacity: 1; transform: translateY(0) scale(1); }
-      100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+      100% { opacity: 0; transform: translateY(-8px) scale(0.96); }
     }
-    .animate-social-toast {
-      animation: socialToastIn 5s ease-in-out forwards;
+    .animate-toast {
+      animation: toastFade 6.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-emerald-800 selection:text-white" id="translatable-body">
+<body class="min-h-screen flex flex-col selection:bg-lime-900 selection:text-white" id="translatable-body">
 
   <!-- 頂部導覽列 -->
-  <header class="sticky top-0 z-40 bg-emerald-950/95 backdrop-blur-md text-white border-b border-emerald-900/60 shadow-lg">
+  <header class="sticky top-0 z-40 bg-[#1e2f0a]/95 backdrop-blur-md text-white border-b border-lime-900/60 shadow-md">
     <div class="max-w-6xl mx-auto px-4 py-3 sm:py-3.5 flex justify-between items-center gap-3">
       
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center shadow-inner border border-emerald-500/30 text-lg">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#527921] to-[#283d0c] flex items-center justify-center shadow-inner border border-lime-400/30 text-lg">
           🌿
         </div>
         <div class="leading-tight">
           <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-bold tracking-wider font-serif-title text-amber-100">艾草生活體驗館</h1>
-            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-medium bg-emerald-800/80 text-emerald-200 border border-emerald-700/60 rounded-full">產地直供</span>
+            <h1 class="text-base sm:text-lg font-bold tracking-wider font-serif-title text-[#fef3c7]">伏牛仙草 · 艾生活體驗館</h1>
+            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-medium bg-[#365314] text-[#bef264] border border-lime-600/40 rounded-full">源頭普惠直供</span>
           </div>
-          <p class="text-[11px] text-emerald-300/80 tracking-wide font-light">南陽伏牛山地道純艾 · 匠心溫養</p>
+          <p class="text-[11px] text-lime-200/80 tracking-wide font-light">循天地仁心 · 傳艾草之溫 · 藏艾藏醫於家</p>
         </div>
       </div>
       
       <div class="flex items-center gap-2 sm:gap-3">
         <!-- 繁簡切換 -->
-        <button onclick="toggleLang()" id="btnLangToggle" class="px-2.5 py-1.5 rounded-full text-xs font-bold text-amber-200 bg-emerald-900 border border-emerald-700/60 transition shadow-sm active:scale-95">
+        <button onclick="toggleLang()" id="btnLangToggle" class="px-2.5 py-1.5 rounded-full text-xs font-bold text-amber-200 bg-[#283d0c] border border-lime-700/60 transition shadow-sm active:scale-95">
           简
         </button>
 
-        <!-- 社交推廣中心 -->
-        <button onclick="openShareModal()" class="relative px-3 py-1.5 rounded-full text-xs font-medium text-emerald-100 bg-emerald-900/80 hover:bg-emerald-800 border border-emerald-700/60 transition flex items-center gap-1.5 shadow-sm active:scale-95">
-          <span class="text-amber-300">📢</span> <span>推廣分享</span>
-          <span class="absolute -top-1 -right-1 px-1.5 py-0.2 bg-rose-500 text-[9px] text-white font-bold rounded-full animate-pulse">立減¥5</span>
+        <!-- 暖心草本家書按鈕 -->
+        <button onclick="openShareModal()" class="px-3.5 py-1.5 rounded-full text-xs font-medium text-amber-100 bg-gradient-to-r from-[#476912] to-[#365314] hover:from-[#365314] hover:to-[#283d0c] border border-amber-400/40 transition flex items-center gap-1.5 shadow-sm active:scale-95">
+          <span>💌</span> <span>草本家書</span>
         </button>
         
-        <button onclick="toggleCartDrawer()" class="relative px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-950 bg-gradient-to-r from-amber-300 to-amber-400 hover:from-amber-200 hover:to-amber-300 transition flex items-center gap-1.5 shadow-md active:scale-95">
+        <button onclick="toggleCartDrawer()" class="relative px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-900 bg-gradient-to-r from-amber-300 to-amber-400 hover:from-amber-200 hover:to-amber-300 transition flex items-center gap-1.5 shadow-md active:scale-95">
           <span>🛒</span> <span>購物車</span>
-          <span id="cartCountBadge" class="ml-0.5 bg-emerald-950 text-amber-300 font-mono font-bold text-[10px] px-1.5 py-0.2 rounded-full min-w-[18px] text-center">0</span>
+          <span id="cartCountBadge" class="ml-0.5 bg-[#1e2f0a] text-amber-300 font-mono font-bold text-[10px] px-1.5 py-0.2 rounded-full min-w-[18px] text-center">0</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- 好友專屬雙向激勵橫幅 (帶 ?ref= 時展示) -->
-  <div id="referrerBanner" class="hidden bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-amber-950 px-4 py-2 text-xs text-center font-bold shadow-inner flex items-center justify-center gap-2">
-    <span>🎁</span> 您正在透過好友專屬推薦選購，下單結算已自動為您解鎖【專屬立減 ¥5】禮遇！
+  <!-- 好友專屬草本心意禮遇標籤 -->
+  <div id="referrerBanner" class="hidden bg-gradient-to-r from-[#283d0c] via-[#365314] to-[#283d0c] text-amber-200 border-b border-amber-500/30 px-4 py-2 text-xs text-center font-medium shadow-inner flex items-center justify-center gap-2">
+    <span>🌸</span> <span>同道同行：來自好友的草本問候，已為您備妥專屬溫養心意禮（本單自動立減 ¥5），願艾香伴您長安。</span>
   </div>
 
-  <!-- 品牌橫幅 -->
-  <section class="bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-800 text-white pt-6 pb-8 px-4 border-b border-emerald-700/30">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="space-y-1">
-        <div class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 uppercase tracking-widest bg-emerald-950/60 px-2.5 py-1 rounded-full border border-amber-400/20">
-          <span>✦</span> 傳統中醫本草 · 現代健康美學
+  <!-- 品牌人文大願橫幅 -->
+  <section class="bg-gradient-to-b from-[#1e2f0a] via-[#2a400e] to-[#3d5a14] text-white pt-8 pb-10 px-4 border-b border-lime-800/40">
+    <div class="max-w-6xl mx-auto space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-3 max-w-2xl">
+          <div class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-300 uppercase tracking-widest bg-black/40 px-3 py-1 rounded-full border border-amber-400/30">
+            <span>✦</span> 循天地仁心，傳艾草之溫 · 守萬家安康，踐智慧之行
+          </div>
+          <h2 class="text-xl sm:text-2xl md:text-3xl font-bold font-serif-title tracking-wide text-stone-50 leading-snug">
+            藏艾於家庭，藏醫於家庭 · 願艾草的溫暖浸潤千家萬戶
+          </h2>
+          <p class="text-xs sm:text-sm text-lime-100/90 font-light leading-relaxed text-justify">
+            以道地艾草為載體，傳承中醫文化，推動健康生活。我們依託南陽伏牛山北緯 33° 天然藥庫，恪守古法技藝與現代品控，精選三年自然乾倉純陽陳艾。以文化滋養健康，以商業承載善意，讓“簡、便、廉、驗”的方法回歸大眾，讓大仁大愛溫暖人心。
+          </p>
         </div>
-        <h2 class="text-xl sm:text-2xl md:text-3xl font-bold font-serif-title tracking-wide text-stone-50 pt-1">
-          溫通經絡，靜享艾香純陽之韻
-        </h2>
-        <p class="text-xs sm:text-sm text-emerald-200/90 max-w-xl font-light leading-relaxed">
-          全系列產品遵循古法製作，精選三年及五年陳放天然艾絨，不摻雜質、純陽溫煦，為您與家人守護日常元氣。
-        </p>
+
+        <div class="bg-[#182607]/80 backdrop-blur-md border border-amber-400/40 rounded-2xl p-4 sm:p-5 text-center md:text-right shrink-0 shadow-xl">
+          <div class="text-xs font-serif-title text-amber-200 tracking-wider">醫聖故里 · 濟世濟民</div>
+          <div class="text-base font-bold text-stone-100 mt-1 font-serif-title">艾香所至皆安康</div>
+          <div class="text-xs text-amber-300 font-serif-title mt-0.5">吾輩所行成福祉</div>
+        </div>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 md:pt-0">
-        <div class="bg-emerald-950/50 backdrop-blur-sm border border-emerald-700/40 rounded-xl p-2.5 text-center">
-          <div class="text-base sm:text-lg mb-0.5">🌱</div>
-          <div class="text-xs font-bold text-amber-100">南陽伏牛山</div>
-          <div class="text-[10px] text-emerald-300/80">核心產地直送</div>
+      <!-- 四大核心理念維度 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+        <div class="bg-[#142005]/60 backdrop-blur-sm border border-lime-700/40 rounded-xl p-3.5 text-center">
+          <div class="text-xl mb-1">🌿</div>
+          <div class="text-xs font-bold text-amber-100">治未病 · 預防為先</div>
+          <div class="text-[10px] text-lime-200/80 mt-1">可觸可感 · 可及可依</div>
         </div>
-        <div class="bg-emerald-950/50 backdrop-blur-sm border border-emerald-700/40 rounded-xl p-2.5 text-center">
-          <div class="text-base sm:text-lg mb-0.5">🍂</div>
-          <div class="text-xs font-bold text-amber-100">精純陳年艾</div>
-          <div class="text-[10px] text-emerald-300/80">三年五年陳放</div>
+        <div class="bg-[#142005]/60 backdrop-blur-sm border border-lime-700/40 rounded-xl p-3.5 text-center">
+          <div class="text-xl mb-1">🏡</div>
+          <div class="text-xs font-bold text-amber-100">藏醫於家 · 簡便廉驗</div>
+          <div class="text-[10px] text-lime-200/80 mt-1">三年純陽陳艾 · 溫而不燥</div>
         </div>
-        <div class="bg-emerald-950/50 backdrop-blur-sm border border-emerald-700/40 rounded-xl p-2.5 text-center">
-          <div class="text-base sm:text-lg mb-0.5">📦</div>
-          <div class="text-xs font-bold text-amber-100">全國包郵寄</div>
-          <div class="text-[10px] text-emerald-300/80">安心密封發貨</div>
+        <div class="bg-[#142005]/60 backdrop-blur-sm border border-lime-700/40 rounded-xl p-3.5 text-center">
+          <div class="text-xl mb-1">✨</div>
+          <div class="text-xs font-bold text-amber-100">形神兼備 · 八韻純陽</div>
+          <div class="text-[10px] text-lime-200/80 mt-1">清香柔透穩煦勻純 · 大仁大愛</div>
         </div>
-        <div class="bg-emerald-950/50 backdrop-blur-sm border border-emerald-700/40 rounded-xl p-2.5 text-center">
-          <div class="text-base sm:text-lg mb-0.5">🛡️</div>
-          <div class="text-xs font-bold text-amber-100">官方正品保證</div>
-          <div class="text-[10px] text-emerald-300/80">品質售後無憂</div>
+        <div class="bg-[#142005]/60 backdrop-blur-sm border border-lime-700/40 rounded-xl p-3.5 text-center">
+          <div class="text-xl mb-1">🤝</div>
+          <div class="text-xs font-bold text-amber-100">普惠大眾 · 美美與共</div>
+          <div class="text-[10px] text-lime-200/80 mt-1">同道同行 · 共築全民健康</div>
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- 中醫文化與艾史經典板塊 -->
+  <section class="max-w-6xl mx-auto px-4 pt-8 space-y-6">
+    
+    <!-- 大美南陽與經典記載 -->
+    <div class="bg-white rounded-3xl border border-stone-200/80 p-5 sm:p-6 shadow-sm flex flex-col md:flex-row items-center gap-6">
+      <div class="flex-1 space-y-2.5 text-justify">
+        <div class="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#476912] bg-[#f4f7eb] px-3 py-1 rounded-full border border-[#476912]/20">
+          <span>📜</span> 七千年文脈 · 歷代醫籍見證
+        </div>
+        <h3 class="text-base sm:text-lg font-bold text-slate-800 font-serif-title">
+          頭枕伏牛，足蹬江漢 · 炎帝祭天之火，醫聖活人之方
+        </h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          距今七千年前炎帝於南陽桐柏山以艾火祭天，開啟生命治火之路；東漢醫聖張仲景《傷寒雜病論》創芎歸膠艾湯與柏葉湯；宋代寇宗奭《本草衍義》特表宛艾；《本草綱目》盛讚艾葉取太陽真火，可回垂絕元陽。數千年來，艾草為生命熱能管理之聖品，護佑萬民安康。
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 w-full md:w-80 shrink-0">
+        <div class="bg-[#fcfaf2] border border-amber-200/70 rounded-2xl p-3 text-center">
+          <div class="text-base font-bold text-amber-900 font-serif-title">雙向之妙</div>
+          <p class="text-[10px] text-amber-800/80 mt-1 leading-normal">
+            寒者得溫，熱者反涼；純陽之性，自動循經調平陰陽。
+          </p>
+        </div>
+        <div class="bg-[#fcfaf2] border border-amber-200/70 rounded-2xl p-3 text-center">
+          <div class="text-base font-bold text-amber-900 font-serif-title">記憶之奇</div>
+          <p class="text-[10px] text-amber-800/80 mt-1 leading-normal">
+            三灸之後，近火即應；此乃道地陳艾與人身對話之玄機。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 經典箴言與生命熱能感悟 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div class="bg-gradient-to-br from-[#f8faf2] to-[#f4f7ea] border border-[#d6e3c3] rounded-2xl p-4 space-y-2">
+        <div class="font-bold text-[#365314] flex items-center gap-1.5 font-serif-title">
+          <span>📖</span> 《黃帝內經》
+        </div>
+        <p class="text-slate-600 leading-relaxed text-justify">
+          “藥之不到，針之不及，必灸之。” 大風汗出，灸意喜穴，扶正祛邪，引天火補命門元氣。
+        </p>
+      </div>
+
+      <div class="bg-gradient-to-br from-[#f8faf2] to-[#f4f7ea] border border-[#d6e3c3] rounded-2xl p-4 space-y-2">
+        <div class="font-bold text-[#365314] flex items-center gap-1.5 font-serif-title">
+          <span>📖</span> 《扁鵲心書》
+        </div>
+        <p class="text-slate-600 leading-relaxed text-justify">
+          “保命之法，灼艾第一。人於無病時，長灸關元、氣海、命門、中脘，雖不得長生，亦可得百年壽矣。”
+        </p>
+      </div>
+
+      <div class="bg-gradient-to-br from-[#f8faf2] to-[#f4f7ea] border border-[#d6e3c3] rounded-2xl p-4 space-y-2">
+        <div class="font-bold text-[#365314] flex items-center gap-1.5 font-serif-title">
+          <span>📖</span> 聖賢養生法
+        </div>
+        <p class="text-slate-600 leading-relaxed text-justify">
+          《孔子》載聖人孔子“無病而自灸”；艾為太陽之使，真火入體，以溫和之性，常保安泰無恙。
+        </p>
+      </div>
+    </div>
+
+    <!-- 灸感五層與三字經智慧 -->
+    <div class="bg-gradient-to-br from-[#f8faf2] to-[#f4f7ea] border border-[#d6e3c3] rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#d6e3c3]/70 pb-3">
+        <div>
+          <span class="text-xs font-bold text-[#365314] flex items-center gap-1.5 font-serif-title">
+            <span>🔥</span> 三年純陽陳艾 · 灸感五層，氣運周天
+          </span>
+          <p class="text-[11px] text-slate-500 mt-0.5">清、香、柔、透、穩、煦、勻、純 · 八韻兼備</p>
+        </div>
+        <div class="text-[11px] text-[#476912] bg-white px-3 py-1 rounded-full border border-[#476912]/20 font-medium">
+          《艾灸三字經》：人之身，價無邊；用艾火，最簡便
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5 text-xs">
+        <div class="bg-white/80 p-3 rounded-xl border border-[#d6e3c3] space-y-1">
+          <div class="font-bold text-[#365314] flex items-center gap-1"><span>①</span> 皮部</div>
+          <p class="text-[11px] text-slate-600">如披暖陽，溫域徑五寸，溫潤親和不灼痛。</p>
+        </div>
+        <div class="bg-white/80 p-3 rounded-xl border border-[#d6e3c3] space-y-1">
+          <div class="font-bold text-[#365314] flex items-center gap-1"><span>②</span> 經絡</div>
+          <p class="text-[11px] text-slate-600">熱流注經，貫趾尖腕腹，循行傳導通經達絡。</p>
+        </div>
+        <div class="bg-white/80 p-3 rounded-xl border border-[#d6e3c3] space-y-1">
+          <div class="font-bold text-[#365314] flex items-center gap-1"><span>③</span> 病灶</div>
+          <p class="text-[11px] text-slate-600">見跳動如魚吞餌，聞腸鳴若遠雷，正勝邪卻。</p>
+        </div>
+        <div class="bg-white/80 p-3 rounded-xl border border-[#d6e3c3] space-y-1">
+          <div class="font-bold text-[#365314] flex items-center gap-1"><span>④</span> 深效</div>
+          <p class="text-[11px] text-slate-600">透肌振骨，微波暗湧，深透肌骨溫化陳寒。</p>
+        </div>
+        <div class="bg-white/80 p-3 rounded-xl border border-[#d6e3c3] space-y-1">
+          <div class="font-bold text-[#365314] flex items-center gap-1"><span>⑤</span> 餘韻</div>
+          <p class="text-[11px] text-slate-600">停灸逾刻，猶存膚暖，皮膚勻潤，溫煦無燥。</p>
+        </div>
+      </div>
+    </div>
+
   </section>
 
   <!-- 主商城展示區 -->
@@ -155,10 +267,10 @@
     <div class="space-y-3">
       <div class="flex items-center justify-between">
         <h3 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
-          <span class="w-2 h-4 rounded-full bg-emerald-800"></span>
-          <span>精選產品分類</span>
+          <span class="w-2 h-4 rounded-full bg-[#3d5a14]"></span>
+          <span>精選產品系列 · 簡便廉驗</span>
         </h3>
-        <span class="text-[11px] text-slate-400">點選圖片檢視溯源詳情</span>
+        <span class="text-[11px] text-slate-400">點選圖片檢視溯源與養生要訣</span>
       </div>
 
       <div class="flex gap-2.5 overflow-x-auto pb-2 no-scrollbar" id="categoryFilter">
@@ -175,15 +287,27 @@
     </div>
   </main>
 
+  <!-- 底部立館誓願與版權說明 -->
+  <footer class="bg-[#182607] border-t border-[#2a400e] text-lime-200/80 py-8 text-center text-xs space-y-2 px-4 mt-12">
+    <p class="font-serif-title text-[#fef3c7] text-sm tracking-wider">
+      同道同行，將“藏艾於家庭、藏醫於家庭”的理想付諸實踐，共築全民健康未來。
+    </p>
+    <p class="text-[11px] text-lime-300/70">
+      一切過往，皆為序章 · 大艾可期，大愛無疆 · 艾香所至皆安康，吾輩所行成福祉
+    </p>
+    <p class="text-[10px] text-lime-400/50 pt-2 font-mono">
+      © 2026 南陽伏牛仙草生物科技有限公司 著作權所有 · Nanyang Funiu Xiancao Biotechnology Co., Ltd.
+    </p>
+  </footer>
+
   <!-- 商品詳情與文化溯源 Modal -->
   <div id="productDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50 transition-opacity">
     <div class="bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col relative no-scrollbar">
-      
       <div class="relative w-full aspect-square bg-slate-100 overflow-hidden rounded-t-3xl">
         <img id="detailImg" src="" alt="商品圖片" class="w-full h-full object-cover">
         <button onclick="closeProductDetail()" class="absolute top-4 right-4 w-8 h-8 bg-black/40 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/60 transition shadow-lg">✕</button>
-        <div class="absolute bottom-3 left-3 bg-emerald-950/85 backdrop-blur text-emerald-200 text-xs px-3 py-1.5 rounded-full border border-emerald-700/50 flex items-center gap-1.5 shadow-lg">
-          <span class="text-amber-300">🛡️</span> 官方溯源正品保證
+        <div class="absolute bottom-3 left-3 bg-[#1e2f0a]/85 backdrop-blur text-lime-200 text-xs px-3 py-1.5 rounded-full border border-lime-600/50 flex items-center gap-1.5 shadow-lg">
+          <span class="text-amber-300">🛡️</span> 形神兼備 · 源頭品質保證
         </div>
       </div>
       
@@ -191,7 +315,7 @@
         <div>
           <div class="flex justify-between items-start gap-2">
             <h2 id="detailTitle" class="text-lg font-bold text-slate-800 font-serif-title leading-snug"></h2>
-            <div class="text-xl font-bold text-emerald-900 font-serif-title whitespace-nowrap">
+            <div class="text-xl font-bold text-[#283d0c] font-serif-title whitespace-nowrap">
               <span class="text-sm">¥</span><span id="detailPrice"></span>
             </div>
           </div>
@@ -201,25 +325,24 @@
           </p>
         </div>
         
-        <!-- 文化溯源信任區塊 -->
-        <div class="bg-gradient-to-br from-amber-50 to-orange-50/30 border border-amber-200/60 rounded-2xl p-4 space-y-3 shadow-inner">
+        <div class="bg-gradient-to-br from-[#fcfaf2] to-[#f4f7ea] border border-amber-200/70 rounded-2xl p-4 space-y-3 shadow-inner">
           <h3 class="text-xs font-bold text-amber-900 flex items-center gap-1.5 border-b border-amber-200/50 pb-2">
-            <span class="text-amber-600">📜</span> 道地溯源與品質履歷
+            <span class="text-amber-600">📜</span> 道地溯源與“治未病”履歷
           </h3>
-          <p id="detailDesc" class="text-[11px] text-amber-800/90 leading-relaxed font-medium text-justify"></p>
+          <p id="detailDesc" class="text-[11px] text-amber-900/90 leading-relaxed font-medium text-justify"></p>
           
           <div class="grid grid-cols-3 gap-2 pt-2 mt-2">
-            <div class="text-center bg-white/60 rounded-lg p-2 border border-amber-100">
+            <div class="text-center bg-white/70 rounded-lg p-2 border border-amber-100">
               <div class="text-lg mb-1">⛰️</div>
               <div class="text-[9px] font-bold text-amber-900">伏牛山原產</div>
             </div>
-            <div class="text-center bg-white/60 rounded-lg p-2 border border-amber-100">
+            <div class="text-center bg-white/70 rounded-lg p-2 border border-amber-100">
               <div class="text-lg mb-1">☀️</div>
               <div class="text-[9px] font-bold text-amber-900">端午純陽採</div>
             </div>
-            <div class="text-center bg-white/60 rounded-lg p-2 border border-amber-100">
+            <div class="text-center bg-white/70 rounded-lg p-2 border border-amber-100">
               <div class="text-lg mb-1">🏺</div>
-              <div class="text-[9px] font-bold text-amber-900">乾倉古法陳</div>
+              <div class="text-[9px] font-bold text-amber-900">三年溫和陳</div>
             </div>
           </div>
         </div>
@@ -231,65 +354,65 @@
               <span id="detailQty" class="text-sm font-mono font-bold w-6 text-center text-slate-800">1</span>
               <button onclick="changeDetailQty(1)" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-emerald-700 font-bold text-lg transition">+</button>
             </div>
-            <button id="btnDetailAddToCart" onclick="confirmDetailAddToCart()" class="flex-1 py-3.5 bg-emerald-900 hover:bg-emerald-800 text-amber-200 font-bold rounded-xl shadow-lg shadow-emerald-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 text-sm disabled:bg-slate-300 disabled:shadow-none">
+            <button id="btnDetailAddToCart" onclick="confirmDetailAddToCart()" class="flex-1 py-3.5 bg-[#365314] hover:bg-[#283d0c] text-amber-200 font-bold rounded-xl shadow-lg shadow-lime-950/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 text-sm disabled:bg-slate-300 disabled:shadow-none">
               <span>🛒</span> 加入選購清單
             </button>
           </div>
           
-          <button onclick="generateProductPoster(currentDetailPartNo)" class="w-full py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300/80 text-amber-900 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-[0.99]">
-            <span>🎨</span> 生成該商品專屬宣傳海報（發朋友圈）
+          <button onclick="generateProductPoster(currentDetailPartNo)" class="w-full py-2.5 bg-amber-50/80 hover:bg-amber-100 border border-amber-300/80 text-amber-900 font-medium rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-[0.99]">
+            <span>💌</span> 書寫草本心意信箋（把“藏醫於家”贈予知己長輩）
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 購物車抽屜 (含社交立減動態結算) -->
+  <!-- 購物車抽屜 -->
   <div id="cartDrawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-emerald-950 to-emerald-900 text-white">
+    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-[#1e2f0a] to-[#283d0c] text-white">
       <div class="flex items-center gap-2">
         <span class="text-xl">🛍️</span>
         <div>
           <h2 class="font-bold text-sm tracking-wide">結帳與收件資訊</h2>
-          <p class="text-[10px] text-emerald-300 font-light">全場官方包郵 · 當天極速發貨</p>
+          <p class="text-[10px] text-lime-200 font-light">源頭普惠直供包郵 · 願艾草溫暖浸潤千家萬戶</p>
         </div>
       </div>
-      <button onclick="toggleCartDrawer()" class="text-emerald-300 hover:text-white text-lg p-1 transition rounded-lg hover:bg-emerald-800/50">✕</button>
+      <button onclick="toggleCartDrawer()" class="text-lime-200 hover:text-white text-lg p-1 transition rounded-lg hover:bg-lime-900/50">✕</button>
     </div>
 
     <div class="flex-1 overflow-y-auto p-4 space-y-4">
       <div class="space-y-2">
         <h4 class="text-xs font-bold text-slate-700 flex items-center justify-between">
-          <span>已選購產品</span>
-          <span class="text-[10px] text-emerald-700 font-normal">確認數量後填寫下方收件資料</span>
+          <span>已選購品項</span>
+          <span class="text-[10px] text-[#365314] font-normal">確認數量後填寫下方收件資料</span>
         </h4>
         <div id="cartItemList" class="space-y-2"></div>
       </div>
 
-      <!-- 社交激勵：轉發分享立減橫幅 -->
-      <div id="shareDiscountBanner" class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300/80 rounded-xl p-3 flex items-center justify-between gap-2 shadow-sm">
+      <!-- 溫暖傳遞分享橫條 -->
+      <div id="shareDiscountBanner" class="bg-gradient-to-r from-amber-50 to-orange-50/80 border border-amber-200/90 rounded-xl p-3 flex items-center justify-between gap-2 shadow-sm">
         <div class="text-left">
           <div class="text-xs font-bold text-amber-900 flex items-center gap-1">
-            <span>🎁</span> <span id="shareDiscountTitle">推廣分享立減 ¥5 專屬優惠</span>
+            <span>🍵</span> <span>艾香傳情 · 溫暖相伴</span>
           </div>
-          <p id="shareDiscountDesc" class="text-[10px] text-amber-800/80 mt-0.5">點擊分享海報或複製文案給好友，本單即可立減 ¥5！</p>
+          <p class="text-[10px] text-amber-800/80 mt-0.5">將三年純陽陳艾的溫和本草分享給親友，本單享溫暖禮遇 ¥5！</p>
         </div>
-        <button onclick="openShareModal()" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs rounded-lg shadow-sm whitespace-nowrap transition active:scale-95">
-          立即分享
+        <button onclick="openShareModal()" class="px-3 py-1.5 bg-[#365314] hover:bg-[#283d0c] text-amber-200 font-medium text-xs rounded-lg shadow-sm whitespace-nowrap transition active:scale-95">
+          分享溫暖
         </button>
       </div>
 
       <!-- 收件資訊 -->
       <div class="border-t border-slate-200 pt-3 space-y-3">
         <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-          <span class="text-emerald-700">📦</span> 收件人發貨資訊
+          <span class="text-[#365314]">📦</span> 收件人發貨資訊
         </h4>
         
         <div class="grid grid-cols-2 gap-2.5 text-xs">
           <div>
             <label class="block text-slate-600 font-medium mb-1">收件人姓名 *</label>
             <input type="text" id="orderName" autocomplete="off" autocorrect="off" placeholder="如：張先生 / 李華" 
-                   class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-emerald-600 focus:bg-white" 
+                   class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-lime-700 focus:bg-white" 
                    oninput="clearError('orderName', 'errName')">
             <p id="errName" class="text-[10px] text-rose-500 hidden mt-1">請填寫真實姓名 (2~15字)</p>
           </div>
@@ -297,7 +420,7 @@
           <div>
             <label class="block text-slate-600 font-medium mb-1">聯絡電話 *</label>
             <input type="tel" id="orderPhone" autocomplete="off" autocorrect="off" maxlength="11" placeholder="11位手機號" 
-                   class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-emerald-600 focus:bg-white font-mono" 
+                   class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-lime-700 focus:bg-white font-mono" 
                    oninput="clearError('orderPhone', 'errPhone')">
             <p id="errPhone" class="text-[10px] text-rose-500 hidden mt-1">請填寫有效11位手機號</p>
           </div>
@@ -306,7 +429,7 @@
         <div class="text-xs">
           <label class="block text-slate-600 font-medium mb-1">收件方式</label>
           <select id="orderDeliveryType" onchange="handleDeliveryChange()" 
-                  class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs text-slate-700 font-medium focus:border-emerald-600 focus:bg-white">
+                  class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs text-slate-700 font-medium focus:border-lime-700 focus:bg-white">
             <option value="快遞寄送">快遞包郵寄送至指定地址</option>
             <option value="現場自提">現場展台自提</option>
           </select>
@@ -316,18 +439,18 @@
           <label class="block text-slate-600 font-medium mb-1" id="lblAddress">詳細收貨地址 *</label>
           <textarea id="orderAddress" autocomplete="off" autocorrect="off" rows="2" 
                     placeholder="請詳細填寫：省、市、區/縣、街道及詳細門牌號" 
-                    class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-emerald-600 focus:bg-white" 
+                    class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-lime-700 focus:bg-white" 
                     oninput="clearError('orderAddress', 'errAddress')"></textarea>
           <p id="errAddress" class="text-[10px] text-rose-500 hidden mt-1">地址過於簡略，請填寫完整街道門牌 (至少8字)</p>
         </div>
 
-        <!-- 推薦碼結構化綁定 -->
+        <!-- 好友心意分享碼 -->
         <div class="text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
           <label class="block text-slate-600 font-medium mb-1 flex items-center justify-between">
-            <span>🤝 推薦人代碼 / 邀請碼 (選填)</span>
-            <span class="text-[10px] text-emerald-700 font-semibold" id="refStatusHint">享專屬售後指導</span>
+            <span>🌿 好友心意分享碼 (選填)</span>
+            <span class="text-[10px] text-[#365314] font-semibold" id="refStatusHint">享專屬溫養諮詢</span>
           </label>
-          <input type="text" id="orderReferralCode" placeholder="如無可留空，或填寫推薦人邀請碼" 
+          <input type="text" id="orderReferralCode" placeholder="如無可留空，或填寫好友的心意分享碼" 
                  class="w-full bg-white border border-slate-200 rounded-lg p-2 outline-none text-xs uppercase font-mono text-slate-700 font-bold"
                  oninput="handleManualRefInput()">
         </div>
@@ -336,7 +459,7 @@
       <!-- 結算方式 -->
       <div class="border-t border-slate-200 pt-3 space-y-2.5">
         <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-          <span class="text-emerald-700">💳</span> 選擇結算方式
+          <span class="text-[#365314]">💳</span> 選擇結算方式
         </h4>
         <div class="grid grid-cols-2 gap-2.5">
           <label class="relative cursor-pointer">
@@ -364,20 +487,20 @@
       </div>
     </div>
 
-    <!-- 底部金額統計與下單 -->
+    <!-- 底部金額 -->
     <div class="p-4 border-t border-slate-100 bg-slate-50/90 backdrop-blur-sm space-y-2.5">
       <div class="space-y-1 px-1">
-        <div id="discountRow" class="hidden flex justify-between items-center text-xs text-rose-600 font-bold">
-          <span id="discountLabel">🎉 社交推廣專屬立減</span>
+        <div id="discountRow" class="hidden flex justify-between items-center text-xs text-rose-600 font-medium">
+          <span id="discountLabel">🌸 好友心意立減禮遇</span>
           <span>-¥5</span>
         </div>
         <div class="flex justify-between items-baseline">
           <span class="text-xs text-slate-500">訂單實付總額（包郵）</span>
-          <span class="text-2xl font-extrabold text-emerald-900 font-serif-title" id="cartTotalText">¥0</span>
+          <span class="text-2xl font-extrabold text-[#283d0c] font-serif-title" id="cartTotalText">¥0</span>
         </div>
       </div>
       
-      <button onclick="openPayModal()" id="btnGoPay" class="w-full py-3.5 bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none">
+      <button onclick="openPayModal()" id="btnGoPay" class="w-full py-3.5 bg-gradient-to-r from-[#476912] to-[#365314] hover:from-[#365314] hover:to-[#283d0c] text-white font-bold rounded-xl shadow-lg shadow-lime-950/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none">
         前往安全掃碼結算
       </button>
     </div>
@@ -426,174 +549,189 @@
   <!-- 下單成功 Modal -->
   <div id="successModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
-      <div class="w-14 h-14 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-inner">
+      <div class="w-14 h-14 bg-lime-100 text-lime-900 rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-inner">
         ✓
       </div>
       
       <div>
         <h3 class="text-lg font-bold text-slate-800 font-serif-title">選購登記已成功！</h3>
         <p class="text-xs text-slate-500 mt-1">
-          訂單編號：<span id="orderNumberShow" class="font-mono text-emerald-800 font-bold tracking-wider"></span>
+          訂單編號：<span id="orderNumberShow" class="font-mono text-[#283d0c] font-bold tracking-wider"></span>
         </p>
       </div>
 
-      <div class="bg-gradient-to-b from-emerald-50 to-emerald-100/50 p-4 rounded-2xl border border-emerald-200/60 space-y-2.5">
-        <p class="text-xs font-bold text-emerald-950 flex items-center justify-center gap-1">
+      <div class="bg-gradient-to-b from-[#f8faf2] to-[#f4f7ea] p-4 rounded-2xl border border-lime-200/60 space-y-2.5">
+        <p class="text-xs font-bold text-lime-950 flex items-center justify-center gap-1">
           <span>👇</span> 長按識別二維碼關注官方公眾號
         </p>
         <img id="officialAccountQrImg" src="./official-account.jpg" alt="公司公眾號" 
-             class="w-36 h-36 mx-auto rounded-xl object-contain shadow border border-emerald-200 bg-white" 
+             class="w-36 h-36 mx-auto rounded-xl object-contain shadow border border-lime-200 bg-white" 
              onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=' + encodeURIComponent('https://weixin.qq.com/r/OfficialAccountPlaceholder')">
-        <p class="text-[11px] text-emerald-800 leading-normal">
+        <p class="text-[11px] text-lime-900 leading-normal">
           關注後發送您的<b>訂單編號</b>，即可即時查詢物流動態與領取節氣艾灸養生錦囊！
         </p>
       </div>
 
       <div class="flex gap-2">
-        <button onclick="closeSuccessModal(); openShareModal();" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1">
-          <span>📢</span> 分享好物給朋友 (賺佣金)
+        <button onclick="closeSuccessModal(); openShareModal();" class="flex-1 py-3 bg-[#365314] hover:bg-[#283d0c] text-amber-200 font-medium rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1">
+          <span>💌</span> 書寫心意家書贈友
         </button>
-        <button onclick="closeSuccessModal()" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+        <button onclick="closeSuccessModal()" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">
           完成
         </button>
       </div>
     </div>
   </div>
 
-  <!-- 升級版：社交推廣中心 Modal (支援三種 Canvas 裂變海報主題) -->
+  <!-- 【草本家書 · 見字如面】心意箋 Modal -->
   <div id="shareModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-5 max-w-md w-full text-center space-y-3.5 shadow-2xl max-h-[92vh] overflow-y-auto no-scrollbar">
       
       <div class="flex justify-between items-center border-b border-slate-100 pb-2.5">
-        <span class="text-sm font-bold text-emerald-950 flex items-center gap-1.5 font-serif-title">
-          <span>📢</span> 社交推廣與裂變中心
-        </span>
+        <div class="text-left">
+          <span class="text-sm font-bold text-slate-900 flex items-center gap-1.5 font-serif-title">
+            <span>💌</span> 草本家書 · 見字如面
+          </span>
+          <p class="text-[10px] text-slate-400 mt-0.5">以艾為媒 · 傳遞治未病智慧與家人健康關愛</p>
+        </div>
         <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
       </div>
       
-      <!-- 標籤頁切換 -->
       <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-medium">
-        <button onclick="switchShareTab('poster')" id="tabBtnPoster" class="flex-1 py-1.5 rounded-lg bg-white text-emerald-900 font-bold shadow-sm transition">
-          🖼️ 宣傳海報
+        <button onclick="switchShareTab('poster')" id="tabBtnPoster" class="flex-1 py-1.5 rounded-lg bg-white text-[#365314] font-bold shadow-sm transition">
+          📜 草本心意箋
         </button>
         <button onclick="switchShareTab('copy')" id="tabBtnCopy" class="flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition">
-          📝 種草文案庫
+          ✍️ 溫暖隨筆話語
         </button>
         <button onclick="switchShareTab('link')" id="tabBtnLink" class="flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition">
-          🔗 專屬連結
+          🌿 贈友溫暖通道
         </button>
       </div>
 
-      <!-- 面板 1：海報繪製 (支援 3 款裂變主題) -->
+      <!-- 面板 1：手繪宣紙心意信箋 -->
       <div id="shareTabPoster" class="space-y-3">
-        <!-- 海報主題選擇器 -->
-        <div class="flex items-center justify-center gap-2 text-xs">
-          <span class="text-slate-500 font-medium">海報風格：</span>
-          <select id="posterThemeSelect" onchange="changePosterTheme()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 font-bold outline-none focus:border-emerald-600">
-            <option value="origin">🌿 產地正品直供版</option>
-            <option value="acupoints">🔥 經絡穴位養生圖版 (高轉發爆款)</option>
-            <option value="filial">👵 孝親敬長關懷版</option>
-          </select>
+        <div class="bg-amber-50/70 border border-amber-200/70 rounded-2xl p-3 text-left space-y-2">
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-[11px] text-amber-950 font-bold mb-1">致贈對象：</label>
+              <input type="text" id="letterToInput" value="致 吾親 / 吾友" maxlength="10" oninput="generateStorePoster()" 
+                     class="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 outline-none focus:border-[#365314]">
+            </div>
+            <div>
+              <label class="block text-[11px] text-amber-950 font-bold mb-1">心意主題：</label>
+              <select id="posterThemeSelect" onchange="changePosterTheme()" class="w-full bg-white border border-amber-300 rounded-lg px-2 py-1 text-xs text-slate-800 font-medium outline-none focus:border-[#365314]">
+                <option value="acupoints">🔥 藏醫於家 · 穴位溫養圖卡 (治未病)</option>
+                <option value="filial">👵 孝親敬長家書 (長輩關節溫暖)</option>
+                <option value="origin">🌿 伏牛山道地三年陳艾帖 (簡便廉驗)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] text-amber-950 font-bold mb-1">署名 / 落款：</label>
+            <input type="text" id="letterFromInput" value="知己 敬筆" maxlength="8" oninput="generateStorePoster()" 
+                   class="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1 text-xs text-slate-800 outline-none focus:border-[#365314]">
+          </div>
         </div>
 
         <div class="relative bg-slate-50 border border-slate-200 rounded-2xl p-2 inline-block shadow-inner max-w-full">
-          <canvas id="posterCanvas" width="600" height="850" class="w-64 max-w-full rounded-xl mx-auto shadow-md"></canvas>
+          <canvas id="posterCanvas" width="600" height="910" class="w-64 max-w-full rounded-xl mx-auto shadow-md"></canvas>
           <div id="posterLoading" class="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-2xl text-white text-xs gap-2">
             <span class="animate-spin text-2xl">🌿</span>
-            <span>正在為您精心繪製海報...</span>
+            <span>正在為您精繪草本心意信箋...</span>
           </div>
         </div>
         
-        <p class="text-[11px] text-amber-800 bg-amber-50 py-1.5 px-3 rounded-lg border border-amber-200/50 leading-tight">
-          💡 長按上方海報可直接儲存至手機相簿，分享至微信朋友圈或小紅書！
+        <p class="text-[11px] text-emerald-800 bg-emerald-50 py-1.5 px-3 rounded-lg border border-emerald-200/50 leading-tight">
+          💡 長按上方心意箋儲存至相簿，發送至微信或朋友圈，傳遞無負擔的真摯關懷。
         </p>
         
         <div class="flex gap-2">
-          <button onclick="downloadPoster()" class="flex-1 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-amber-200 font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-1.5">
-            <span>💾</span> 儲存高清海報 (領立減)
+          <button onclick="downloadPoster()" class="flex-1 py-2.5 bg-[#365314] hover:bg-[#283d0c] text-amber-200 font-medium rounded-xl text-xs shadow-md transition flex items-center justify-center gap-1.5">
+            <span>💾</span> 保存高清心意箋
           </button>
-          <button onclick="nativeShare()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+          <button onclick="nativeShare()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">
             📤 分享
           </button>
         </div>
       </div>
 
-      <!-- 面板 2：種草文案庫 -->
+      <!-- 面板 2：真實體驗隨筆 -->
       <div id="shareTabCopy" class="hidden text-left space-y-2.5">
-        <p class="text-[11px] text-slate-400">點擊下方任一文案，即可一鍵複製「文案 + 專屬連結」發送至微信群或朋友圈：</p>
+        <p class="text-[11px] text-slate-400">點選複製溫暖隨筆，如同平時與親友微信談心般自然分享：</p>
         
-        <div onclick="copyPresetText(1)" class="p-3 bg-emerald-50/60 hover:bg-emerald-100/60 border border-emerald-200/70 rounded-xl cursor-pointer transition active:scale-[0.99] group">
-          <div class="flex justify-between items-center text-xs font-bold text-emerald-950 mb-1">
-            <span>🌿 朋友圈日常自用養生推薦</span>
-            <span class="text-[10px] text-emerald-700 group-hover:underline">一鍵複製 📋</span>
+        <div onclick="copyPresetText(1)" class="p-3 bg-[#f8faf2] hover:bg-[#f2f6e9] border border-[#d6e3c3] rounded-xl cursor-pointer transition active:scale-[0.99] group">
+          <div class="flex justify-between items-center text-xs font-bold text-[#283d0c] mb-1">
+            <span>🌿 自身日常溫養體驗隨筆</span>
+            <span class="text-[10px] text-[#476912] group-hover:underline">一鍵複製 📋</span>
           </div>
           <p id="copyText1" class="text-[11px] text-slate-600 leading-relaxed font-normal">
-            家裡常備的好艾條！採自南陽伏牛山端午純陽艾，乾倉三年陳放，溫通經絡不燥熱。產地直供品質真的很正，透過我的連結選購立享專屬好友優惠！👇
+            平時容易疲勞、天冷手腳發涼，我自己常備著南陽伏牛山的三年陳艾。中醫常講“藏艾於家庭、治未病”，三年陳艾火力柔和深入、艾煙淡白微香不嗆人。源頭廠家直供乾淨放心，送你一份好友專屬心意禮，願艾草的溫暖浸潤身心！👇
           </p>
         </div>
 
         <div onclick="copyPresetText(2)" class="p-3 bg-amber-50/60 hover:bg-amber-100/60 border border-amber-200/70 rounded-xl cursor-pointer transition active:scale-[0.99] group">
           <div class="flex justify-between items-center text-xs font-bold text-amber-950 mb-1">
-            <span>👵 孝敬長輩/親友關懷文案</span>
+            <span>👵 寄予父母長輩的安康心願</span>
             <span class="text-[10px] text-amber-800 group-hover:underline">一鍵複製 📋</span>
           </div>
           <p id="copyText2" class="text-[11px] text-slate-600 leading-relaxed font-normal">
-            天涼給父母備了伏牛山的道地陳艾。古法工藝不摻雜質，艾香純陽溫潤。驅寒暖身舒緩關節，比送什麼保健品都貼心實用，支持官方正品包郵直送！👇
+            天涼給父母備了伏牛山的三年陳艾。老祖宗講「七年之病，求三年之艾」，陳透了的純陽艾草火力最是溫和，驅寒暖身、舒緩關節不適。為你備好了一份專屬心意禮，也為家裡的長輩帶一份簡便廉驗的溫暖守護吧。👇
           </p>
         </div>
 
         <div onclick="copyPresetText(3)" class="p-3 bg-sky-50/60 hover:bg-sky-100/60 border border-sky-200/70 rounded-xl cursor-pointer transition active:scale-[0.99] group">
           <div class="flex justify-between items-center text-xs font-bold text-sky-950 mb-1">
-            <span>🔥 辦公室久坐/低頭族專用文案</span>
+            <span>🔥 案頭伏案知己的互勉叮嚀</span>
             <span class="text-[10px] text-sky-800 group-hover:underline">一鍵複製 📋</span>
           </div>
           <p id="copyText3" class="text-[11px] text-slate-600 leading-relaxed font-normal">
-            天天對著電腦肩頸酸痛的看過來！體驗了這家的無煙隨身灸和陳艾柱，聚熱快不燙傷，隨時隨地溫通氣血。核心產地一手好貨，點開立領專屬優惠！👇
+            天天坐著對電腦，肩頸常常僵硬發涼。用這款隨身溫灸配三年陳艾柱，三年陳艾火力特別溫和深透，一下就把鬱堵寒氣化開了。源頭廠家直供很踏實，點進去送你好友專屬見面禮遇，好好愛護身體！👇
           </p>
         </div>
       </div>
 
-      <!-- 面板 3：專屬連結 -->
+      <!-- 面板 3：心意分享碼 -->
       <div id="shareTabLink" class="hidden text-left space-y-3">
         <div class="space-y-1.5">
-          <label class="block text-xs font-bold text-slate-700">我的自訂推薦代碼 (Affiliate ID)</label>
+          <label class="block text-xs font-bold text-slate-700">我的心意分享碼</label>
           <div class="flex gap-2">
-            <input type="text" id="customRefInput" maxlength="12" placeholder="如：VIP888 或您的姓名" 
-                   class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs uppercase font-mono font-bold text-emerald-950 outline-none focus:border-emerald-600">
-            <button onclick="applyCustomRefCode()" class="px-3.5 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-amber-200 font-bold rounded-xl text-xs transition">
-              生成專屬碼
+            <input type="text" id="customRefInput" maxlength="12" placeholder="如：您的名字拼音或字號" 
+                   class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs uppercase font-mono font-bold text-slate-800 outline-none focus:border-[#365314]">
+            <button onclick="applyCustomRefCode()" class="px-3.5 py-2.5 bg-[#365314] hover:bg-[#283d0c] text-amber-200 font-medium rounded-xl text-xs transition">
+              設定心意碼
             </button>
           </div>
-          <p class="text-[10px] text-slate-400">好友透過此連結進入後將享有【立減 ¥5】專屬福利，訂單成功發貨後您將享有推廣佣金！</p>
+          <p class="text-[10px] text-slate-400">好友透過此心意碼或連結進入後，將自動解鎖【心意禮遇立減 ¥5】，真誠分享，溫暖相伴。</p>
         </div>
 
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1.5">
-          <span class="text-[10px] text-slate-400 font-bold uppercase block">專屬推廣分享網址</span>
-          <div id="myShareUrlText" class="font-mono text-emerald-900 break-all text-[11px] bg-white p-2 rounded-lg border border-slate-200"></div>
+          <span class="text-[10px] text-slate-400 font-bold uppercase block">專屬分享網址</span>
+          <div id="myShareUrlText" class="font-mono text-[#365314] break-all text-[11px] bg-white p-2 rounded-lg border border-slate-200"></div>
         </div>
 
-        <button onclick="copyStoreLink()" class="w-full py-3 bg-emerald-800 hover:bg-emerald-700 text-amber-200 font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-1.5">
-          <span>🔗</span> 複製我的專屬推薦連結 (領立減)
+        <button onclick="copyStoreLink()" class="w-full py-3 bg-[#365314] hover:bg-[#283d0c] text-amber-200 font-medium rounded-xl text-xs shadow-md transition flex items-center justify-center gap-1.5">
+          <span>🔗</span> 複製我的贈友心意連結
         </button>
       </div>
 
     </div>
   </div>
 
-  <!-- 養生錦囊動態氣泡 (Health Knowledge Toast) -->
-  <div id="socialProofToast" class="fixed bottom-4 left-4 z-40 hidden max-w-[280px] bg-emerald-950/90 backdrop-blur-md text-white border border-emerald-700/60 rounded-2xl p-3 shadow-2xl flex items-start gap-2.5 pointer-events-none">
-    <div class="w-7 h-7 mt-0.5 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center text-sm flex-shrink-0 border border-amber-500/40 text-emerald-950 shadow-inner">
+  <!-- 養生錦囊動態氣泡 (純中醫治未病常識) -->
+  <div id="socialProofToast" class="fixed bottom-4 left-4 z-40 hidden max-w-[290px] bg-[#1e2f0a]/95 backdrop-blur-md text-white border border-lime-700/60 rounded-2xl p-3 shadow-2xl flex items-start gap-2.5 pointer-events-none">
+    <div class="w-7 h-7 mt-0.5 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center text-sm flex-shrink-0 border border-amber-500/40 text-[#1e2f0a] shadow-inner">
       💡
     </div>
     <div class="text-[11px] leading-relaxed overflow-hidden">
-      <div id="socialToastUser" class="font-bold text-amber-200 mb-0.5 tracking-wide">節氣本草 · 養生錦囊</div>
-      <div id="socialToastAction" class="text-emerald-50/90 text-[10px] font-medium text-justify pr-1"></div>
+      <div id="socialToastUser" class="font-bold text-amber-200 mb-0.5 tracking-wide">治未病 · 養生錦囊</div>
+      <div id="socialToastAction" class="text-lime-100/90 text-[10px] font-medium text-justify pr-1"></div>
     </div>
   </div>
 
   <!-- 繁簡語言轉換核心腳本 -->
   <script>
-    const t2sMap = { "體驗": "体验", "館": "馆", "官方": "官方", "正品": "正品", "展銷": "展销", "中心": "中心", "產地": "产地", "直供": "直供", "南陽": "南阳", "伏牛山": "伏牛山", "地道": "地道", "純": "纯", "艾": "艾", "匠心": "匠心", "溫養": "温养", "推廣": "推广", "分享": "分享", "購物車": "购物车", "傳統": "传统", "中醫": "中医", "本草": "本草", "現代": "现代", "健康": "健康", "美學": "美学", "溫通": "温通", "經絡": "经络", "靜享": "静享", "艾香": "艾香", "純陽": "纯阳", "之韻": "之韵", "全系列": "全系列", "產品": "产品", "遵循": "遵循", "古法": "古法", "製作": "制作", "精選": "精选", "三年": "三年", "及": "及", "五年": "五年", "陳放": "陈放", "天然": "天然", "艾絨": "艾绒", "不摻": "不掺", "雜質": "杂质", "溫煦": "温煦", "為您": "为您", "與家人": "与家人", "守護": "守护", "日常": "日常", "元氣": "元气", "核心": "核心", "直送": "直送", "精純": "精纯", "陳年": "陈年", "全國": "全国", "包郵寄": "包邮寄", "安心": "安心", "密封": "密封", "發貨": "发货", "保證": "保证", "品質": "品质", "售後": "售后", "無憂": "无忧", "精選產品分類": "精选产品分类", "點選圖片檢視溯源詳情": "点选图片检视溯源详情", "載入系列分類中": "载入系列分类中", "全部系列": "全部系列", "正在為您同步正品庫存": "正在为您同步正品库存", "請稍候": "请稍候", "已售罄": "已售罄", "品號": "品号", "特惠價": "特惠价", "補貨中": "补货中", "選購": "选购", "官方溯源正品保證": "官方溯源正品保证", "庫存充足": "库存充足", "道地溯源與品質履歷": "道地溯源与品质履历", "原產": "原产", "端午純陽採": "端午纯阳采", "乾倉古法陳": "乾仓古法陈", "加入選購清單": "加入选购清单", "結帳與收件資訊": "结帐与收件资讯", "全場官方包郵": "全场官方包邮", "當天極速發貨": "当天极速发货", "已選購產品": "已选购产品", "確認數量後填寫下方收件資料": "确认数量后填写下方收件资料", "收件人發貨資訊": "收件人发货资讯", "收件人姓名": "收件人姓名", "如：張先生 / 李華": "如：张先生 / 李华", "請填寫真實姓名": "请填写真实姓名", "聯絡電話": "联络电话", "位手機號": "位手机号", "請填寫有效": "请填写有效", "收件方式": "收件方式", "快遞包郵寄送至指定地址": "快递包邮寄送至指定地址", "現場展台自提": "现场展台自提", "詳細收貨地址": "详细收货地址", "請詳細填寫：省、市、區/縣、街道及詳細門牌號": "请详细填写：省、市、区/县、街道及详细门牌号", "地址過於簡略": "地址过于简略", "請填寫完整街道門牌": "请填写完整街道门牌", "選擇結算方式": "选择结算方式", "微信支付": "微信支付", "官方掃碼結算": "官方扫码结算", "支付寶": "支付宝", "安全掃碼結算": "安全扫码结算", "訂單應付總額（包郵）": "订单应付总额（包邮）", "訂單實付總額（包郵）": "订单实付总额（包邮）", "前往安全掃碼結算": "前往安全扫码结算", "實付結算金額": "实付结算金额", "溫馨提醒": "温馨提醒", "掃碼轉帳付款後，請務必點擊下方按鈕送出訂單，系統將第一時間為您核對並安排出貨！": "扫码转帐付款后，请务必点击下方按钮送出订单，系统将第一时间为您核对并安排出货！", "我已完成付款，立即送出訂單": "我已完成付款，立即送出订单", "選購登記已成功": "选购登记已成功", "訂單編號": "订单编号", "長按識別二維碼關注官方公眾號": "长按识别二维码关注官方公众号", "關注後發送您的": "关注后发送您的", "即可即時查詢物流動態與領取節氣艾灸養生錦囊！": "即可即时查询物流动态与领取节气艾灸养生锦囊！", "完成": "完成", "複製連結": "复制连结", "系統分享": "系统分享", "本站商品均經安全嚴格品控": "本站商品均经安全严格品控", "支持微信/支付寶安全結算": "支持微信/支付宝安全结算", "發貨進度請關注微信公眾號": "发货进度请关注微信公众号", "推薦人代碼 / 邀請碼": "推荐人代码 / 邀请码", "享專屬售後健康指導": "享专属售后健康指导", "如無可留空，或填寫推薦人邀請碼": "如无可留空，或填写推荐人邀请码", "社交推廣與裂變中心": "社交推广与裂变中心", "宣傳海報": "宣传海报", "種草文案庫": "种草文案库", "專屬連結": "专属连结", "儲存高清海報": "储存高清海报", "生成該商品專屬宣傳海報（發朋友圈）": "生成该商品专属宣传海报（发朋友圈）", "分享好物給朋友": "分享好物给朋友", "節氣本草 · 養生錦囊": "节气本草 · 养生锦囊" };
+    const t2sMap = { "體驗": "体验", "館": "馆", "官方": "官方", "正品": "正品", "展銷": "展销", "中心": "中心", "產地": "产地", "直供": "直供", "源頭直供": "源头直供", "源頭普惠直供": "源头普惠直供", "南陽": "南阳", "伏牛山": "伏牛山", "地道": "地道", "純": "纯", "艾": "艾", "匠心": "匠心", "溫養": "温养", "暖心分享": "暖心分享", "草本家書": "草本家书", "購物車": "购物车", "傳統": "传统", "中醫": "中医", "本草": "本草", "現代": "现代", "健康": "健康", "美學": "美学", "溫通": "温通", "經絡": "经络", "靜享": "静享", "艾香": "艾香", "純陽": "纯阳", "之韻": "之韵", "全系列": "全系列", "產品": "产品", "遵循": "遵循", "古法": "古法", "製作": "制作", "精選": "精选", "三年": "三年", "及": "及", "五年": "五年", "陳放": "陈放", "天然": "天然", "艾絨": "艾绒", "不摻": "不掺", "雜質": "杂质", "溫煦": "温煦", "為您": "为您", "與家人": "与家人", "守護": "守护", "日常": "日常", "元氣": "元气", "核心": "核心", "直送": "直送", "精純": "精纯", "陳年": "陈年", "全國": "全国", "包郵寄": "包邮寄", "安心": "安心", "密封": "密封", "發貨": "发货", "保證": "保证", "品質": "品质", "售後": "售后", "無憂": "无忧", "精選產品系列": "精选产品系列", "點選圖片檢視溯源詳情": "点选图片检视溯源详情", "載入系列分類中": "载入系列分类中", "全部系列": "全部系列", "正在為您同步正品庫存": "正在为您同步正品库存", "請稍候": "请稍候", "已售罄": "已售罄", "品號": "品号", "特惠價": "特惠价", "源頭特惠價": "源头特惠价", "補貨中": "补货中", "選購": "选购", "官方溯源正品保證": "官方溯源正品保证", "庫存充足": "库存充足", "道地溯源與品質履歷": "道地溯源与品质履历", "原產": "原产", "端午純陽採": "端午纯阳采", "乾倉古法陳": "乾仓古法陈", "三年溫和陳": "三年温和陈", "加入選購清單": "加入选购清单", "結帳與收件資訊": "结帐与收件资讯", "全場官方包郵": "全场官方包邮", "當天極速發貨": "当天极速发货", "已選購產品": "已选购产品", "已選購品項": "已选购品项", "確認數量後填寫下方收件資料": "确认数量后填写下方收件资料", "收件人發貨資訊": "收件人发货资讯", "收件人姓名": "收件人姓名", "如：張先生 / 李華": "如：张先生 / 李华", "請填寫真實姓名": "请填写真实姓名", "聯絡電話": "联络电话", "位手機號": "位手机号", "請填寫有效": "请填写有效", "收件方式": "收件方式", "快遞包郵寄送至指定地址": "快递包邮寄送至指定地址", "現場展台自提": "现场展台自提", "詳細收貨地址": "详细收货地址", "請詳細填寫：省、市、區/縣、街道及詳細門牌號": "请详细填写：省、市、区/县、街道及详细门牌号", "地址過於簡略": "地址过于简略", "請填寫完整街道門牌": "请填写完整街道门牌", "選擇結算方式": "选择结算方式", "微信支付": "微信支付", "官方掃碼結算": "官方扫码结算", "支付寶": "支付宝", "安全掃碼結算": "安全扫码结算", "訂單應付總額（包郵）": "订单应付总额（包邮）", "訂單實付總額（包郵）": "订单实付总额（包邮）", "前往安全掃碼結算": "前往安全扫码结算", "實付結算金額": "实付结算金额", "溫馨提醒": "温馨提醒", "掃碼轉帳付款後，請務必點擊下方按鈕送出訂單，系統將第一時間為您核對並安排出貨！": "扫码转帐付款后，请务必点击下方按钮送出订单，系统将第一时间为您核对并安排出货！", "我已完成付款，立即送出訂單": "我已完成付款，立即送出订单", "選購登記已成功": "选购登记已成功", "訂單編號": "订单编号", "長按識別二維碼關注官方公眾號": "长按识别二维码关注官方公众号", "關注後發送您的": "关注后发送您的", "即可即時查詢物流動態與領取節氣艾灸養生錦囊！": "即可即时查询物流动态与领取节气艾灸养生锦囊！", "完成": "完成", "複製連結": "复制连结", "系統分享": "系统分享", "本站商品均經安全嚴格品控": "本站商品均经安全严格品控", "支持微信/支付寶安全結算": "支持微信/支付宝安全结算", "發貨進度請關注微信公眾號": "发货进度请关注微信公众号", "好友心意分享碼": "好友心意分享码", "享專屬溫養諮詢": "享专属温养咨询", "艾香傳情 · 溫暖相伴": "艾香传情 · 温暖相伴", "草本心意箋": "草本心意笺", "溫暖隨筆話語": "温暖随笔话语", "贈友溫暖通道": "赠友温暖通道", "保存高清心意箋": "保存高清心意笺", "書寫心意家書贈友": "书写心意家书赠友", "書寫本草心意信箋（把溫暖贈予知己長輩）": "书写本草心意信笺（把温暖赠予知己长辈）", "書寫本草心意信箋（把“藏醫於家”贈予知己長輩）": "书写本草心意信笺（把“藏医于家”赠予知己长辈）", "節氣本草 · 養生錦囊": "节气本草 · 养生锦囊", "治未病 · 養生錦囊": "治未病 · 养生锦囊", "藏艾於家庭 · 藏醫於家庭 · 弘揚治未病智慧": "藏艾于家庭 · 藏医于家庭 · 弘扬治未病智慧", "藏艾於家庭，藏醫於家庭 · 願艾草的溫暖浸潤千家萬戶": "藏艾于家庭，藏医于家庭 · 愿艾草的温暖浸润千家万户", "讓“預防為先”可觸可感、可及可依": "让“预防为先”可触可感、可及可依", "治未病 · 預防為先": "治未病 · 预防为先", "藏醫於家 · 簡便廉驗": "藏医于家 · 简便廉验", "八韻兼備 · 神形相融": "八韵兼备 · 神形相融", "普惠大眾 · 共贏未來": "普惠大众 · 共赢未来", "艾香所至皆安康": "艾香所至皆安康", "吾輩所行成福祉": "吾辈所行成福祉", "大仁大愛 · 溫暖人心": "大仁大爱 · 温暖人心", "頭枕伏牛，足蹬江漢 · 北緯 33° 道地純陽純艾": "头枕伏牛，足蹬江汉 · 北纬 33° 道地纯阳纯艾", "雙向之妙": "双向之妙", "記憶之奇": "记忆之奇", "灸感五層，氣運周天": "灸感五层，气运周天" };
     
     const s2tMap = {};
     for (let key in t2sMap) { s2tMap[t2sMap[key]] = key; }
@@ -635,7 +773,8 @@
     function toggleLang() {
       currentLang = currentLang === 'tc' ? 'sc' : 'tc';
       applyLanguage(currentLang);
-      initStore(); 
+      renderCategoryMenu();
+      renderProducts();
     }
 
     function _t(str) {
@@ -649,7 +788,7 @@
     }
   </script>
 
-  <!-- 商城主業務與社交雙向裂變邏輯 -->
+  <!-- 商城業務邏輯 (0秒快取秒開 + 溫潤家書傳播) -->
   <script>
     const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
     const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
@@ -667,14 +806,14 @@
     let lastSubmitTimestamp = 0;
     let turnstileToken = '';
 
-    // 社交激勵機制變數
+    // 社交心意變數
     let currentRefCode = '';
-    let hasSharedDiscount = false; // 是否已完成分享獲得立減
-    let referralDiscount = 0;      // 推薦立減金額
+    let hasSharedDiscount = false;
+    let referralDiscount = 0;
     let currentDetailPartNo = null;
     let currentDetailQty = 1;
     let currentPosterTargetProduct = null;
-    let currentPosterTheme = 'origin';
+    let currentPosterTheme = 'acupoints';
 
     const HERBAL_FALLBACK_IMAGES = {
       cone: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80",
@@ -702,17 +841,16 @@
     function onTurnstileExpired() { turnstileToken = ''; }
     function onTurnstileError() { turnstileToken = ''; }
 
-    /* ================= 雙向推薦激勵初始化 ================= */
     function initReferralSystem() {
       const urlParams = new URLSearchParams(window.location.search);
       const ref = urlParams.get('ref') || urlParams.get('r');
       if (ref) {
         currentRefCode = ref.trim().toUpperCase();
         localStorage.setItem('moxa_ref_code', currentRefCode);
-        referralDiscount = 5; // 好友進站立享 5 元禮遇
+        referralDiscount = 5;
         document.getElementById('referrerBanner').classList.remove('hidden');
         document.getElementById('orderReferralCode').value = currentRefCode;
-        document.getElementById('refStatusHint').innerText = "✓ 已套用專屬立減 ¥5";
+        document.getElementById('refStatusHint').innerText = "✓ 已套用溫養心意禮 -¥5";
         document.getElementById('refStatusHint').className = "text-[10px] text-rose-600 font-bold";
       } else {
         const savedRef = localStorage.getItem('moxa_ref_code');
@@ -720,7 +858,7 @@
           currentRefCode = savedRef;
           referralDiscount = 5;
           document.getElementById('orderReferralCode').value = currentRefCode;
-          document.getElementById('refStatusHint').innerText = "✓ 已套用專屬立減 ¥5";
+          document.getElementById('refStatusHint').innerText = "✓ 已套用溫養心意禮 -¥5";
           document.getElementById('refStatusHint').className = "text-[10px] text-rose-600 font-bold";
         }
       }
@@ -728,7 +866,6 @@
       if (localStorage.getItem('moxa_has_shared') === 'true') {
         hasSharedDiscount = true;
       }
-
       updateShareUrlDisplay();
     }
 
@@ -736,12 +873,12 @@
       const val = document.getElementById('orderReferralCode').value.trim().toUpperCase();
       if (val.length >= 2) {
         referralDiscount = 5;
-        document.getElementById('refStatusHint').innerText = "✓ 已套用推薦立減 ¥5";
+        document.getElementById('refStatusHint').innerText = "✓ 已套用溫養心意禮 -¥5";
         document.getElementById('refStatusHint').className = "text-[10px] text-rose-600 font-bold";
       } else {
         referralDiscount = 0;
-        document.getElementById('refStatusHint').innerText = "享專屬售後指導";
-        document.getElementById('refStatusHint').className = "text-[10px] text-emerald-700 font-semibold";
+        document.getElementById('refStatusHint').innerText = "享專屬溫養諮詢";
+        document.getElementById('refStatusHint').className = "text-[10px] text-[#365314] font-semibold";
       }
       updateCartUI();
     }
@@ -750,7 +887,7 @@
       if (!hasSharedDiscount) {
         hasSharedDiscount = true;
         localStorage.setItem('moxa_has_shared', 'true');
-        alert(_t("🎉 感謝您推廣傳統艾草文化！已為您成功解鎖【本單立減 ¥5】專屬福利！"));
+        alert(_t("🌸 感謝您把這份“藏醫於家”的草本溫暖傳遞給親友！已為您備好【溫暖禮遇立減 ¥5】！"));
         updateCartUI();
       }
     }
@@ -765,37 +902,90 @@
 
     function applyCustomRefCode() {
       const input = document.getElementById('customRefInput').value.trim().toUpperCase();
-      if (!input) return alert(_t("請輸入推薦代碼！"));
+      if (!input) return alert(_t("請輸入心意代碼！"));
       currentRefCode = input;
       localStorage.setItem('moxa_ref_code', currentRefCode);
       updateShareUrlDisplay();
-      alert(_t("您的專屬推薦代碼已更新！海報與分享連結已自動綁定。"));
+      alert(_t("心意碼已更新！草本家書與贈友通道已自動同步。"));
       generateStorePoster();
+    }
+
+    /* SWR 秒開與並行快取載入 */
+    function fetchWithTimeout(promise, ms = 4500) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+      ]);
+    }
+
+    function loadCachedDataAndRender() {
+      try {
+        const cachedCats = localStorage.getItem('moxa_cache_cats');
+        const cachedProds = localStorage.getItem('moxa_cache_prods');
+        if (cachedCats) {
+          dynamicCategories = JSON.parse(cachedCats);
+          renderCategoryMenu();
+        }
+        if (cachedProds) {
+          catalogProducts = JSON.parse(cachedProds);
+          renderProducts();
+        }
+      } catch (e) {}
     }
 
     async function initStore() {
       initReferralSystem();
-      await fetchCategories();
-      await fetchCatalog();
-      if(currentLang === 'sc') applyLanguage('sc');
-      startHealthTipsToast(); // 啟動中醫養生錦囊
+      loadCachedDataAndRender();
+
+      try {
+        await Promise.all([
+          fetchCategoriesWithTimeout(),
+          fetchCatalogWithTimeout()
+        ]);
+      } catch (err) {
+        if (dynamicCategories.length === 0) renderCategoryMenu();
+        if (catalogProducts.length === 0) renderProducts();
+      }
+
+      if (currentLang === 'sc') applyLanguage('sc');
+      startHealthTipsToast();
     }
 
-    async function fetchCategories() {
-      const { data } = await supabaseClient
-        .from('product_categories')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('id', { ascending: true });
-      dynamicCategories = data || [];
-      renderCategoryMenu();
+    async function fetchCategoriesWithTimeout() {
+      try {
+        const query = supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
+        const { data, error } = await fetchWithTimeout(query, 4500);
+        if (error) throw error;
+        if (data && data.length > 0) {
+          dynamicCategories = data;
+          localStorage.setItem('moxa_cache_cats', JSON.stringify(data));
+          renderCategoryMenu();
+        }
+      } catch (e) {
+        if (dynamicCategories.length === 0) renderCategoryMenu();
+      }
+    }
+
+    async function fetchCatalogWithTimeout() {
+      try {
+        const query = supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+        const { data, error } = await fetchWithTimeout(query, 4500);
+        if (error) throw error;
+        if (data && data.length > 0) {
+          catalogProducts = data;
+          localStorage.setItem('moxa_cache_prods', JSON.stringify(data));
+          renderProducts();
+        }
+      } catch (e) {
+        if (catalogProducts.length === 0) renderProducts();
+      }
     }
 
     function renderCategoryMenu() {
       const filterBox = document.getElementById('categoryFilter');
       const allText = currentLang === 'sc' ? '✦ 全部系列' : '✦ 全部系列';
       let html = `
-        <button onclick="filterCategory('ALL')" class="category-btn ${currentCategory === 'ALL' ? 'bg-emerald-900 text-amber-200 shadow-md border-emerald-900 font-bold' : 'bg-white text-slate-600 border-slate-200/80 hover:border-emerald-600 hover:text-emerald-800'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
+        <button onclick="filterCategory('ALL')" class="category-btn ${currentCategory === 'ALL' ? 'bg-[#283d0c] text-amber-200 shadow-md border-[#283d0c] font-bold' : 'bg-white text-slate-600 border-slate-200 hover:border-[#365314] hover:text-[#283d0c]'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
           ${allText}
         </button>
       `;
@@ -803,21 +993,12 @@
       dynamicCategories.forEach(c => {
         const isActive = currentCategory === c.name;
         html += `
-          <button onclick="filterCategory('${c.name}')" class="category-btn ${isActive ? 'bg-emerald-900 text-amber-200 shadow-md border-emerald-900 font-bold' : 'bg-white text-slate-600 border-slate-200/80 hover:border-emerald-600 hover:text-emerald-800'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
+          <button onclick="filterCategory('${c.name}')" class="category-btn ${isActive ? 'bg-[#283d0c] text-amber-200 shadow-md border-[#283d0c] font-bold' : 'bg-white text-slate-600 border-slate-200 hover:border-[#365314] hover:text-[#283d0c]'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
             ${_t(c.name)}
           </button>
         `;
       });
       filterBox.innerHTML = html;
-    }
-
-    async function fetchCatalog() {
-      const { data } = await supabaseClient
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-      catalogProducts = data || [];
-      renderProducts();
     }
 
     function renderProducts() {
@@ -834,9 +1015,9 @@
       }
 
       const outOfStockTxt = currentLang === 'sc' ? '已售罄' : '已售罄';
-      const herbTxt = currentLang === 'sc' ? '道地艾草' : '道地艾草';
+      const herbTxt = currentLang === 'sc' ? '道地純陽艾' : '道地純陽艾';
       const skuTxt = currentLang === 'sc' ? '品号' : '品號';
-      const priceTxt = currentLang === 'sc' ? '特惠价' : '特惠價';
+      const priceTxt = currentLang === 'sc' ? '源頭特惠價' : '源頭特惠價';
       const restockingTxt = currentLang === 'sc' ? '补货中' : '補貨中';
       const buyTxt = currentLang === 'sc' ? '选购' : '選購';
 
@@ -845,13 +1026,13 @@
         const displayImg = getSmartProductImage(item);
         
         return `
-          <div class="group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-emerald-700/30 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer" onclick="openProductDetail('${item.part_no}')">
+          <div class="group bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-xl hover:border-lime-700/40 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer" onclick="openProductDetail('${item.part_no}')">
             <div class="relative w-full aspect-square bg-slate-100 overflow-hidden">
               <img src="${displayImg}" alt="${_t(item.part_name)}" 
                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
                    onerror="this.src='${HERBAL_FALLBACK_IMAGES.default}'">
               <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <span class="absolute top-2.5 left-2.5 text-[10px] font-medium bg-emerald-950/80 backdrop-blur-md text-emerald-200 px-2.5 py-0.5 rounded-full border border-emerald-700/50">
+              <span class="absolute top-2.5 left-2.5 text-[10px] font-medium bg-[#1e2f0a]/85 backdrop-blur-md text-lime-200 px-2.5 py-0.5 rounded-full border border-lime-600/40">
                 ${_t(item.category || herbTxt)}
               </span>
               ${isOutOfStock ? `
@@ -863,7 +1044,7 @@
 
             <div class="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
               <div>
-                <h4 class="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 leading-snug group-hover:text-emerald-900 transition-colors">
+                <h4 class="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 leading-snug group-hover:text-[#365314] transition-colors">
                   ${_t(item.part_name)}
                 </h4>
                 <p class="text-[10px] text-slate-400 font-mono mt-1">${skuTxt}: ${item.part_no}</p>
@@ -872,13 +1053,13 @@
               <div class="pt-2.5 border-t border-slate-100 flex items-end justify-between gap-1">
                 <div>
                   <span class="text-[10px] text-slate-400 block -mb-0.5 font-light">${priceTxt}</span>
-                  <div class="text-base sm:text-lg font-bold text-emerald-900 font-serif-title leading-tight">
+                  <div class="text-base sm:text-lg font-bold text-[#283d0c] font-serif-title leading-tight">
                     <span class="text-xs">¥</span>${item.unit_price}
                   </div>
                 </div>
 
                 <button onclick="event.stopPropagation(); addToCart('${item.part_no}')" ${isOutOfStock ? 'disabled' : ''} 
-                        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all transform active:scale-95 flex items-center gap-1 ${isOutOfStock ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-emerald-900 hover:bg-emerald-800 text-amber-200 shadow-md shadow-emerald-950/10'}">
+                        class="px-3 py-1.5 rounded-xl text-xs font-medium transition-all transform active:scale-95 flex items-center gap-1 ${isOutOfStock ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#365314] hover:bg-[#283d0c] text-amber-200 shadow-md shadow-lime-950/10'}">
                   ${isOutOfStock ? restockingTxt : `<span>+</span> ${buyTxt}`}
                 </button>
               </div>
@@ -924,16 +1105,16 @@
         const cat = p.category || '';
         if (cat.includes('絨') || cat.includes('條') || cat.includes('柱') || cat.includes('绒') || cat.includes('条')) {
           descEl.innerText = currentLang === 'sc' ? 
-            '严选南阳伏牛山野生艾草，端午时节纯阳之气最盛时采摘。历经自然阴干，置于恒温乾仓陈放三年以上，古法石碾工艺，不掺杂质，艾烟淡白，温润入经络。' : 
-            '嚴選南陽伏牛山野生艾草，端午時節純陽之氣最盛時採摘。歷經自然陰乾，置於恆溫乾倉陳放三年以上，古法石碾工藝，不摻雜質，艾煙淡白，溫潤入經絡。';
+            '严选南阳伏牛山原生纯阳艾，端午时节采收。历经自然阴干，置于恒温乾仓陈放三年以上。去其燥烈、存其温纯。三年陈艾八韵兼备（清香柔透稳煦匀纯），火力柔和温润、艾烟淡白微香，让“简、便、廉、验”的治未病本草真正走进家庭日常。' : 
+            '嚴選南陽伏牛山原生純陽艾，端午時節採收。歷經自然陰乾，置於恆溫乾倉陳放三年以上。去其燥烈、存其溫純。三年陳艾八韻兼備（清香柔透穩煦勻純），火力柔和溫潤、艾煙淡白微香，讓“簡、便、廉、驗”的治未病本草真正走進家庭日常。';
         } else if (cat.includes('器') || cat.includes('盒')) {
           descEl.innerText = currentLang === 'sc' ? 
-            '专为现代居家温灸设计，选用耐高温安全材质，聚热不烫伤，防灰网设计确保施灸安全，搭配道地艾柱，让养生更纯粹简捷。' : 
-            '專為現代居家溫灸設計，選用耐高溫安全材質，聚熱不燙傷，防灰網設計確保施灸安全，搭配道地艾柱，讓養生更純粹簡捷。';
+            '造形神兼备之器，专为居家随身温灸设计。选用安全耐用厚实材质，聚热均匀不烫肤。搭配三年纯阳陈艾使用，让藏医于家的健康管理触手可及。' : 
+            '造形神兼備之器，專為居家隨身溫灸設計。選用安全耐用厚實材質，聚熱均勻不燙膚。搭配三年純陽陳艾使用，讓藏醫於家的健康管理觸手可及。';
         } else {
           descEl.innerText = currentLang === 'sc' ? 
-            '本馆所售产品均源自南阳核心产区，严格把控采收、炮制与封存环节，将传统中医草本智慧与现代品控结合，为您呈献最纯正的健康养生佳品。' : 
-            '本館所售產品均源自南陽核心產區，嚴格把控採收、炮製與封存環節，將傳統中醫草本智慧與現代品控結合，為您呈獻最純正的健康養生佳品。';
+            '造形神兼备之优质产品，以艾为媒，将预防为先的健康理念变得可触可感。南阳伏牛山核心源头直供，让大仁大爱温润千家万户。' : 
+            '造形神兼備之優質產品，以艾為媒，將預防為先的健康理念變得可觸可感。南陽伏牛山核心源頭直供，讓大仁大愛溫潤千家萬戶。';
         }
       }
 
@@ -985,7 +1166,7 @@
       setTimeout(() => { toggleCartDrawer(); }, 200);
     }
 
-    /* ================= 購物車動態金額與立減計算 ================= */
+    /* ================= 購物車金額與心意禮遇立減 ================= */
     function addToCart(partNo) {
       const p = catalogProducts.find(x => x.part_no === partNo);
       if (!p || p.status === 'INACTIVE') return;
@@ -1011,7 +1192,6 @@
       const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
       const rawPrice = cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0);
       
-      // 計算社交優惠立減
       let appliedDiscount = 0;
       const discountRow = document.getElementById('discountRow');
       const discountLabel = document.getElementById('discountLabel');
@@ -1019,10 +1199,10 @@
       if (cart.length > 0) {
         if (referralDiscount > 0) {
           appliedDiscount = 5;
-          discountLabel.innerText = "🎁 好友專屬推薦禮遇立減";
+          discountLabel.innerText = "🌸 好友專屬溫養心意禮";
         } else if (hasSharedDiscount) {
           appliedDiscount = 5;
-          discountLabel.innerText = "🎉 社交推廣轉發立減";
+          discountLabel.innerText = "🍵 艾香傳情溫暖禮遇";
         }
       }
 
@@ -1049,7 +1229,7 @@
 
       document.getElementById('btnGoPay').innerHTML = isWx ? `<span>💬</span> ${wxTxt}` : `<span>🔷</span> ${aliTxt}`;
       document.getElementById('btnGoPay').className = isWx 
-        ? "w-full py-3.5 bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none" 
+        ? "w-full py-3.5 bg-gradient-to-r from-[#476912] to-[#365314] hover:from-[#365314] hover:to-[#283d0c] text-white font-bold rounded-xl shadow-lg shadow-lime-950/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none" 
         : "w-full py-3.5 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-900/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none";
 
       const box = document.getElementById('cartItemList');
@@ -1062,7 +1242,7 @@
         <div class="flex justify-between items-center bg-slate-50/80 p-3 rounded-xl border border-slate-200/80">
           <div class="flex-1 pr-3">
             <h5 class="font-bold text-xs text-slate-800 line-clamp-1">${_t(i.part_name)}</h5>
-            <div class="text-[11px] text-emerald-800 font-bold font-serif-title mt-0.5">¥${i.unit_price}</div>
+            <div class="text-[11px] text-[#365314] font-bold font-serif-title mt-0.5">¥${i.unit_price}</div>
           </div>
           <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
             <button onclick="changeQty('${i.part_no}', -1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-800 text-xs font-bold">-</button>
@@ -1139,7 +1319,7 @@
       
       document.getElementById('payModalTitle').innerHTML = isWx ? `<span>💬</span> ${_t('微信官方安全支付')}` : `<span>🔷</span> ${_t('支付寶官方安全支付')}`;
       document.getElementById('payModalTitle').className = `text-xs font-bold flex items-center gap-1.5 ${isWx ? 'text-emerald-800' : 'text-sky-800'}`;
-      document.getElementById('qrCodeContainer').className = `p-3.5 rounded-2xl border inline-block shadow-inner ${isWx ? 'border-emerald-200/80 bg-emerald-50/50' : 'border-sky-200/80 bg-sky-50/50'}`;
+      document.getElementById('qrCodeContainer').className = `p-3.5 rounded-2xl border inline-block shadow-inner ${isWx ? 'border-lime-200/80 bg-lime-50/50' : 'border-sky-200/80 bg-sky-50/50'}`;
       
       const qrImg = document.getElementById('payQrImg');
       qrImg.onerror = function() { qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(isWx ? 'WeChatPay' : 'Alipay')}`; };
@@ -1149,7 +1329,7 @@
         ? _t('請長按二維碼識別，或截圖後使用微信掃一掃付款')
         : _t('請截圖後使用支付寶掃一掃結算');
 
-      document.getElementById('btnConfirmPaid').className = `w-full py-3 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] ${isWx ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-sky-600 hover:bg-sky-500'}`;
+      document.getElementById('btnConfirmPaid').className = `w-full py-3 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] ${isWx ? 'bg-[#365314] hover:bg-[#283d0c]' : 'bg-sky-600 hover:bg-sky-500'}`;
       
       if (window.turnstile) try { turnstile.reset(); } catch(e) {}
       turnstileToken = '';
@@ -1172,7 +1352,7 @@
 
       let orderNotes = [];
       if (referralCode) orderNotes.push(`【推薦人代碼】${referralCode}`);
-      if (referralDiscount > 0 || hasSharedDiscount) orderNotes.push(`【社交優惠立減-¥5】`);
+      if (referralDiscount > 0 || hasSharedDiscount) orderNotes.push(`【好友心意立減-¥5】`);
 
       try {
         const { data, error } = await supabaseClient.rpc('submit_shop_order', {
@@ -1201,7 +1381,7 @@
         
         turnstileToken = '';
         if (window.turnstile) try { turnstile.reset(); } catch(e) {}
-        fetchCatalog();
+        fetchCatalogWithTimeout();
       } catch (err) { 
         alert(_t("下單失敗: ") + err.message); 
         if (window.turnstile) try { turnstile.reset(); } catch(e) {}
@@ -1214,11 +1394,11 @@
 
     function closeSuccessModal() { document.getElementById('successModal').classList.replace('flex', 'hidden'); }
 
-    /* ================= 升級版社交裂變海報生成核心 (支援多風格) ================= */
+    /* ================= 養生心意家書 Canvas 手繪引擎 ================= */
     function openShareModal() {
       currentPosterTargetProduct = null;
-      document.getElementById('posterThemeSelect').value = 'origin';
-      currentPosterTheme = 'origin';
+      document.getElementById('posterThemeSelect').value = 'acupoints';
+      currentPosterTheme = 'acupoints';
       switchShareTab('poster');
       document.getElementById('shareModal').classList.replace('hidden', 'flex');
       generateStorePoster();
@@ -1244,7 +1424,7 @@
       ['poster', 'copy', 'link'].forEach(t => {
         document.getElementById('shareTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? 'space-y-3' : 'hidden';
         document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t)
-          ? 'flex-1 py-1.5 rounded-lg bg-white text-emerald-900 font-bold shadow-sm transition'
+          ? 'flex-1 py-1.5 rounded-lg bg-white text-[#365314] font-bold shadow-sm transition'
           : 'flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition';
       });
     }
@@ -1263,105 +1443,151 @@
       const W = canvas.width;
       const H = canvas.height;
 
-      // 1. 依主題設定底色
+      const recipientText = document.getElementById('letterToInput').value.trim() || '致 吾親 / 吾友';
+      const senderText = document.getElementById('letterFromInput').value.trim() || '知己 敬筆';
+
+      // 宣紙暖米色底色
       const gradBg = ctx.createLinearGradient(0, 0, 0, H);
-      if (currentPosterTheme === 'acupoints') {
-        gradBg.addColorStop(0, '#064e3b');
-        gradBg.addColorStop(0.3, '#022c22');
-        gradBg.addColorStop(1, '#021814');
-      } else if (currentPosterTheme === 'filial') {
-        gradBg.addColorStop(0, '#fffbeb');
-        gradBg.addColorStop(1, '#fef3c7');
-      } else {
-        gradBg.addColorStop(0, '#fdfbf7');
-        gradBg.addColorStop(1, '#f4ede2');
-      }
+      gradBg.addColorStop(0, '#fdfbf7');
+      gradBg.addColorStop(0.5, '#faf6ee');
+      gradBg.addColorStop(1, '#f4ede0');
       ctx.fillStyle = gradBg;
       ctx.fillRect(0, 0, W, H);
 
-      // 內外古典裝飾邊框
-      ctx.strokeStyle = currentPosterTheme === 'acupoints' ? '#047857' : '#d1c7b7';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(16, 16, W - 32, H - 32);
-      ctx.strokeStyle = currentPosterTheme === 'acupoints' ? '#fbbf24' : '#064e3b';
+      // 古雅邊框線條
+      ctx.strokeStyle = '#c9bfae';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(18, 18, W - 36, H - 36);
+      ctx.strokeStyle = '#476912';
       ctx.lineWidth = 1;
-      ctx.strokeRect(22, 22, W - 44, H - 44);
+      ctx.strokeRect(24, 24, W - 48, H - 48);
 
-      // 2. 頂部標題與定位
-      ctx.textAlign = 'center';
+      // 頂部抬頭
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#283d0c';
+      ctx.font = 'bold 22px "Noto Serif TC", serif';
+      ctx.fillText(`【 ${recipientText} 】`, 45, 68);
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#b45309';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText(_t('藏艾於家庭 · 藏醫於家庭'), W - 45, 68);
+
+      // 正文區塊
       if (currentPosterTheme === 'acupoints') {
-        ctx.fillStyle = '#fde68a';
-        ctx.font = 'bold 30px "Noto Serif TC", serif';
-        ctx.fillText(_t('🌿 節氣經絡艾灸養生指南'), W / 2, 70);
-
-        ctx.fillStyle = '#6ee7b7';
-        ctx.font = 'bold 14px sans-serif';
-        ctx.fillText(_t('✦ 溫陽散寒 · 培元固本 · 祛濕通絡 ✦'), W / 2, 102);
-      } else if (currentPosterTheme === 'filial') {
-        ctx.fillStyle = '#78350f';
-        ctx.font = 'bold 32px "Noto Serif TC", serif';
-        ctx.fillText(_t('👵 孝親關懷 · 伏牛山道地溫養'), W / 2, 70);
-
-        ctx.fillStyle = '#b45309';
-        ctx.font = 'bold 14px sans-serif';
-        ctx.fillText(_t('✦ 送父母長輩健康 · 比什麼保健品都貼心 ✦'), W / 2, 102);
-      } else {
-        ctx.fillStyle = '#064e3b';
-        ctx.font = 'bold 34px "Noto Serif TC", serif';
-        ctx.fillText(_t('🌿 艾草生活體驗館'), W / 2, 75);
-
-        ctx.fillStyle = '#b45309';
-        ctx.font = 'bold 15px sans-serif';
-        ctx.fillText(_t('✦ 南陽伏牛山 · 道地純陽純艾 ✦'), W / 2, 108);
-      }
-
-      // 3. 中部內容繪製
-      if (currentPosterTheme === 'acupoints') {
-        // 穴位科普模式：繪製三大養生穴位速查卡
-        const cardY = 130;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
+        const cardY = 95;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = 'rgba(71, 105, 18, 0.2)';
         ctx.beginPath();
-        ctx.roundRect(45, cardY, W - 90, 365, 16);
+        ctx.roundRect(45, cardY, W - 90, 495, 16);
         ctx.fill();
         ctx.stroke();
 
-        ctx.textAlign = 'left';
-        // 穴位 1：神闕
-        ctx.fillStyle = '#fde68a';
-        ctx.font = 'bold 18px "Noto Serif TC", serif';
-        ctx.fillText(_t('① 神闕穴（肚臍）: 溫通百脈、健脾祛濕'), 65, cardY + 45);
-        ctx.fillStyle = '#d1d5db';
-        ctx.font = '13px sans-serif';
-        ctx.fillText(_t('適宜：體寒畏冷、腹瀉腹脹、抵抗力弱者溫灸15分鐘。'), 65, cardY + 72);
-
-        // 穴位 2：關元
-        ctx.fillStyle = '#fde68a';
-        ctx.font = 'bold 18px "Noto Serif TC", serif';
-        ctx.fillText(_t('② 關元穴（臍下三寸）: 補腎壯陽、培補元氣'), 65, cardY + 130);
-        ctx.fillStyle = '#d1d5db';
-        ctx.font = '13px sans-serif';
-        ctx.fillText(_t('適宜：手腳冰涼、腰膝酸軟、氣血虧損者固本溫養。'), 65, cardY + 157);
-
-        // 穴位 3：足三里
-        ctx.fillStyle = '#fde68a';
-        ctx.font = 'bold 18px "Noto Serif TC", serif';
-        ctx.fillText(_t('③ 足三里（膝下外側三寸）: 調理脾胃、養生長壽'), 65, cardY + 215);
-        ctx.fillStyle = '#d1d5db';
-        ctx.font = '13px sans-serif';
-        ctx.fillText(_t('民間諺語：「常灸足三里，勝吃老母雞」。抗衰延年必灸。'), 65, cardY + 242);
-
-        // 金句背書
-        ctx.fillStyle = '#a7f3d0';
-        ctx.font = 'bold 14px "Noto Serif TC", serif';
         ctx.textAlign = 'center';
-        ctx.fillText(_t('《本草綱目》：「艾葉純陽也，通十二經，灸之溫通氣血」'), W / 2, cardY + 310);
-        ctx.fillStyle = '#9ca3af';
+        ctx.fillStyle = '#283d0c';
+        ctx.font = 'bold 19px "Noto Serif TC", serif';
+        ctx.fillText(_t('以艾為媒 · 傳承“治未病”智慧'), W / 2, cardY + 34);
+
+        ctx.fillStyle = '#b45309';
         ctx.font = '12px sans-serif';
-        ctx.fillText(_t('精選南陽伏牛山純陽陳艾 · 溫通更透達 · 艾煙淡白不燥'), W / 2, cardY + 338);
+        ctx.fillText(_t('讓“簡、便、廉、驗”的健康管理回歸大眾生活'), W / 2, cardY + 56);
+
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(65, cardY + 70);
+        ctx.lineTo(W - 65, cardY + 70);
+        ctx.stroke();
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#283d0c';
+        ctx.font = 'bold 15px "Noto Serif TC", serif';
+        ctx.fillText(_t('① 神闕穴（肚臍）— 溫通百脈 · 健脾祛濕'), 65, cardY + 98);
+        ctx.fillStyle = '#475569';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(_t('適宜：體寒畏冷、抵抗力弱者，以三年陳艾溫灸15分鐘。'), 65, cardY + 118);
+
+        ctx.fillStyle = '#283d0c';
+        ctx.font = 'bold 15px "Noto Serif TC", serif';
+        ctx.fillText(_t('② 關元穴（臍下三寸）— 補腎壯陽 · 培元固本'), 65, cardY + 158);
+        ctx.fillStyle = '#475569';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(_t('適宜：手腳冰涼、腰膝酸軟者，三年老艾溫純透達最宜固本。'), 65, cardY + 178);
+
+        ctx.fillStyle = '#283d0c';
+        ctx.font = 'bold 15px "Noto Serif TC", serif';
+        ctx.fillText(_t('③ 足三里（膝下外側三寸）— 調和氣血 · 養生延年'), 65, cardY + 218);
+        ctx.fillStyle = '#475569';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(_t('古諺「常灸足三里，勝吃老母雞」。調理脾胃、身心通暢。'), 65, cardY + 238);
+
+        ctx.fillStyle = '#283d0c';
+        ctx.font = 'bold 15px "Noto Serif TC", serif';
+        ctx.fillText(_t('④ 大椎穴（低頭頸後最高骨下）— 疏風散寒 · 舒通頸肩'), 65, cardY + 278);
+        ctx.fillStyle = '#475569';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(_t('適宜：伏案久坐、肩頸僵涼者，溫火一至，鬱滯自消。'), 65, cardY + 298);
+
+        // 銘文
+        ctx.fillStyle = '#283d0c';
+        ctx.font = 'bold 12px "Noto Serif TC", serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(_t('“艾為太陽使，真火入我體；我為艾之使，遍示艾之慈”'), W / 2, cardY + 344);
+
+        ctx.fillStyle = '#78350f';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(_t('造形神兼備之優質產品 · 踐行“美美與共”的中華智慧'), W / 2, cardY + 370);
+
+        ctx.fillStyle = '#365314';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(_t('願艾草的溫暖浸潤千家萬戶 · 普惠大眾共築安康'), W / 2, cardY + 394);
+
+      } else if (currentPosterTheme === 'filial') {
+        const cardY = 95;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = 'rgba(180, 83, 9, 0.2)';
+        ctx.beginPath();
+        ctx.roundRect(45, cardY, W - 90, 495, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#78350f';
+        ctx.font = 'bold 20px "Noto Serif TC", serif';
+        ctx.fillText(_t('敬奉長輩 · 藏艾於家 · 大仁大愛溫暖人心'), W / 2, cardY + 40);
+
+        ctx.fillStyle = '#92400e';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(_t('天涼添衣 · 不如送一份三年純陽陳艾的真實溫潤'), W / 2, cardY + 64);
+
+        ctx.strokeStyle = '#fde68a';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(65, cardY + 78);
+        ctx.lineTo(W - 65, cardY + 78);
+        ctx.stroke();
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#334155';
+        ctx.font = '13px "Noto Serif TC", serif';
+        const lines = [
+          "父母年邁，氣血漸弱，每逢換季最易關節寒涼、夜臥不寧。",
+          "為長輩備艾，斷不可用新艾雜絨，新艾燥烈容易傷及經絡。",
+          "伏牛山三年純陽老艾，歷經一千多個日夜乾倉自然陳化，",
+          "烈性消散，火氣溫厚綿長，艾煙清淡如草木微香，",
+          "每晚伴長輩溫灸足三里、泡泡雙腳，引火歸元、安眠暖身。",
+          "將“藏醫於家庭”付諸實踐，艾香所至皆安康，吾輩所行成福祉。"
+        ];
+        lines.forEach((line, idx) => {
+          ctx.fillText(_t(line), 65, cardY + 115 + (idx * 31));
+        });
+
+        ctx.fillStyle = '#365314';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(_t('伏牛山源頭廠家直供 · 純陽溫厚 · 兒女至純心意'), W / 2, cardY + 395);
 
       } else {
-        // 標準或孝親版：繪製高清晰商品圖片
         const targetImgUrl = currentPosterTargetProduct 
           ? getSmartProductImage(currentPosterTargetProduct) 
           : HERBAL_FALLBACK_IMAGES.cone;
@@ -1374,61 +1600,71 @@
           mainImg.src = targetImgUrl;
         });
 
-        const imgX = 45, imgY = 135, imgW = W - 90, imgH = 360;
+        const imgX = 45, imgY = 100, imgW = W - 90, imgH = 360;
         ctx.save();
         ctx.beginPath();
-        ctx.roundRect(imgX, imgY, imgW, imgH, 20);
+        ctx.roundRect(imgX, imgY, imgW, imgH, 16);
         ctx.clip();
         try {
           ctx.drawImage(mainImg, imgX, imgY, imgW, imgH);
         } catch (e) {
-          ctx.fillStyle = '#064e3b';
+          ctx.fillStyle = '#365314';
           ctx.fillRect(imgX, imgY, imgW, imgH);
         }
         ctx.restore();
 
-        ctx.strokeStyle = 'rgba(6,78,59,0.15)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(imgX, imgY, imgW, imgH, 20);
-        ctx.stroke();
-
         if (currentPosterTargetProduct) {
           ctx.fillStyle = '#1e293b';
-          ctx.font = 'bold 26px "Noto Serif TC", serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(_t(currentPosterTargetProduct.part_name), W / 2, 535);
-
-          ctx.fillStyle = '#065f46';
-          ctx.font = 'bold 36px "Noto Serif TC", serif';
-          ctx.fillText(`¥${currentPosterTargetProduct.unit_price}`, W / 2, 580);
-        } else {
-          ctx.fillStyle = currentPosterTheme === 'filial' ? '#78350f' : '#064e3b';
           ctx.font = 'bold 24px "Noto Serif TC", serif';
           ctx.textAlign = 'center';
-          ctx.fillText(currentPosterTheme === 'filial' ? _t('給長輩一份溫暖守護，舒緩關節與老寒腿') : _t('溫通經絡，靜享艾香純陽之韻'), W / 2, 535);
+          ctx.fillText(_t(currentPosterTargetProduct.part_name), W / 2, 495);
+
+          ctx.fillStyle = '#283d0c';
+          ctx.font = 'bold 32px "Noto Serif TC", serif';
+          ctx.fillText(`¥${currentPosterTargetProduct.unit_price}`, W / 2, 535);
+        } else {
+          ctx.fillStyle = '#283d0c';
+          ctx.font = 'bold 22px "Noto Serif TC", serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(_t('伏牛山端午純陽艾 · 簡便廉驗三年陳'), W / 2, 495);
 
           ctx.fillStyle = '#475569';
-          ctx.font = '15px sans-serif';
-          ctx.fillText(_t('傳統中醫草本智慧 · 官方正品包郵直送'), W / 2, 570);
+          ctx.font = '14px sans-serif';
+          ctx.fillText(_t('源頭直供 · 讓簡便廉驗的健康管理回歸大眾生活'), W / 2, 530);
         }
       }
 
-      // 4. 繪製底部信任徽章欄
-      const badgeY = 605;
-      ctx.fillStyle = currentPosterTheme === 'acupoints' ? 'rgba(255,255,255,0.1)' : '#f0fdf4';
-      ctx.strokeStyle = currentPosterTheme === 'acupoints' ? 'rgba(255,255,255,0.2)' : '#bbf7d0';
+      // 落款與硃砂大愛之印
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#475569';
+      ctx.font = '15px "Noto Serif TC", serif';
+      ctx.fillText(`${senderText}`, W - 110, 620);
+
+      ctx.save();
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(W - 100, 598, 32, 32);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('藏醫', W - 84, 613);
+      ctx.fillText('於家', W - 84, 626);
+      ctx.restore();
+
+      // 道地信任標章
+      const badgeY = 648;
+      ctx.fillStyle = '#f4f7ea';
+      ctx.strokeStyle = '#c5d8a9';
       ctx.beginPath();
-      ctx.roundRect(45, badgeY, W - 90, 40, 10);
+      ctx.roundRect(45, badgeY, W - 90, 38, 10);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = currentPosterTheme === 'acupoints' ? '#fde68a' : '#065f46';
-      ctx.font = 'bold 14px sans-serif';
+      ctx.fillStyle = '#283d0c';
+      ctx.font = 'bold 13px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(_t('⛰️ 伏牛山原產  |  ☀️ 端午純陽採  |  🏺 乾倉三年陳'), W / 2, badgeY + 25);
+      ctx.fillText(_t('⛰️ 伏牛山源頭道地  |  ☀️ 傳承治未病  |  🏺 艾香所至皆安康'), W / 2, badgeY + 24);
 
-      // 5. 繪製帶有專屬裂變碼的二維碼
+      // 二維碼
       const baseUrl = window.location.href.split('?')[0];
       const activeCode = currentRefCode || localStorage.getItem('moxa_ref_code') || '';
       const targetShareUrl = activeCode ? `${baseUrl}?ref=${activeCode}` : baseUrl;
@@ -1442,27 +1678,30 @@
         qrImg.src = qrApiUrl;
       });
 
-      const qrX = 65, qrY = 670, qrSize = 135;
+      const qrX = 55, qrY = 710, qrSize = 140;
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(qrX - 6, qrY - 6, qrSize + 12, qrSize + 12);
+      ctx.fillRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10);
       ctx.strokeStyle = '#e2e8f0';
-      ctx.strokeRect(qrX - 6, qrY - 6, qrSize + 12, qrSize + 12);
+      ctx.strokeRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10);
       ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
-      // 6. 二維碼右側引導文案
       ctx.textAlign = 'left';
-      ctx.fillStyle = currentPosterTheme === 'acupoints' ? '#ffffff' : '#0f172a';
-      ctx.font = 'bold 18px "Noto Serif TC", serif';
-      ctx.fillText(_t('長按識別二維碼開啟選購'), 225, 715);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 17px "Noto Serif TC", serif';
+      ctx.fillText(_t('長按識別二維碼 · 領取好友心意見面禮'), 215, 755);
 
-      ctx.fillStyle = currentPosterTheme === 'acupoints' ? '#a7f3d0' : '#e11d48';
+      ctx.fillStyle = '#365314';
       ctx.font = 'bold 13px sans-serif';
-      ctx.fillText(_t('★ 好友專屬福利：掃碼進店首單立減 ¥5 ★'), 225, 745);
+      ctx.fillText(_t('★ 伏牛山生產廠家直接發貨 · 官方包郵正品 ★'), 215, 785);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(_t('三年陳艾溫和透達 · 艾煙微香清淡 · 隨身溫養'), 215, 815);
 
       if (activeCode) {
-        ctx.fillStyle = currentPosterTheme === 'acupoints' ? '#fde68a' : '#b45309';
+        ctx.fillStyle = '#b45309';
         ctx.font = 'bold 12px monospace';
-        ctx.fillText(`專屬推薦碼: ${activeCode}`, 225, 775);
+        ctx.fillText(`心意分享碼: ${activeCode}`, 215, 840);
       }
 
       loading.classList.add('hidden');
@@ -1471,10 +1710,10 @@
     function downloadPoster() {
       const canvas = document.getElementById('posterCanvas');
       const a = document.createElement('a');
-      a.download = `艾草體驗館_${currentPosterTheme}_${Date.now()}.png`;
+      a.download = `草本心意信箋_${currentPosterTheme}_${Date.now()}.png`;
       a.href = canvas.toDataURL('image/png');
       a.click();
-      unlockShareDiscount(); // 觸發分享立減福利
+      unlockShareDiscount();
     }
 
     function copyPresetText(idx) {
@@ -1482,10 +1721,10 @@
       const baseUrl = window.location.href.split('?')[0];
       const activeCode = currentRefCode || localStorage.getItem('moxa_ref_code') || '';
       const shareUrl = activeCode ? `${baseUrl}?ref=${activeCode}` : baseUrl;
-      const fullCopy = `${p.innerText}\n\n👉 好友立減通道：${shareUrl}`;
+      const fullCopy = `${p.innerText}\n\n👉 贈友溫暖通道：${shareUrl}`;
       navigator.clipboard.writeText(fullCopy).then(() => {
-        alert(_t("種草文案與專屬連結已複製成功！快去發給朋友吧！"));
-        unlockShareDiscount(); // 觸發分享立減福利
+        alert(_t("心意隨筆與贈友通道已複製成功！發送給朋友，傳遞一份踏實溫暖吧！"));
+        unlockShareDiscount();
       }).catch(() => {
         alert(_t("複製失敗，請手動選取複製。"));
       });
@@ -1494,8 +1733,8 @@
     function copyStoreLink() {
       const text = document.getElementById('myShareUrlText').innerText;
       navigator.clipboard.writeText(text).then(() => { 
-        alert(_t("專屬推薦連結已複製到剪貼簿！")); 
-        unlockShareDiscount(); // 觸發分享立減福利
+        alert(_t("心意連結已複製到剪貼簿！")); 
+        unlockShareDiscount();
       }).catch(() => { alert(_t("複製失敗，請手動複製網址。")); });
     }
 
@@ -1503,8 +1742,8 @@
       const text = document.getElementById('myShareUrlText').innerText;
       if (navigator.share) {
         navigator.share({ 
-          title: _t('艾草生活體驗館'), 
-          text: _t('發現一家伏牛山天然陳艾草本館，產地直送官方正品！好友點開立減 5 元！'), 
+          title: _t('伏牛仙草 · 艾生活體驗館'), 
+          text: _t('同道同行，將“藏艾於家庭、藏醫於家庭”的理想付諸實踐。送您一份好友專屬溫暖心意禮遇！'), 
           url: text 
         });
         unlockShareDiscount();
@@ -1513,14 +1752,15 @@
       }
     }
 
-    /* ================= 專業中醫養生錦囊 (無虛假資訊) ================= */
+    /* ================= 治未病養生錦囊（全理念融入） ================= */
     const HEALTH_TIPS = [
-      "節氣溫養：端午純陽艾溫透經絡，適合手腳冰涼者日常溫灸。",
-      "溯源常識：五年陳艾火力溫和，艾煙淡白微香，不嗆鼻燥烈。",
-      "穴位養生：常灸「足三里」可健脾和胃，扶正培元，適合久坐族。",
-      "日常保健：睡前艾草泡腳微微出汗，能引火下行，幫助深層入眠。",
-      "中醫智慧：《本草綱目》載「艾葉純陽也，通十二經，理氣血」。",
-      "選品訣竅：道地南陽伏牛山野生艾，葉片肥厚，出絨率高，藥效最佳。"
+      "治未病智慧：以艾為媒，將“預防為先”落實在日常，讓千年中醫智慧回歸家庭。",
+      "藏醫於家庭：讓“簡、便、廉、驗”的艾灸方法融入大眾生活，艾香所至皆安康。",
+      "三年陳本色：新艾燥烈傷經，三年乾倉自然陳化，火力柔和深入，溫而不燥。",
+      "八韻兼備：清、香、柔、透、穩、煦、勻、純，身心舒泰，氣運周天。",
+      "大仁大愛：造形神兼備之草本佳物，傳遞健康文化，讓大仁大愛溫暖人心。",
+      "雙向之妙：寒者得溫，熱者反涼；記憶之奇，三灸之後近火即應。",
+      "聖賢心法：《黃帝內經》載“藥之不到針之不及必灸之”，孔子無病而自灸。"
     ];
 
     function startHealthTipsToast() {
@@ -1529,10 +1769,10 @@
         const randomTip = HEALTH_TIPS[Math.floor(Math.random() * HEALTH_TIPS.length)];
         document.getElementById('socialToastAction').innerText = _t(randomTip);
         
-        toast.classList.remove('hidden', 'animate-social-toast');
+        toast.classList.remove('hidden', 'animate-toast');
         void toast.offsetWidth;
-        toast.classList.add('animate-social-toast');
-      }, 15000); // 每 15 秒彈出一次中醫知識
+        toast.classList.add('animate-toast');
+      }, 15000);
     }
 
     window.addEventListener('DOMContentLoaded', initStore);
