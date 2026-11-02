@@ -114,7 +114,14 @@
           <input type="text" id="partName" placeholder="產品品名規格" class="w-full bg-sub border border-theme rounded px-2.5 py-1.5 text-xs text-slate-200">
           <div>
             <label class="block text-[11px] text-slate-400 mb-1">所屬自定義類別</label>
-            <select id="partCategory" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200"></select>
+            <!-- 預載入基礎類別，避免資料庫為空時選單呈現空白 -->
+            <select id="partCategory" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
+              <option value="三年純陽艾條系列">三年純陽艾條系列</option>
+              <option value="特級純艾柱系列">特級純艾柱系列</option>
+              <option value="道地純艾絨/艾葉">道地純艾絨/艾葉</option>
+              <option value="居家隨身溫灸器具">居家隨身溫灸器具</option>
+              <option value="草本溫養精油/足浴">草本溫養精油/足浴</option>
+            </select>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <input type="number" id="unitPrice" placeholder="單價 (¥)" class="w-full bg-sub border border-theme rounded px-2 py-1.5 text-xs text-slate-200">
@@ -164,7 +171,7 @@
         <div class="bg-sub border border-theme rounded-lg p-3">
           <h3 class="text-xs font-bold text-sky-400 mb-2">➕ 新增自定義類別 (將即時顯示在前台頂部菜單)</h3>
           <div class="flex gap-2">
-            <input type="text" id="newCategoryName" placeholder="輸入新分類名稱 (如：薰香養生、特級艾絨條)" class="flex-1 bg-panel border border-theme rounded px-3 py-1.5 text-xs text-slate-200 outline-none">
+            <input type="text" id="newCategoryName" placeholder="輸入新分類名稱 (如：三年純陽艾條系列、特級純艾柱系列)" class="flex-1 bg-panel border border-theme rounded px-3 py-1.5 text-xs text-slate-200 outline-none">
             <button onclick="addCategory()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded text-xs font-bold text-white transition">確認新增</button>
           </div>
         </div>
@@ -251,7 +258,7 @@
 
 <!-- 繁簡語言轉換核心腳本 -->
 <script>
-  const t2sMap = { "產品": "产品", "管理": "管理", "系統": "系统", "社交推廣與裂變對帳版": "社交推广与裂变对帐版", "即時": "即时", "同步": "同步", "前台": "前台", "菜單": "菜单", "發貨": "发货", "圖庫": "图库", "與": "与", "庫存": "库存", "中台": "中台", "未登入": "未登入", "登入": "登入", "匯出台帳": "汇出台帐", "納管品項": "纳管品项", "總值": "总值", "待發貨訂單": "待发货订单", "有效自定義類別": "有效自定义类别", "推廣帶貨總額": "推广带货总额", "零庫存斷貨品項": "零库存断货品项", "請登入系統進行異動": "请登入系统进行异动", "前往登入": "前往登入", "異動登記": "异动登记", "溯源": "溯源", "異動類型": "异动类型", "基地收穫": "基地收获", "入庫": "入库", "門市調撥": "门市调拨", "出庫": "出库", "新產品建檔": "新产品建档", "含溯源資料": "含溯源资料", "產品品號": "产品品号", "如": "如", "產品品名規格": "产品品名规格", "所屬自定義類別": "所属自定义类别", "單價": "单价", "安全水位": "安全水位", "前台溯源與商品詳情描述": "前台溯源与商品详情描述", "選填": "选填", "若留空前台將根據分類自動帶入官方道地履歷": "若留空前台将根据分类自动带入官方道地履历", "數量": "数量", "乾燥儲位": "干燥储位", "提交異動": "提交异动", "搜尋品號、品名": "搜寻品号、品名", "產品台帳": "产品台帐", "菜單分類管理": "菜单分类管理", "發貨訂單": "发货订单", "推廣分潤榜": "推广分润榜", "操作日誌": "操作日志", "圖片": "图片", "品號": "品号", "品名": "品名", "分類": "分类", "狀態": "状态", "儲位": "储位", "操作管理": "操作管理", "新增自定義類別": "新增自定义类别", "將即時顯示在前台頂部菜單": "将即时显示在前台顶部菜单", "輸入新分類名稱": "输入新分类名称", "薰香養生": "薰香养生", "特級艾絨條": "特级艾绒条", "確認新增": "确认新增", "排序": "排序", "前台菜單類別名稱": "前台菜单类别名称", "當前納管產品數": "当前纳管产品数", "操作": "操作", "訂單號": "订单号", "時間": "时间", "收件資訊": "收件资讯", "品項明細": "品项明细", "金額": "金额", "推薦人": "推荐人", "發貨狀態": "发货状态", "社交推廣員業績與分潤榜": "社交推广员业绩与分润榜", "系統依據資料庫結構化推薦代碼統計已發貨訂單": "系统依据数据库结构化推荐代码统计已发货订单", "統一分潤佣金比例：": "统一分润佣金比例：", "排名": "排名", "推薦人代碼": "推荐人代码", "累積帶貨訂單數": "累积带货订单数", "有效帶貨總額": "有效带货总额", "待結算佣金": "待结算佣金", "操作者": "操作者", "項目": "项目", "動作": "动作", "備註詳情": "备注详情", "系統登入": "系统登入", "取消": "取消", "未分類": "未分类", "件商品": "件商品", "修改名稱": "修改名称", "刪除": "删除", "具溯源履歷": "具溯源履历", "上架中": "上架中", "已下架": "已下架", "件": "件", "總額": "总额", "換圖": "换图", "重新上架": "重新上架", "隱藏下架": "隐藏下架", "刪除商品": "删除商品", "已出貨": "已出货", "點擊發貨": "点击发货", "商品清退": "商品清退", "標記已結算": "标记已结算", "請先登入": "请先登入", "請輸入": "请输入", "登入失敗": "登入失败", "為確保設備與後台安全，系統因閒置超過": "为确保设备与后台安全，系统因闲置超过", "分鐘已自動登出": "分钟已自动登出", "該分類已存在": "该分类已存在", "已新增，前台選單已同步": "已新增，前台选单已同步", "請輸入新的分類名稱": "请输入新的分类名称", "原名稱": "原名称", "分類名稱不能為空": "分类名称不能为空", "該分類名稱已存在": "该分类名称已存在", "分類名稱已成功更新為": "分类名称已成功更新为", "關聯商品與前台菜單已同步": "关联商品与前台菜单已同步", "修改分類失敗": "修改分类失败", "無法刪除": "无法删除", "類別": "类别", "下目前仍納管有": "下目前仍纳管有", "依安全規則：分類下無任何商品時方可刪除": "依安全规则：分类下无任何商品时方可删除", "請先前往「產品台帳」將關聯商品刪除或將其分類移至其他類別後再試": "请先前往「产品台帐」将关联商品删除或将其分类移至其他类别后再试", "確定要刪除空類別": "确定要删除空类别", "嗎？此操作不可還原": "吗？此操作不可还原", "已成功刪除": "已成功删除", "確定要將商品": "确定要将商品", "設為": "设为", "嗎？": "吗？", "下架後前台將不再展示該商品": "下架后前台将不再展示该商品", "商品已成功": "商品已成功", "狀態更新失敗": "状态更新失败", "找不到指定商品": "找不到指定商品", "警告": "警告", "即將永久刪除商品": "即将永久删除商品", "當前剩餘庫存": "当前剩余库存", "請輸入刪除/報廢備註原因（必填）": "请输入删除/报废备注原因（必填）", "刪除失敗：依管理規定，必須填寫刪除備註原因": "删除失败：依管理规定，必须填写删除备注原因", "最後確認：確定要永久刪除": "最后确认：确定要永久删除", "填寫備註": "填写备注", "已成功自系統刪除，並已登記備註日誌": "已成功自系统删除，并已登记备注日志", "刪除商品失敗": "删除商品失败", "請填寫快遞單號 (可選填)": "请填写快递单号 (可选填)", "發貨狀態已成功更新": "发货状态已成功更新", "發貨更新失敗": "发货更新失败", "僅作標記，本系統不會執行真實轉帳。確定要將該推薦人的本期佣金標記為已結清嗎？": "仅作标记，本系统不会执行真实转帐。确定要将该推荐人的本期佣金标记为已结清吗？", "數量必須大於": "数量必须大于", "且品號不能為空": "且品号不能为空", "該品號已存在": "该品号已存在", "品號不存在": "品号不存在", "庫存不足": "库存不足", "庫存與溯源異動更新成功": "库存与溯源异动更新成功", "更新失敗": "更新失败", "無圖": "无图", "線上商城": "线上商城" };
+  const t2sMap = { "產品": "产品", "管理": "管理", "系統": "系统", "社交推廣與裂變對帳版": "社交推广与裂变对帐版", "即時": "即时", "同步": "同步", "前台": "前台", "菜單": "菜单", "發貨": "发货", "圖庫": "图库", "與": "与", "庫存": "库存", "中台": "中台", "未登入": "未登入", "登入": "登入", "匯出台帳": "汇出台帐", "納管品項": "纳管品项", "總值": "总值", "待發貨訂單": "待发货订单", "有效自定義類別": "有效自定义类别", "推廣帶貨總額": "推广带货总额", "零庫存斷貨品項": "零库存断货品项", "請登入系統進行異動": "请登入系统进行异动", "前往登入": "前往登入", "異動登記": "异动登记", "溯源": "溯源", "異動類型": "异动类型", "基地收穫": "基地收获", "入庫": "入库", "門市調撥": "门市调拨", "出庫": "出库", "新產品建檔": "新产品建档", "含溯源資料": "含溯源资料", "產品品號": "产品品号", "如": "如", "產品品名規格": "产品品名规格", "所屬自定義類別": "所属自定义类别", "單價": "单价", "安全水位": "安全水位", "前台溯源與商品詳情描述": "前台溯源与商品详情描述", "選填": "选填", "若留空前台將根據分類自動帶入官方道地履歷": "若留空前台将根据分类自动带入官方道地履历", "數量": "数量", "乾燥儲位": "干燥储位", "提交異動": "提交异动", "搜尋品號、品名": "搜寻品号、品名", "產品台帳": "产品台帐", "菜單分類管理": "菜单分类管理", "發貨訂單": "发货订单", "推廣分潤榜": "推广分润榜", "操作日誌": "操作日志", "圖片": "图片", "品號": "品号", "品名": "品名", "分類": "分类", "狀態": "状态", "儲位": "储位", "操作管理": "操作管理", "新增自定義類別": "新增自定义类别", "將即時顯示在前台頂部菜單": "将即时显示在前台顶部菜单", "輸入新分類名稱": "输入新分类名称", "三年純陽艾條系列": "三年纯阳艾条系列", "特級純艾柱系列": "特级纯艾柱系列", "道地純艾絨/艾葉": "道地纯艾绒/艾叶", "居家隨身溫灸器具": "居家随身温灸器具", "草本溫養精油/足浴": "草本温养精油/足浴", "確認新增": "确认新增", "排序": "排序", "前台菜單類別名稱": "前台菜单类别名称", "當前納管產品數": "当前纳管产品数", "操作": "操作", "訂單號": "订单号", "時間": "时间", "收件資訊": "收件资讯", "品項明細": "品项明细", "金額": "金额", "推薦人": "推荐人", "發貨狀態": "发货状态", "社交推廣員業績與分潤榜": "社交推广员业绩与分润榜", "系統依據資料庫結構化推薦代碼統計已發貨訂單": "系统依据数据库结构化推荐代码统计已发货订单", "統一分潤佣金比例：": "统一分润佣金比例：", "排名": "排名", "推薦人代碼": "推荐人代码", "累積帶貨訂單數": "累积带货订单数", "有效帶貨總額": "有效带货总额", "待結算佣金": "待结算佣金", "操作者": "操作者", "項目": "项目", "動作": "动作", "備註詳情": "备注详情", "系統登入": "系统登入", "取消": "取消", "未分類": "未分类", "件商品": "件商品", "修改名稱": "修改名称", "刪除": "删除", "具溯源履歷": "具溯源履历", "上架中": "上架中", "已下架": "已下架", "件": "件", "總額": "总额", "換圖": "换图", "重新上架": "重新上架", "隱藏下架": "隐藏下架", "刪除商品": "删除商品", "已出貨": "已出货", "點擊發貨": "点击发货", "商品清退": "商品清退", "標記已結算": "标记已结算", "請先登入": "请先登入", "請輸入": "请输入", "登入失敗": "登入失败", "為確保設備與後台安全，系統因閒置超過": "为确保设备与后台安全，系统因闲置超过", "分鐘已自動登出": "分钟已自动登出", "該分類已存在": "该分类已存在", "已新增，前台選單已同步": "已新增，前台选单已同步", "請輸入新的分類名稱": "请输入新的分类名称", "原名稱": "原名称", "分類名稱不能為空": "分类名称不能为空", "該分類名稱已存在": "该分类名称已存在", "分類名稱已成功更新為": "分类名称已成功更新为", "關聯商品與前台菜單已同步": "关联商品与前台菜单已同步", "修改分類失敗": "修改分类失败", "無法刪除": "无法删除", "類別": "类别", "下目前仍納管有": "下目前仍纳管有", "依安全規則：分類下無任何商品時方可刪除": "依安全规则：分类下无任何商品时方可删除", "請先前往「產品台帳」將關聯商品刪除或將其分類移至其他類別後再試": "请先前往「产品台帐」将关联商品删除或将其分类移至其他类别后再试", "確定要刪除空類別": "确定要删除空类别", "嗎？此操作不可還原": "吗？此操作不可还原", "已成功刪除": "已成功删除", "確定要將商品": "确定要将商品", "設為": "设为", "嗎？": "吗？", "下架後前台將不再展示該商品": "下架后前台将不再展示该商品", "商品已成功": "商品已成功", "狀態更新失敗": "状态更新失败", "找不到指定商品": "找不到指定商品", "警告": "警告", "即將永久刪除商品": "即将永久删除商品", "當前剩餘庫存": "当前剩余库存", "請輸入刪除/報廢備註原因（必填）": "请输入删除/报废备注原因（必填）", "刪除失敗：依管理規定，必須填寫刪除備註原因": "删除失败：依管理规定，必须填写删除备注原因", "最後確認：確定要永久刪除": "最后确认：确定要永久删除", "填寫備註": "填写备注", "已成功自系統刪除，並已登記備註日誌": "已成功自系统删除，并已登记备注日志", "刪除商品失敗": "删除商品失败", "請填寫快遞單號 (可選填)": "请填写快递单号 (可选填)", "發貨狀態已成功更新": "发货状态已成功更新", "發貨更新失敗": "发货更新失败", "僅作標記，本系統不會執行真實轉帳。確定要將該推薦人的本期佣金標記為已結清嗎？": "仅作标记，本系统不会执行真实转帐。确定要将该推荐人的本期佣金标记为已结清吗？", "數量必須大於": "数量必须大于", "且品號不能為空": "且品号不能为空", "該品號已存在": "该品号已存在", "品號不存在": "品号不存在", "庫存不足": "库存不足", "庫存與溯源異動更新成功": "库存与溯源异动更新成功", "更新失敗": "更新失败", "無圖": "无图", "線上商城": "线上商城" };
   
   const s2tMap = {};
   for (let key in t2sMap) { s2tMap[t2sMap[key]] = key; }
@@ -319,6 +326,15 @@
   let idleTimer = null;
   let allShopOrders = []; 
 
+  // 道地艾草預設基礎分類（兜底機制）
+  const DEFAULT_PRESET_CATEGORIES = [
+    '三年純陽艾條系列',
+    '特級純艾柱系列',
+    '道地純艾絨/艾葉',
+    '居家隨身溫灸器具',
+    '草本溫養精油/足浴'
+  ];
+
   function escapeHtml(text) {
     if (text === null || text === undefined) return '';
     return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -376,14 +392,36 @@
     if(currentLang === 'sc') applyLanguage('sc');
   }
 
+  /* 核心升級：帶有預設分類兜底的分類載入 */
   async function fetchCategories() {
-    const { data } = await supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
-    categoryList = data || [];
-    document.getElementById('kpiCategoryTotal').innerText = categoryList.length;
-    const select = document.getElementById('partCategory');
-    if (categoryList.length === 0) { select.innerHTML = `<option value="未分類">${_t('未分類')}</option>`; } 
-    else { select.innerHTML = categoryList.map(c => `<option value="${escapeHtml(c.name)}">${_t(escapeHtml(c.name))}</option>`).join(''); }
-    renderCategoriesTable();
+    try {
+      const { data, error } = await supabaseClient
+        .from('product_categories')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true });
+      
+      const select = document.getElementById('partCategory');
+
+      if (!error && data && data.length > 0) {
+        categoryList = data;
+        select.innerHTML = categoryList.map(c => `<option value="${escapeHtml(c.name)}">${_t(escapeHtml(c.name))}</option>`).join('');
+      } else {
+        // 資料庫尚未建立分類或為空時，使用預設常用分類兜底，選單不再空白
+        categoryList = DEFAULT_PRESET_CATEGORIES.map((name, idx) => ({ id: idx + 1, name: name, sort_order: idx + 1 }));
+        select.innerHTML = DEFAULT_PRESET_CATEGORIES.map(name => `<option value="${name}">${_t(name)}</option>`).join('');
+      }
+
+      document.getElementById('kpiCategoryTotal').innerText = categoryList.length;
+      renderCategoriesTable();
+    } catch (err) {
+      console.warn("載入分類異常，採用預設分類兜底:", err);
+      const select = document.getElementById('partCategory');
+      categoryList = DEFAULT_PRESET_CATEGORIES.map((name, idx) => ({ id: idx + 1, name: name, sort_order: idx + 1 }));
+      select.innerHTML = DEFAULT_PRESET_CATEGORIES.map(name => `<option value="${name}">${_t(name)}</option>`).join('');
+      document.getElementById('kpiCategoryTotal').innerText = categoryList.length;
+      renderCategoriesTable();
+    }
   }
 
   async function fetchProducts() {
@@ -416,8 +454,13 @@
     if (categoryList.some(c => c.name === name)) return alert(_t("該分類已存在！"));
 
     const { error } = await supabaseClient.from('product_categories').insert([{ name }]);
-    if (error) alert("新增失敗: " + error.message);
-    else { document.getElementById('newCategoryName').value = ''; await fetchCategories(); alert(_t("已新增，前台選單已同步！")); }
+    if (error) {
+      alert("新增失敗: " + error.message);
+    } else { 
+      document.getElementById('newCategoryName').value = ''; 
+      await fetchCategories(); 
+      alert(_t("已新增，前台選單已同步！")); 
+    }
   }
 
   async function editCategory(id) {
@@ -433,7 +476,8 @@
     if (categoryList.some(c => c.name === trimmed && c.id !== id)) return alert(_t("該分類名稱已存在！"));
 
     try {
-      const { error: catErr } = await supabaseClient.from('product_categories').update({ name: trimmed }).eq('id', id); if (catErr) throw catErr;
+      const { error: catErr } = await supabaseClient.from('product_categories').update({ name: trimmed }).eq('id', id); 
+      if (catErr) throw catErr;
       await supabaseClient.from('products').update({ category: trimmed }).eq('category', oldName);
       alert(_t("分類名稱已成功更新為") + `「${trimmed}」，` + _t("關聯商品與前台菜單已同步！"));
       await fetchAllData();
@@ -508,7 +552,7 @@
     ).map(i => {
       const safePartNo = escapeHtml(i.part_no);
       const safePartName = escapeHtml(i.part_name);
-      const safeCategory = escapeHtml(i.category || '未分類');
+      const safeCategory = escapeHtml(i.category || '三年純陽艾條系列');
       const safeBin = escapeHtml(i.bin_location || '');
       const safeImg = i.image_url ? escapeHtml(i.image_url) : '';
       const hasDesc = i.description && i.description.trim() !== '';
@@ -580,7 +624,7 @@
       if (!Array.isArray(orderItems)) orderItems = [];
       const itemsHtml = orderItems.map(i => `${_t(escapeHtml(i.part_name || '商品'))} x${Number(i.quantity || i.qty || 1)}`).join('<br>') || `<span class="text-slate-500">無品項資料</span>`;
       
-      const effectiveRef = o.referral_code || (o.notes || '').match(/【推薦人代碼】([A-Za-z0-9_-]+)/)?.[1] || '';
+      const effectiveRef = o.referral_code || (o.notes || '').match(/【推薦人代碼】([A-Za-z0-9_-]+)/)?.[1] || (o.notes || '').match(/【推荐人代码】([A-Za-z0-9_-]+)/)?.[1] || '';
       const refTag = effectiveRef ? `<br><span class="text-[10px] text-amber-300 bg-amber-900/30 px-1.5 py-0.5 rounded border border-amber-700/50">🤝 ${escapeHtml(effectiveRef)}</span>` : '';
 
       return `
@@ -607,7 +651,7 @@
     } catch (err) { alert(_t("發貨更新失敗：") + err.message); }
   }
 
-  /* ================= 社交推廣排行榜與分潤核算邏輯 ================= */
+  /* 社交推廣排行榜與分潤核算邏輯 */
   function renderCommissions() {
     const rateInput = document.getElementById('commissionRate').value;
     const rate = (parseFloat(rateInput) || 15) / 100;
@@ -630,7 +674,6 @@
         affiliateStats[refCode].orderCount += 1;
         totalAffiliateSales += amount;
 
-        // 依 commission_status 欄位或備註判斷結算狀態
         const isSettled = o.commission_status === 'SETTLED' || (o.notes || '').includes('[已結算]') || (o.notes || '').includes('[已结算]');
         if (!isSettled) {
           affiliateStats[refCode].pendingSales += amount;
@@ -641,7 +684,6 @@
     document.getElementById('kpiAffiliateSales').innerText = `¥${totalAffiliateSales.toLocaleString()}`;
 
     const tbody = document.getElementById('commissionsTableBody');
-    // 依帶貨總金額降序排序 (生成排行榜)
     const sortedCodes = Object.keys(affiliateStats).sort((a, b) => affiliateStats[b].totalSales - affiliateStats[a].totalSales);
     
     if (sortedCodes.length === 0) {
@@ -731,7 +773,9 @@
     }
   }
 
-  function toggleTransFields() { document.getElementById('newSkuFields').className = document.getElementById('transType').value === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden'; }
+  function toggleTransFields() { 
+    document.getElementById('newSkuFields').className = document.getElementById('transType').value === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden'; 
+  }
   
   async function executeTransaction() {
     if (!currentUser) return alert(_t("無權限！請先登入"));
@@ -747,7 +791,18 @@
     
     try {
       if (t === 'NEW') {
-        await supabaseClient.from('products').insert([{ part_no: p, part_name: document.getElementById('partName').value.trim(), category: document.getElementById('partCategory').value, stock: q, bin_location: b, unit_price: parseFloat(document.getElementById('unitPrice').value) || 0, safety_stock: parseInt(document.getElementById('safetyStock').value) || 0, description: document.getElementById('partDesc').value.trim(), status: 'ACTIVE' }]);
+        const catVal = document.getElementById('partCategory').value || '三年純陽艾條系列';
+        await supabaseClient.from('products').insert([{ 
+          part_no: p, 
+          part_name: document.getElementById('partName').value.trim(), 
+          category: catVal, 
+          stock: q, 
+          bin_location: b, 
+          unit_price: parseFloat(document.getElementById('unitPrice').value) || 0, 
+          safety_stock: parseInt(document.getElementById('safetyStock').value) || 0, 
+          description: document.getElementById('partDesc').value.trim(), 
+          status: 'ACTIVE' 
+        }]);
       } else if (t === 'IN') {
         await supabaseClient.from('products').update({ stock: i.stock + q, bin_location: b || i.bin_location }).eq('part_no', p);
       } else if (t === 'OUT') {
@@ -755,7 +810,9 @@
         await supabaseClient.from('products').update({ stock: i.stock - q }).eq('part_no', p);
       }
       await supabaseClient.from('inventory_transactions').insert([{ part_no: p, trans_type: t, qty: q, bin_location: b, operator: currentUser.email }]);
-      document.getElementById('transQty').value = ''; await fetchProducts(); alert(_t("庫存與溯源異動更新成功") + "！");
+      document.getElementById('transQty').value = ''; 
+      await fetchProducts(); 
+      alert(_t("庫存與溯源異動更新成功") + "！");
     } catch (err) { alert(_t("更新失敗：") + err.message); }
   }
 
