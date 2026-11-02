@@ -848,5 +848,141 @@
 
     window.addEventListener('DOMContentLoaded', initStore);
   </script>
+  <!-- ==================== 前端防常規審查與防逆向防護腳本 ==================== -->
+<style>
+  /* 禁用全局文字框外選取與圖片拖曳，增加抓取難度 */
+  body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  /* 允許表單輸入框正常點擊選取，避免影響正常顧客下單體驗 */
+  input, textarea, select {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+  }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  // 1. 攔截滑鼠右鍵選單
+  document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    return false;
+  }, { capture: true });
+
+  // 2. 攔截圖片與文字拖曳行為
+  document.addEventListener('dragstart', function (e) {
+    e.preventDefault();
+    return false;
+  }, { capture: true });
+
+  // 3. 攔截鍵盤常用檢視快捷鍵 (兼容 Windows Ctrl 與 macOS Command/Meta 鍵)
+  document.addEventListener('keydown', function (e) {
+    const isModifier = e.ctrlKey || e.metaKey;
+    const key = (e.key || '').toLowerCase();
+    const keyCode = e.keyCode || e.which;
+
+    // 阻擋 F12
+    if (key === 'f12' || keyCode === 123) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+
+    if (isModifier) {
+      // 阻擋檢視原始碼：Ctrl + U / Cmd + Option + U
+      if (key === 'u' || keyCode === 85) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // 阻擋網頁另存新檔：Ctrl + S / Cmd + S
+      if (key === 's' || keyCode === 83) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // 阻擋列印頁面 (抓取排版內容)：Ctrl + P / Cmd + P
+      if (key === 'p' || keyCode === 80) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // 阻擋開啟開發人員工具：Ctrl + Shift + I / J / C 或 Cmd + Option + I / J / C
+      if (e.shiftKey && ['i', 'j', 'c'].includes(key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    }
+  }, { capture: true });
+
+  // 4. 定時 Debugger 陷阱與視窗維度監聽 (專門應對強行開啟 DevTools 的用戶)
+  let devToolsDetected = false;
+
+  function triggerDefense() {
+    if (devToolsDetected) return;
+    devToolsDetected = true;
+
+    // 清空 DOM，阻斷網頁功能並顯示警告資訊
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#0f172a;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;padding:24px;box-sizing:border-box;">
+        <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
+        <h2 style="font-size:22px;margin:0 0 12px;color:#ef4444;font-weight:700;">系統安全防護觸發</h2>
+        <p style="font-size:14px;color:#94a3b8;line-height:1.6;max-width:480px;margin:0 0 20px;">
+          偵測到異常的除錯環境或開發人員工具已啟動。為保護交易連線與資料安全性，當前存取作業已終止。
+        </p>
+        <button onclick="window.location.reload()" style="background:#2563eb;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:14px;cursor:pointer;">
+          關閉除錯工具後重新載入
+        </button>
+      </div>
+    `;
+  }
+
+  // 方式 A：Debugger 執行延遲比對 (當 DevTools 開啟時，debugger 會停留中斷)
+  function checkDebugger() {
+    const startTime = performance.now();
+    debugger;
+    if (performance.now() - startTime > 100) {
+      triggerDefense();
+    }
+  }
+
+  // 方式 B：視窗維度差偵測 (捕捉以停靠模式嵌入在瀏覽器內側的 DevTools)
+  function checkWindowDiff() {
+    const widthThreshold = window.outerWidth - window.innerWidth > 160;
+    const heightThreshold = window.outerHeight - window.innerHeight > 160;
+    if (widthThreshold || heightThreshold) {
+      triggerDefense();
+    }
+  }
+
+  // 輪詢檢查 (每 800 毫秒評估一次)
+  setInterval(function () {
+    try {
+      checkDebugger();
+      checkWindowDiff();
+    } catch (err) {}
+  }, 800);
+
+  // 5. 覆蓋 console 物件，清空未處理的日誌洩漏
+  try {
+    const noop = function () {};
+    ['log', 'debug', 'info', 'warn', 'error'].forEach(function (method) {
+      console[method] = noop;
+    });
+  } catch (err) {}
+})();
+</script>
+<!-- ===================================================================== -->
 </body>
 </html>
