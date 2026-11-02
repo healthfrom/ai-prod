@@ -2,8 +2,9 @@ name: Supabase Keep-Alive and Automated Backup
 
 on:
   schedule:
-    # 每 3 天於凌晨 02:00 (UTC) 自動執行一次，防範 7 天休眠
-    - cron: '0 2 */3 * *'
+    # 建議改為每 6 小時執行一次 (例如 00:00, 06:00, 12:00, 18:00 UTC)，庫存回補更及時且能持續防休眠
+    # 若維持每 3 天一次可改回：- cron: '0 2 */3 * *'
+    - cron: '0 */6 * * *'
   workflow_dispatch: # 支援在 GitHub 頁面手動點擊「Run workflow」測試
 
 jobs:
@@ -14,7 +15,21 @@ jobs:
       - name: 1. 建立備份目錄
         run: mkdir -p backups
 
-      - name: 2. 存取 Supabase API 啟動保活 (Keep-Alive) 並下載備份資料
+      - name: 2. 執行逾期未付款庫存自動回補 (Auto-Release)
+        env:
+          SUPA_URL: ${{ secrets.SUPABASE_URL }}
+          SUPA_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "開始檢查並釋放逾期未付款訂單庫存..."
+          # 呼叫 Supabase release_unpaid_orders RPC，釋放超過 2 小時未付款訂單
+          RESULT=$(curl -s -f -X POST "$SUPA_URL/rest/v1/rpc/release_unpaid_orders" \
+            -H "apikey: $SUPA_KEY" \
+            -H "Authorization: Bearer $SUPA_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"p_timeout_hours": 2}')
+          echo "庫存釋放執行結果: $RESULT"
+
+      - name: 3. 存取 Supabase API 啟動保活 (Keep-Alive) 並下載備份資料
         env:
           SUPA_URL: ${{ secrets.SUPABASE_URL }}
           SUPA_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -48,16 +63,16 @@ jobs:
 
           echo "所有核心資料表備份與保活請求已順利完成！"
 
-      - name: 3. 使用 AES-256 對備份目錄進行高強度加密
+      - name: 4. 使用 AES-256 對備份目錄進行高強度加密
         env:
           ENC_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
         run: |
           # 打包為 tar.gz 並以 openssl 加密成單一 .enc 密文檔案
           tar -czf - backups | openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 -out encrypted_backup.tar.gz.enc -pass "pass:$ENC_KEY"
-          # 徹底刪除未加密的原始資料夾，防止日誌或臨時空間殘留
+          # 徹底刪除未加密的原始資料夾，防止臨時空間殘留
           rm -rf backups
 
-      - name: 4. 上傳加密檔案至 GitHub Artifacts (保存 90 天)
+      - name: 5. 上傳加密檔案至 GitHub Artifacts (保存 90 天)
         uses: actions/upload-artifact@v4
         with:
           name: supabase-encrypted-backup-${{ github.run_id }}
