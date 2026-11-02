@@ -2,8 +2,7 @@ name: Supabase Keep-Alive and Automated Backup
 
 on:
   schedule:
-    # 建議改為每 6 小時執行一次 (例如 00:00, 06:00, 12:00, 18:00 UTC)，庫存回補更及時且能持續防休眠
-    # 若維持每 3 天一次可改回：- cron: '0 2 */3 * *'
+    # 每 6 小時自動執行一次，及時回補庫存並重置 Supabase 休眠倒數
     - cron: '0 */6 * * *'
   workflow_dispatch: # 支援在 GitHub 頁面手動點擊「Run workflow」測試
 
@@ -20,14 +19,26 @@ jobs:
           SUPA_URL: ${{ secrets.SUPABASE_URL }}
           SUPA_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          echo "開始檢查並釋放逾期未付款訂單庫存..."
-          # 呼叫 Supabase release_unpaid_orders RPC，釋放超過 2 小時未付款訂單
-          RESULT=$(curl -s -f -X POST "$SUPA_URL/rest/v1/rpc/release_unpaid_orders" \
+          echo "=== 開始檢查並釋放逾期未付款訂單庫存 ==="
+          # 發起 POST 請求，移除 -f 參數並捕獲 HTTP 狀態碼與具體錯誤訊息
+          HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$SUPA_URL/rest/v1/rpc/release_unpaid_orders" \
             -H "apikey: $SUPA_KEY" \
             -H "Authorization: Bearer $SUPA_KEY" \
             -H "Content-Type: application/json" \
             -d '{"p_timeout_hours": 2}')
-          echo "庫存釋放執行結果: $RESULT"
+
+          # 分離回應內容 (Body) 與 HTTP 狀態碼 (Status)
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
+          HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n1)
+
+          echo "Supabase RPC 回應狀態碼: $HTTP_STATUS"
+          echo "Supabase RPC 回應內容: $HTTP_BODY"
+
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::warning::庫存釋放 API 未能成功執行 (HTTP $HTTP_STATUS)。若為 404 代表函數尚未建立；若為 400 代表參數或欄位不符。"
+          else
+            echo "庫存釋放順利完成！"
+          fi
 
       - name: 3. 存取 Supabase API 啟動保活 (Keep-Alive) 並下載備份資料
         env:
@@ -69,7 +80,7 @@ jobs:
         run: |
           # 打包為 tar.gz 並以 openssl 加密成單一 .enc 密文檔案
           tar -czf - backups | openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 -out encrypted_backup.tar.gz.enc -pass "pass:$ENC_KEY"
-          # 徹底刪除未加密的原始資料夾，防止臨時空間殘留
+          # 徹底刪除未加密的原始資料夾，防止日誌或臨時空間殘留
           rm -rf backups
 
       - name: 5. 上傳加密檔案至 GitHub Artifacts (保存 90 天)
