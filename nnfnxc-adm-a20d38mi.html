@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <!-- 阻擋搜尋引擎索引與快取，確保後台路徑隱匿 -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   
   <meta http-equiv="Content-Security-Policy" content="
@@ -14,7 +13,7 @@
     img-src 'self' data: https: blob:;
     font-src 'self' data: https:;
   ">
-  <title>艾產品管理系統 - 溯源履歷升級版</title>
+  <title>艾產品管理系統 - 分類編輯與上下架版</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
@@ -40,6 +39,12 @@
     .border-theme { border-color: #223254; }
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    
+    /* 讓下架商品在列表中看起來暗沈一些 */
+    .status-inactive {
+      opacity: 0.5;
+      filter: grayscale(80%);
+    }
   </style>
 </head>
 <body class="p-3 md:p-6 text-sm">
@@ -50,7 +55,7 @@
     <div>
       <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2 text-white">
         🌿 艾產品管理系統
-        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">分類編輯與溯源版</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">分類編輯與上下架版</span>
       </h1>
       <p class="text-xs text-slate-400 mt-1">即時同步前台菜單、發貨、圖庫與庫存中台</p>
     </div>
@@ -151,15 +156,15 @@
 
       <!-- 視圖 1：台帳列表 -->
       <div id="viewTable" class="overflow-x-auto border border-theme rounded">
-        <table class="w-full text-left text-xs min-w-[700px]">
+        <table class="w-full text-left text-xs min-w-[750px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
             <tr>
               <th class="p-2.5 w-16 text-center">圖片</th>
               <th class="p-2.5">品號 / 品名</th>
-              <th class="p-2.5">分類 / 溯源狀態</th>
+              <th class="p-2.5">分類 / 狀態</th>
               <th class="p-2.5">庫存 / 儲位</th>
               <th class="p-2.5">單價 (總值)</th>
-              <th class="p-2.5">圖片管理</th>
+              <th class="p-2.5 text-center">操作</th>
             </tr>
           </thead>
           <tbody id="inventoryTableBody" class="divide-y divide-theme"></tbody>
@@ -450,6 +455,30 @@
     }
   }
 
+  // 修改商品上下架狀態
+  async function toggleProductStatus(partNo, currentStatus) {
+    if (!currentUser) return alert("請先登入系統！");
+    // 預設為 ACTIVE (未填也視為 ACTIVE)
+    const activeStat = currentStatus === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    const newStatus = activeStat === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    const actionText = newStatus === 'ACTIVE' ? '重新上架' : '下架隱藏';
+
+    if (!confirm(`確定要將商品 ${partNo} 設為「${actionText}」嗎？\n(下架後前台將不再顯示該商品)`)) return;
+
+    try {
+      const { error } = await supabaseClient
+        .from('products')
+        .update({ status: newStatus })
+        .eq('part_no', partNo);
+
+      if (error) throw error;
+      alert(`商品已成功${actionText}！`);
+      await fetchProducts(); // 重新拉取資料並渲染列表
+    } catch (err) {
+      alert(`狀態更新失敗：${err.message}`);
+    }
+  }
+
   function renderViews() {
     const kwd = document.getElementById('searchKwd').value.toLowerCase();
     
@@ -475,13 +504,15 @@
       const safeBin = escapeHtml(i.bin_location || '');
       const safeImg = i.image_url ? escapeHtml(i.image_url) : '';
       const hasDesc = i.description && i.description.trim() !== '';
+      const isInactive = i.status === 'INACTIVE';
+      const statusClass = isInactive ? 'status-inactive' : '';
 
       const imgDisplay = safeImg 
         ? `<img src="${safeImg}" class="w-10 h-10 object-cover rounded shadow border border-slate-700">` 
         : `<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center text-[10px] text-slate-500">無圖</div>`;
 
       return `
-        <tr class="hover:bg-slate-800/40">
+        <tr class="hover:bg-slate-800/40 ${statusClass}">
           <td class="p-2.5 flex justify-center">${imgDisplay}</td>
           <td class="p-2.5 leading-tight">
             <span class="font-mono text-sky-400 font-bold">${safePartNo}</span><br>
@@ -489,7 +520,11 @@
           </td>
           <td class="p-2.5">
             <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 border border-theme text-emerald-400 font-medium">${safeCategory}</span>
-            ${hasDesc ? '<span class="ml-1 text-[10px] text-amber-300 font-medium">📜 具溯源履歷</span>' : ''}
+            <br>
+            <div class="mt-1">
+              ${hasDesc ? '<span class="text-[10px] text-amber-300 font-medium mr-2">📜 具溯源履歷</span>' : ''}
+              ${isInactive ? '<span class="text-[10px] bg-rose-900/50 text-rose-300 px-1.5 rounded">已下架</span>' : '<span class="text-[10px] text-slate-400">上架中</span>'}
+            </div>
           </td>
           <td class="p-2.5 leading-tight">
             <span class="${i.stock===0?'text-rose-400':'text-emerald-400'} font-bold">${i.stock} ${escapeHtml(i.unit||'件')}</span><br>
@@ -500,9 +535,14 @@
             <span class="text-slate-500 text-[10px]">總額 ¥${(i.stock * i.unit_price)}</span>
           </td>
           <td class="p-2.5">
-            <button onclick="triggerImageUpload('${encodeURIComponent(i.part_no)}')" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white transition flex items-center gap-1">
-              📷 換圖
-            </button>
+            <div class="flex flex-col gap-1.5 items-center">
+              <button onclick="triggerImageUpload('${encodeURIComponent(i.part_no)}')" class="w-full px-2.5 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white transition flex items-center justify-center gap-1">
+                📷 換圖
+              </button>
+              <button onclick="toggleProductStatus('${safePartNo}', '${escapeHtml(i.status || 'ACTIVE')}')" class="w-full px-2.5 py-1 ${isInactive ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/40' : 'bg-rose-600/20 text-rose-400 hover:bg-rose-600/40'} border border-transparent rounded text-xs transition flex items-center justify-center gap-1">
+                ${isInactive ? '🟢 重新上架' : '🔴 隱藏下架'}
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -681,7 +721,8 @@
           bin_location: b,
           unit_price: parseFloat(document.getElementById('unitPrice').value) || 0,
           safety_stock: parseInt(document.getElementById('safetyStock').value) || 0,
-          description: document.getElementById('partDesc').value.trim()
+          description: document.getElementById('partDesc').value.trim(),
+          status: 'ACTIVE' // 新建商品預設為上架狀態
         }]);
       } else if (t === 'IN') {
         res = await supabaseClient.from('products').update({
@@ -715,13 +756,14 @@
   }
 
   function exportCSV() {
-    let csv = "\uFEFF品號,品名規格,類別,儲位,現存量,安全水位,單價,總值\n";
+    let csv = "\uFEFF品號,品名規格,類別,狀態,儲位,現存量,安全水位,單價,總值\n";
     inventoryList.forEach(i => {
       const cleanNo = String(i.part_no || '').replace(/^[=+\-@\t\r]/, "'");
       const cleanName = String(i.part_name || '').replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
       const cleanCat = String(i.category || '').replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
+      const cleanStatus = (i.status === 'INACTIVE') ? "已下架" : "上架中";
       const cleanBin = String(i.bin_location || '').replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
-      csv += `"${cleanNo}","${cleanName}","${cleanCat}","${cleanBin}",${Number(i.stock||0)},${Number(i.safety_stock||0)},${Number(i.unit_price||0)},${Number((i.stock||0) * (i.unit_price||0))}\n`;
+      csv += `"${cleanNo}","${cleanName}","${cleanCat}","${cleanStatus}","${cleanBin}",${Number(i.stock||0)},${Number(i.safety_stock||0)},${Number(i.unit_price||0)},${Number((i.stock||0) * (i.unit_price||0))}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a');
