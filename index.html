@@ -29,7 +29,6 @@
       --accent-gold: #b45309;
     }
     
-    /* 禁用全局文字框外選取，增加複製與扒取難度 */
     body {
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       background-color: #fbfaf6;
@@ -41,7 +40,6 @@
       user-select: none;
     }
 
-    /* 白名單：允許表單輸入框正常選取與輸入，不影響顧客體驗 */
     input, textarea, select {
       -webkit-user-select: text !important;
       -moz-user-select: text !important;
@@ -49,34 +47,16 @@
       user-select: text !important;
     }
 
-    .font-serif-title {
-      font-family: 'Noto Serif TC', serif;
-    }
+    .font-serif-title { font-family: 'Noto Serif TC', serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-
-    input[type="radio"]:checked + div {
-      box-shadow: 0 4px 14px -2px rgba(6, 78, 59, 0.12);
-    }
-    .radio-wechat:checked + div {
-      border-color: #059669;
-      background-color: #ecfdf5;
-      color: #065f46;
-    }
-    .radio-alipay:checked + div {
-      border-color: #0284c7;
-      background-color: #f0f9ff;
-      color: #075985;
-    }
+    input[type="radio"]:checked + div { box-shadow: 0 4px 14px -2px rgba(6, 78, 59, 0.12); }
+    .radio-wechat:checked + div { border-color: #059669; background-color: #ecfdf5; color: #065f46; }
+    .radio-alipay:checked + div { border-color: #0284c7; background-color: #f0f9ff; color: #075985; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-emerald-800 selection:text-white">
+<body class="min-h-screen flex flex-col selection:bg-emerald-800 selection:text-white" id="translatable-body">
 
   <!-- 頂部導覽列 -->
   <header class="sticky top-0 z-40 bg-emerald-950/95 backdrop-blur-md text-white border-b border-emerald-900/60 shadow-lg">
@@ -96,6 +76,11 @@
       </div>
       
       <div class="flex items-center gap-2 sm:gap-3">
+        <!-- 繁簡切換按鈕 -->
+        <button onclick="toggleLang()" id="btnLangToggle" class="px-2.5 py-1.5 rounded-full text-xs font-bold text-amber-200 bg-emerald-900 border border-emerald-700/60 transition shadow-sm active:scale-95">
+          简
+        </button>
+
         <button onclick="openShareModal()" class="px-3 py-1.5 rounded-full text-xs font-medium text-emerald-100 bg-emerald-900/80 hover:bg-emerald-800 border border-emerald-700/60 transition flex items-center gap-1.5 shadow-sm active:scale-95">
           <span>📢</span> <span class="hidden sm:inline">推廣分享</span>
         </button>
@@ -180,9 +165,7 @@
       <!-- 頂部圖片區 -->
       <div class="relative w-full aspect-square bg-slate-100 overflow-hidden rounded-t-3xl">
         <img id="detailImg" src="" alt="商品圖片" class="w-full h-full object-cover">
-        <button onclick="closeProductDetail()" class="absolute top-4 right-4 w-8 h-8 bg-black/40 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/60 transition shadow-lg">
-          ✕
-        </button>
+        <button onclick="closeProductDetail()" class="absolute top-4 right-4 w-8 h-8 bg-black/40 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/60 transition shadow-lg">✕</button>
         <div class="absolute bottom-3 left-3 bg-emerald-950/85 backdrop-blur text-emerald-200 text-xs px-3 py-1.5 rounded-full border border-emerald-700/50 flex items-center gap-1.5 shadow-lg">
           <span class="text-amber-300">🛡️</span> 官方溯源正品保證
         </div>
@@ -251,9 +234,7 @@
           <p class="text-[10px] text-emerald-300 font-light">全場官方包郵 · 當天極速發貨</p>
         </div>
       </div>
-      <button onclick="toggleCartDrawer()" class="text-emerald-300 hover:text-white text-lg p-1 transition rounded-lg hover:bg-emerald-800/50">
-        ✕
-      </button>
+      <button onclick="toggleCartDrawer()" class="text-emerald-300 hover:text-white text-lg p-1 transition rounded-lg hover:bg-emerald-800/50">✕</button>
     </div>
 
     <div class="flex-1 overflow-y-auto p-4 space-y-5">
@@ -463,6 +444,60 @@
     </div>
   </footer>
 
+  <!-- 繁簡轉換腳本與字典 -->
+  <script>
+    const t2sMap = { "體驗": "体验", "館": "馆", "官方": "官方", "正品": "正品", "展銷": "展销", "中心": "中心", "產地": "产地", "直供": "直供", "南陽": "南阳", "伏牛山": "伏牛山", "地道": "地道", "純": "纯", "艾": "艾", "匠心": "匠心", "溫養": "温养", "推廣": "推广", "分享": "分享", "購物車": "购物车", "傳統": "传统", "中醫": "中医", "本草": "本草", "現代": "现代", "健康": "健康", "美學": "美学", "溫通": "温通", "經絡": "经络", "靜享": "静享", "艾香": "艾香", "純陽": "纯阳", "之韻": "之韵", "全系列": "全系列", "產品": "产品", "遵循": "遵循", "古法": "古法", "製作": "制作", "精選": "精选", "三年": "三年", "及": "及", "五年": "五年", "陳放": "陈放", "天然": "天然", "艾絨": "艾绒", "不摻": "不掺", "雜質": "杂质", "溫煦": "温煦", "為您": "为您", "與家人": "与家人", "守護": "守护", "日常": "日常", "元氣": "元气", "核心": "核心", "直送": "直送", "精純": "精纯", "陳年": "陈年", "全國": "全国", "包郵寄": "包邮寄", "安心": "安心", "密封": "密封", "發貨": "发货", "保證": "保证", "品質": "品质", "售後": "售后", "無憂": "无忧", "精選產品分類": "精选产品分类", "點選圖片檢視溯源詳情": "点选图片检视溯源详情", "載入系列分類中": "载入系列分类中", "全部系列": "全部系列", "正在為您同步正品庫存": "正在为您同步正品库存", "請稍候": "请稍候", "已售罄": "已售罄", "品號": "品号", "特惠價": "特惠价", "補貨中": "补货中", "選購": "选购", "官方溯源正品保證": "官方溯源正品保证", "庫存充足": "库存充足", "道地溯源與品質履歷": "道地溯源与品质履历", "原產": "原产", "端午純陽採": "端午纯阳采", "乾倉古法陳": "乾仓古法陈", "加入選購清單": "加入选购清单", "結帳與收件資訊": "结帐与收件资讯", "全場官方包郵": "全场官方包邮", "當天極速發貨": "当天极速发货", "已選購產品": "已选购产品", "確認數量後填寫下方收件資料": "确认数量后填写下方收件资料", "收件人發貨資訊": "收件人发货资讯", "收件人姓名": "收件人姓名", "如：張先生 / 李華": "如：张先生 / 李华", "請填寫真實姓名": "请填写真实姓名", "聯絡電話": "联络电话", "位手機號": "位手机号", "請填寫有效": "请填写有效", "收件方式": "收件方式", "快遞包郵寄送至指定地址": "快递包邮寄送至指定地址", "現場展台自提": "现场展台自提", "詳細收貨地址": "详细收货地址", "請詳細填寫：省、市、區/縣、街道及詳細門牌號": "请详细填写：省、市、区/县、街道及详细门牌号", "地址過於簡略": "地址过于简略", "請填寫完整街道門牌": "请填写完整街道门牌", "選擇結算方式": "选择结算方式", "微信支付": "微信支付", "官方掃碼結算": "官方扫码结算", "支付寶": "支付宝", "安全掃碼結算": "安全扫码结算", "訂單應付總額（包郵）": "订单应付总额（包邮）", "前往安全掃碼結算": "前往安全扫码结算", "實付結算金額": "实付结算金额", "溫馨提醒": "温馨提醒", "掃碼轉帳付款後，請務必點擊下方按鈕送出訂單，系統將第一時間為您核對並安排出貨！": "扫码转帐付款后，请务必点击下方按钮送出订单，系统将第一时间为您核对并安排出货！", "我已完成付款，立即送出訂單": "我已完成付款，立即送出订单", "選購登記已成功": "选购登记已成功", "訂單編號": "订单编号", "長按識別二維碼關注官方公眾號": "长按识别二维码关注官方公众号", "關注後發送您的": "关注后发送您的", "即可即時查詢物流動態與領取節氣艾灸養生錦囊！": "即可即时查询物流动态与领取节气艾灸养生锦囊！", "完成": "完成", "邀請好友體驗道地純陽艾灸草本好物": "邀请好友体验道地纯阳艾灸草本好物", "在微信內長按二維碼點選「發送給朋友」，或讓好友直接掃碼開啟選購。": "在微信内长按二维码点选「发送给朋友」，或让好友直接扫码开启选购。", "複製連結": "复制连结", "系統分享": "系统分享", "本站商品均經安全嚴格品控": "本站商品均经安全严格品控", "支持微信/支付寶安全結算": "支持微信/支付宝安全结算", "發貨進度請關注微信公眾號": "发货进度请关注微信公众号", "嚴選": "严选", "野生": "野生", "端午時節純陽之氣最盛時採摘": "端午时节纯阳之气最盛时采摘", "歷經自然陰乾": "历经自然阴干", "置於恆溫乾倉陳放三年以上": "置于恒温乾仓陈放三年以上", "古法石碾工藝": "古法石碾工艺", "艾煙淡白": "艾烟淡白", "溫潤入經絡": "温润入经络", "專為現代居家溫灸設計": "专为现代居家温灸设计", "選用耐高溫安全材質": "选用耐高温安全材质", "聚熱不燙傷": "聚热不烫伤", "防灰網設計確保施灸安全": "防灰网设计确保施灸安全", "搭配道地艾柱": "搭配道地艾柱", "讓養生更純粹簡捷": "让养生更纯粹简捷", "本館所售產品均源自南陽核心產區": "本馆所售产品均源自南阳核心产区", "嚴格把控採收、炮製與封存環節": "严格把控采收、炮制与封存环节", "將傳統中醫草本智慧與現代品控結合": "将传统中医草本智慧与现代品控结合", "為您呈獻最純正的健康養生佳品": "为您呈献最纯正的健康养生佳品", "未分類": "未分类", "該商品庫存僅剩": "该商品库存仅剩", "件": "件", "自提展位 / 備註資訊": "自提展位 / 备注资讯", "請註明您的展位號或預計自提時間（如：A08展台、下午3點自提）": "请注明您的展位号或预计自提时间（如：A08展台、下午3点自提）", "自提請填寫展位號或備註（至少2字）": "自提请填写展位号或备注（至少2字）", "請包含省市區/縣及詳細門牌（至少8字）": "请包含省市区/县及详细门牌（至少8字）", "收貨人發貨資料填寫有誤，請依紅字提示修正後再結算！": "收货人发货资料填写有误，请依红字提示修正后再结算！", "微信官方安全支付": "微信官方安全支付", "支付寶官方安全支付": "支付宝官方安全支付", "請長按二維碼識別，或截圖後使用微信掃一掃付款": "请长按二维码识别，或截图后使用微信扫一扫付款", "請截圖後使用支付寶掃一掃結算": "请截图后使用支付宝扫一扫结算", "請勿頻繁點擊，訂單正安全佇列中，請稍候 15 秒！": "请勿频繁点击，订单正安全伫列中，请稍候 15 秒！", "人機安全檢查進行中，請稍候片刻再點擊送出！": "人机安全检查进行中，请稍候片刻再点击送出！", "正在為您安全建立訂單...": "正在为您安全建立订单...", "下單失敗": "下单失败", "店鋪網址已成功複製到剪貼簿！": "店铺网址已成功复制到剪贴簿！", "複製失敗，請手動複製網址。": "复制失败，请手动复制网址。", "發現一家優質天然艾草草本館，產地直送官方正品！": "发现一家优质天然艾草草本馆，产地直送官方正品！", "您的裝置暫不支援直接調用系統分享，請點擊「複製連結」分享給好友！": "您的装置暂不支持直接调用系统分享，请点击「复制连结」分享给好友！", "購物車內暫無選購商品": "购物车内暂无选购商品" };
+    
+    // 生成反向字典 (簡轉繁)
+    const s2tMap = {};
+    for (let key in t2sMap) { s2tMap[t2sMap[key]] = key; }
+
+    let currentLang = localStorage.getItem('storeLang') || 'tc'; // 'tc' (繁) 或 'sc' (簡)
+
+    // 遞迴替換文字節點 (排除 input/textarea 以免干擾使用者輸入)
+    function translateNode(node, dict) {
+      if (node.nodeType === 3) { // Text node
+        let text = node.nodeValue;
+        for (let key in dict) { text = text.split(key).join(dict[key]); }
+        node.nodeValue = text;
+      } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE' && node.nodeName !== 'INPUT' && node.nodeName !== 'TEXTAREA') {
+        // 處理 placeholder 屬性
+        if (node.hasAttribute('placeholder')) {
+          let ph = node.getAttribute('placeholder');
+          for (let key in dict) { ph = ph.split(key).join(dict[key]); }
+          node.setAttribute('placeholder', ph);
+        }
+        for (let i = 0; i < node.childNodes.length; i++) {
+          translateNode(node.childNodes[i], dict);
+        }
+      }
+    }
+
+    function applyLanguage(lang) {
+      const root = document.getElementById('translatable-body');
+      const btn = document.getElementById('btnLangToggle');
+      if (lang === 'sc') {
+        translateNode(root, t2sMap);
+        btn.innerText = '繁';
+        btn.title = '切換至繁體中文';
+      } else {
+        translateNode(root, s2tMap);
+        btn.innerText = '简';
+        btn.title = '切换至简体中文';
+      }
+      localStorage.setItem('storeLang', lang);
+    }
+
+    function toggleLang() {
+      currentLang = currentLang === 'tc' ? 'sc' : 'tc';
+      applyLanguage(currentLang);
+      
+      // 動態更新載入的商品庫資料 (因為這部分是 JS 變數，替換 DOM 不會改到原始資料)
+      // 若後續切換分類或加入購物車，需要保證資料層也是目標語言
+      initStore(); 
+    }
+  </script>
+
   <!-- 商城主業務邏輯 -->
   <script>
     const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
@@ -507,6 +542,18 @@
       return HERBAL_FALLBACK_IMAGES.default;
     }
 
+    // 將資料庫回傳的字串翻譯為當前語系
+    function _t(str) {
+      if (!str) return str;
+      if (currentLang === 'sc') {
+        let res = str;
+        for (let k in t2sMap) res = res.split(k).join(t2sMap[k]);
+        return res;
+      }
+      // 因為資料庫存的通常是繁體，若當前是 tc 則不用刻意轉 (或確保安全仍可過一次 s2t)
+      return str;
+    }
+
     function onTurnstileSuccess(token) { turnstileToken = token; }
     function onTurnstileExpired() { turnstileToken = ''; }
     function onTurnstileError() { turnstileToken = ''; }
@@ -514,6 +561,8 @@
     async function initStore() {
       await fetchCategories();
       await fetchCatalog();
+      // 初始化頁面語言
+      if(currentLang === 'sc') applyLanguage('sc');
     }
 
     async function fetchCategories() {
@@ -528,9 +577,10 @@
 
     function renderCategoryMenu() {
       const filterBox = document.getElementById('categoryFilter');
+      const allText = currentLang === 'sc' ? '✦ 全部系列' : '✦ 全部系列';
       let html = `
         <button onclick="filterCategory('ALL')" class="category-btn ${currentCategory === 'ALL' ? 'bg-emerald-900 text-amber-200 shadow-md border-emerald-900 font-bold' : 'bg-white text-slate-600 border-slate-200/80 hover:border-emerald-600 hover:text-emerald-800'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
-          ✦ 全部系列
+          ${allText}
         </button>
       `;
 
@@ -538,7 +588,7 @@
         const isActive = currentCategory === c.name;
         html += `
           <button onclick="filterCategory('${c.name}')" class="category-btn ${isActive ? 'bg-emerald-900 text-amber-200 shadow-md border-emerald-900 font-bold' : 'bg-white text-slate-600 border-slate-200/80 hover:border-emerald-600 hover:text-emerald-800'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
-            ${c.name}
+            ${_t(c.name)}
           </button>
         `;
       });
@@ -557,7 +607,6 @@
     function renderProducts() {
       const container = document.getElementById('productGrid');
       
-      // 關鍵升級：前台主動過濾掉 status 為 INACTIVE 的已下架商品
       const activeProducts = catalogProducts.filter(p => p.status !== 'INACTIVE');
 
       const filtered = currentCategory === 'ALL' 
@@ -565,9 +614,17 @@
         : activeProducts.filter(p => (p.category || '未分類') === currentCategory);
 
       if (filtered.length === 0) {
-        container.innerHTML = '<div class="col-span-full py-16 text-center text-slate-400 text-xs bg-white rounded-2xl border border-dashed border-slate-200">該分類下目前暫無上架商品。</div>';
+        const noDataText = currentLang === 'sc' ? '该分类下目前暂无上架商品。' : '該分類下目前暫無上架商品。';
+        container.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 text-xs bg-white rounded-2xl border border-dashed border-slate-200">${noDataText}</div>`;
         return;
       }
+
+      const outOfStockTxt = currentLang === 'sc' ? '已售罄' : '已售罄';
+      const herbTxt = currentLang === 'sc' ? '道地艾草' : '道地艾草';
+      const skuTxt = currentLang === 'sc' ? '品号' : '品號';
+      const priceTxt = currentLang === 'sc' ? '特惠价' : '特惠價';
+      const restockingTxt = currentLang === 'sc' ? '补货中' : '補貨中';
+      const buyTxt = currentLang === 'sc' ? '选购' : '選購';
 
       container.innerHTML = filtered.map(item => {
         const isOutOfStock = (item.stock || 0) <= 0;
@@ -576,16 +633,16 @@
         return `
           <div class="group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-emerald-700/30 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer" onclick="openProductDetail('${item.part_no}')">
             <div class="relative w-full aspect-square bg-slate-100 overflow-hidden">
-              <img src="${displayImg}" alt="${item.part_name}" 
+              <img src="${displayImg}" alt="${_t(item.part_name)}" 
                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
                    onerror="this.src='${HERBAL_FALLBACK_IMAGES.default}'">
               <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <span class="absolute top-2.5 left-2.5 text-[10px] font-medium bg-emerald-950/80 backdrop-blur-md text-emerald-200 px-2.5 py-0.5 rounded-full border border-emerald-700/50">
-                ${item.category || '道地艾草'}
+                ${_t(item.category || herbTxt)}
               </span>
               ${isOutOfStock ? `
                 <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center">
-                  <span class="bg-rose-600 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">已售罄</span>
+                  <span class="bg-rose-600 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">${outOfStockTxt}</span>
                 </div>
               ` : ''}
             </div>
@@ -593,14 +650,14 @@
             <div class="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
               <div>
                 <h4 class="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 leading-snug group-hover:text-emerald-900 transition-colors">
-                  ${item.part_name}
+                  ${_t(item.part_name)}
                 </h4>
-                <p class="text-[10px] text-slate-400 font-mono mt-1">品號: ${item.part_no}</p>
+                <p class="text-[10px] text-slate-400 font-mono mt-1">${skuTxt}: ${item.part_no}</p>
               </div>
 
               <div class="pt-2.5 border-t border-slate-100 flex items-end justify-between gap-1">
                 <div>
-                  <span class="text-[10px] text-slate-400 block -mb-0.5 font-light">特惠價</span>
+                  <span class="text-[10px] text-slate-400 block -mb-0.5 font-light">${priceTxt}</span>
                   <div class="text-base sm:text-lg font-bold text-emerald-900 font-serif-title leading-tight">
                     <span class="text-xs">¥</span>${item.unit_price}
                   </div>
@@ -608,7 +665,7 @@
 
                 <button onclick="event.stopPropagation(); addToCart('${item.part_no}')" ${isOutOfStock ? 'disabled' : ''} 
                         class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all transform active:scale-95 flex items-center gap-1 ${isOutOfStock ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-emerald-900 hover:bg-emerald-800 text-amber-200 shadow-md shadow-emerald-950/10'}">
-                  ${isOutOfStock ? '補貨中' : '<span>+</span> 選購'}
+                  ${isOutOfStock ? restockingTxt : `<span>+</span> ${buyTxt}`}
                 </button>
               </div>
             </div>
@@ -632,42 +689,47 @@
       const isOutOfStock = (p.stock || 0) <= 0;
       
       document.getElementById('detailImg').src = getSmartProductImage(p);
-      document.getElementById('detailTitle').innerText = p.part_name;
+      document.getElementById('detailTitle').innerText = _t(p.part_name);
       document.getElementById('detailPrice').innerText = p.unit_price;
       document.getElementById('detailSku').innerText = p.part_no;
       document.getElementById('detailQty').innerText = currentDetailQty;
       
       const stockStatus = document.getElementById('detailStockStatus');
       if (isOutOfStock) {
-        stockStatus.innerText = '(已售罄)';
+        stockStatus.innerText = currentLang === 'sc' ? '(已售罄)' : '(已售罄)';
         stockStatus.className = 'ml-2 font-bold text-rose-500';
       } else {
-        stockStatus.innerText = '(庫存充足)';
+        stockStatus.innerText = currentLang === 'sc' ? '(库存充足)' : '(庫存充足)';
         stockStatus.className = 'ml-2 font-bold text-emerald-600';
       }
 
-      // 文化溯源描述處理 (若資料庫有填寫則優先展示，無則自動配對專業文案)
       const descEl = document.getElementById('detailDesc');
       if (p.description && p.description.trim() !== '') {
-        descEl.innerText = p.description;
+        descEl.innerText = _t(p.description);
       } else {
         const cat = p.category || '';
-        if (cat.includes('絨') || cat.includes('條') || cat.includes('柱')) {
-          descEl.innerText = '嚴選南陽伏牛山野生艾草，端午時節純陽之氣最盛時採摘。歷經自然陰乾，置於恆溫乾倉陳放三年以上，古法石碾工藝，不摻雜質，艾煙淡白，溫潤入經絡。';
+        if (cat.includes('絨') || cat.includes('條') || cat.includes('柱') || cat.includes('绒') || cat.includes('条')) {
+          descEl.innerText = currentLang === 'sc' ? 
+            '严选南阳伏牛山野生艾草，端午时节纯阳之气最盛时采摘。历经自然阴干，置于恒温乾仓陈放三年以上，古法石碾工艺，不掺杂质，艾烟淡白，温润入经络。' : 
+            '嚴選南陽伏牛山野生艾草，端午時節純陽之氣最盛時採摘。歷經自然陰乾，置於恆溫乾倉陳放三年以上，古法石碾工藝，不摻雜質，艾煙淡白，溫潤入經絡。';
         } else if (cat.includes('器') || cat.includes('盒')) {
-          descEl.innerText = '專為現代居家溫灸設計，選用耐高溫安全材質，聚熱不燙傷，防灰網設計確保施灸安全，搭配道地艾柱，讓養生更純粹簡捷。';
+          descEl.innerText = currentLang === 'sc' ? 
+            '专为现代居家温灸设计，选用耐高温安全材质，聚热不烫伤，防灰网设计确保施灸安全，搭配道地艾柱，让养生更纯粹简捷。' : 
+            '專為現代居家溫灸設計，選用耐高溫安全材質，聚熱不燙傷，防灰網設計確保施灸安全，搭配道地艾柱，讓養生更純粹簡捷。';
         } else {
-          descEl.innerText = '本館所售產品均源自南陽核心產區，嚴格把控採收、炮製與封存環節，將傳統中醫草本智慧與現代品控結合，為您呈獻最純正的健康養生佳品。';
+          descEl.innerText = currentLang === 'sc' ? 
+            '本馆所售产品均源自南阳核心产区，严格把控采收、炮制与封存环节，将传统中医草本智慧与现代品控结合，为您呈献最纯正的健康养生佳品。' : 
+            '本館所售產品均源自南陽核心產區，嚴格把控採收、炮製與封存環節，將傳統中醫草本智慧與現代品控結合，為您呈獻最純正的健康養生佳品。';
         }
       }
 
       const btnAdd = document.getElementById('btnDetailAddToCart');
       if (isOutOfStock) {
         btnAdd.disabled = true;
-        btnAdd.innerHTML = '產品補貨中';
+        btnAdd.innerHTML = currentLang === 'sc' ? '产品补货中' : '產品補貨中';
       } else {
         btnAdd.disabled = false;
-        btnAdd.innerHTML = '<span>🛒</span> 加入選購清單';
+        btnAdd.innerHTML = `<span>🛒</span> ${currentLang === 'sc' ? '加入选购清单' : '加入選購清單'}`;
       }
 
       document.getElementById('productDetailModal').classList.replace('hidden', 'flex');
@@ -690,7 +752,8 @@
       const existingQty = c ? c.qty : 0;
       
       if (newQty + existingQty > p.stock) {
-        alert(`該商品庫存僅剩 ${p.stock} 件！`);
+        const msg = currentLang === 'sc' ? `该商品库存仅剩 ${p.stock} 件！` : `該商品庫存僅剩 ${p.stock} 件！`;
+        alert(msg);
         return;
       }
       
@@ -708,20 +771,12 @@
         c.qty += currentDetailQty; 
       } else {
         cart.push({ 
-          id: p.id, 
-          part_no: p.part_no, 
-          part_name: p.part_name, 
-          unit_price: p.unit_price, 
-          maxStock: p.stock, 
-          qty: currentDetailQty 
+          id: p.id, part_no: p.part_no, part_name: p.part_name, unit_price: p.unit_price, maxStock: p.stock, qty: currentDetailQty 
         });
       }
       updateCartUI();
       closeProductDetail();
-      
-      setTimeout(() => { 
-        toggleCartDrawer(); 
-      }, 200);
+      setTimeout(() => { toggleCartDrawer(); }, 200);
     }
 
     /* ================= 購物車邏輯 ================= */
@@ -730,17 +785,13 @@
       if (!p || p.status === 'INACTIVE') return;
       const c = cart.find(i => i.part_no === partNo);
       if (c) { 
-        if (c.qty + 1 > p.stock) return alert(`庫存僅剩 ${p.stock} 件！`); 
+        if (c.qty + 1 > p.stock) {
+           const msg = currentLang === 'sc' ? `库存仅剩 ${p.stock} 件！` : `庫存僅剩 ${p.stock} 件！`;
+           return alert(msg); 
+        }
         c.qty++; 
       } else {
-        cart.push({ 
-          id: p.id, 
-          part_no: p.part_no, 
-          part_name: p.part_name, 
-          unit_price: p.unit_price, 
-          maxStock: p.stock, 
-          qty: 1 
-        });
+        cart.push({ id: p.id, part_no: p.part_no, part_name: p.part_name, unit_price: p.unit_price, maxStock: p.stock, qty: 1 });
       }
       updateCartUI();
     }
@@ -764,21 +815,25 @@
       selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
       const isWx = selectedPayMethod === 'wechat';
       
-      document.getElementById('btnGoPay').innerHTML = isWx ? "<span>💬</span> 微信掃碼結算" : "<span>🔷</span> 支付寶安全結算";
+      const wxTxt = currentLang === 'sc' ? "微信扫码结算" : "微信掃碼結算";
+      const aliTxt = currentLang === 'sc' ? "支付宝安全结算" : "支付寶安全結算";
+
+      document.getElementById('btnGoPay').innerHTML = isWx ? `<span>💬</span> ${wxTxt}` : `<span>🔷</span> ${aliTxt}`;
       document.getElementById('btnGoPay').className = isWx 
         ? "w-full py-3.5 bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none" 
         : "w-full py-3.5 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-900/20 flex items-center justify-center gap-2 text-sm transition-all transform active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none";
 
       const box = document.getElementById('cartItemList');
       if (cart.length === 0) {
-        box.innerHTML = '<div class="text-center text-slate-400 py-10 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">購物車內暫無選購商品</div>';
+        const emptyTxt = currentLang === 'sc' ? '购物车内暂无选购商品' : '購物車內暫無選購商品';
+        box.innerHTML = `<div class="text-center text-slate-400 py-10 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">${emptyTxt}</div>`;
         return;
       }
 
       box.innerHTML = cart.map(i => `
         <div class="flex justify-between items-center bg-slate-50/80 p-3 rounded-xl border border-slate-200/80">
           <div class="flex-1 pr-3">
-            <h5 class="font-bold text-xs text-slate-800 line-clamp-1">${i.part_name}</h5>
+            <h5 class="font-bold text-xs text-slate-800 line-clamp-1">${_t(i.part_name)}</h5>
             <div class="text-[11px] text-emerald-800 font-bold font-serif-title mt-0.5">¥${i.unit_price}</div>
           </div>
           <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
@@ -809,12 +864,12 @@
       const lbl = document.getElementById('lblAddress');
       clearError('orderAddress', 'errAddress');
       
-      if (type === '現場自提') {
-        lbl.innerText = '自提展位 / 備註資訊 *';
-        addrInput.placeholder = '請註明您的展位號或預計自提時間（如：A08展台、下午3點自提）';
+      if (type === '現場自提' || type === '现场自提') {
+        lbl.innerText = currentLang === 'sc' ? '自提展位 / 备注资讯 *' : '自提展位 / 備註資訊 *';
+        addrInput.placeholder = currentLang === 'sc' ? '请注明您的展位号或预计自提时间（如：A08展台、下午3点自提）' : '請註明您的展位號或預計自提時間（如：A08展台、下午3點自提）';
       } else {
-        lbl.innerText = '詳細收貨地址 *';
-        addrInput.placeholder = '請詳細填寫：省、市、區/縣、街道及詳細門牌號';
+        lbl.innerText = currentLang === 'sc' ? '详细收货地址 *' : '詳細收貨地址 *';
+        addrInput.placeholder = currentLang === 'sc' ? '请详细填写：省、市、区/县、街道及详细门牌号' : '請詳細填寫：省、市、區/縣、街道及詳細門牌號';
       }
     }
 
@@ -823,53 +878,44 @@
       const phoneEl = document.getElementById('orderPhone');
       const addrEl = document.getElementById('orderAddress');
       const delType = document.getElementById('orderDeliveryType').value;
-
       const errName = document.getElementById('errName');
       const errPhone = document.getElementById('errPhone');
       const errAddress = document.getElementById('errAddress');
-
       let isValid = true;
 
-      const nameVal = nameEl.value.trim();
-      const nameRegex = /^[\u4e00-\u9fa5a-zA-Z·\s]{2,15}$/;
-      if (!nameRegex.test(nameVal)) {
+      if (!/^[\u4e00-\u9fa5a-zA-Z·\s]{2,15}$/.test(nameEl.value.trim())) {
         nameEl.classList.add('border-rose-500', 'bg-rose-50');
         errName.classList.remove('hidden');
         isValid = false;
       }
-
-      const phoneVal = phoneEl.value.trim();
-      const phoneRegex = /^1[3-9]\d{9}$/;
-      if (!phoneRegex.test(phoneVal)) {
+      if (!/^1[3-9]\d{9}$/.test(phoneEl.value.trim())) {
         phoneEl.classList.add('border-rose-500', 'bg-rose-50');
         errPhone.classList.remove('hidden');
         isValid = false;
       }
 
       const addrVal = addrEl.value.trim();
-      if (delType === '現場自提') {
+      if (delType === '現場自提' || delType === '现场自提') {
         if (addrVal.length < 2) {
           addrEl.classList.add('border-rose-500', 'bg-rose-50');
-          errAddress.innerText = '自提請填寫展位號或備註（至少2字）';
+          errAddress.innerText = currentLang === 'sc' ? '自提请填写展位号或备注（至少2字）' : '自提請填寫展位號或備註（至少2字）';
           errAddress.classList.remove('hidden');
           isValid = false;
         }
       } else {
-        const isPureNumOrLetter = /^[0-9a-zA-Z]+$/.test(addrVal);
-        if (addrVal.length < 8 || isPureNumOrLetter) {
+        if (addrVal.length < 8 || /^[0-9a-zA-Z]+$/.test(addrVal)) {
           addrEl.classList.add('border-rose-500', 'bg-rose-50');
-          errAddress.innerText = '地址過於簡略，請包含省市區/縣及詳細門牌（至少8字）';
+          errAddress.innerText = currentLang === 'sc' ? '请包含省市区/县及详细门牌（至少8字）' : '請包含省市區/縣及詳細門牌（至少8字）';
           errAddress.classList.remove('hidden');
           isValid = false;
         }
       }
-
       return isValid;
     }
 
     function openPayModal() {
       if (!validateShippingInfo()) {
-        alert("收貨人發貨資料填寫有誤，請依紅字提示修正後再結算！");
+        alert(currentLang === 'sc' ? "收货人发货资料填写有误，请依红字提示修正后再结算！" : "收貨人發貨資料填寫有誤，請依紅字提示修正後再結算！");
         return;
       }
 
@@ -879,149 +925,89 @@
       selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
       const isWx = selectedPayMethod === 'wechat';
       
-      document.getElementById('payModalTitle').innerHTML = isWx ? '<span>💬</span> 微信官方安全支付' : '<span>🔷</span> 支付寶官方安全支付';
+      document.getElementById('payModalTitle').innerHTML = isWx ? `<span>💬</span> ${currentLang==='sc'?'微信官方安全支付':'微信官方安全支付'}` : `<span>🔷</span> ${currentLang==='sc'?'支付宝官方安全支付':'支付寶官方安全支付'}`;
       document.getElementById('payModalTitle').className = `text-xs font-bold flex items-center gap-1.5 ${isWx ? 'text-emerald-800' : 'text-sky-800'}`;
       document.getElementById('qrCodeContainer').className = `p-3.5 rounded-2xl border inline-block shadow-inner ${isWx ? 'border-emerald-200/80 bg-emerald-50/50' : 'border-sky-200/80 bg-sky-50/50'}`;
       
       const qrImg = document.getElementById('payQrImg');
-      const targetSrc = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
-      
-      qrImg.onerror = function() {
-        const fallbackText = isWx ? 'WeChatPay_StoreTransfer' : 'Alipay_StoreTransfer';
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(fallbackText)}`;
-      };
-      qrImg.src = targetSrc;
+      qrImg.onerror = function() { qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(isWx ? 'WeChatPay' : 'Alipay')}`; };
+      qrImg.src = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
 
       document.getElementById('payInstruction').innerText = isWx 
-        ? '請長按二維碼識別，或截圖後使用微信掃一掃付款' 
-        : '請截圖後使用支付寶掃一掃結算';
+        ? (currentLang === 'sc' ? '请长按二维码识别，或截图后使用微信扫一扫付款' : '請長按二維碼識別，或截圖後使用微信掃一掃付款')
+        : (currentLang === 'sc' ? '请截图后使用支付宝扫一扫结算' : '請截圖後使用支付寶掃一掃結算');
 
       document.getElementById('btnConfirmPaid').className = `w-full py-3 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] ${isWx ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-sky-600 hover:bg-sky-500'}`;
       
-      if (window.turnstile) {
-        try { turnstile.reset(); } catch(e) {}
-      }
+      if (window.turnstile) { try { turnstile.reset(); } catch(e) {} }
       turnstileToken = '';
-
       document.getElementById('payModal').classList.replace('hidden', 'flex');
     }
 
-    function closePayModal() { 
-      document.getElementById('payModal').classList.replace('flex', 'hidden'); 
-    }
+    function closePayModal() { document.getElementById('payModal').classList.replace('flex', 'hidden'); }
 
     async function confirmPaidAndSubmit() {
-      const now = Date.now();
-      if (now - lastSubmitTimestamp < 15000) {
-        alert("請勿頻繁點擊，訂單正安全佇列中，請稍候 15 秒！");
-        return;
-      }
-
-      if (!turnstileToken) {
-        alert("人機安全檢查進行中，請稍候片刻再點擊送出！");
-        return;
-      }
+      if (Date.now() - lastSubmitTimestamp < 15000) return alert(currentLang === 'sc' ? "请勿频繁点击，订单正安全伫列中，请稍候 15 秒！" : "請勿頻繁點擊，訂單正安全佇列中，請稍候 15 秒！");
+      if (!turnstileToken) return alert(currentLang === 'sc' ? "人机安全检查进行中，请稍候片刻再点击送出！" : "人機安全檢查進行中，請稍候片刻再點擊送出！");
 
       const btn = document.getElementById('btnConfirmPaid'); 
       btn.disabled = true; 
-      btn.innerText = "正在為您安全建立訂單...";
+      btn.innerText = currentLang === 'sc' ? "正在为您安全建立订单..." : "正在為您安全建立訂單...";
       
-      const name = document.getElementById('orderName').value.trim();
-      const phone = document.getElementById('orderPhone').value.trim();
-      const addr = document.getElementById('orderAddress').value.trim();
-      const delType = document.getElementById('orderDeliveryType').value;
       const orderNo = (selectedPayMethod === 'wechat' ? 'WX' : 'AL') + Date.now().toString().slice(-8);
-
-      const rpcItems = cart.map(item => ({
-        id: item.id,
-        part_no: item.part_no,
-        part_name: item.part_name,
-        quantity: item.qty,
-        qty: item.qty,
-        unit_price: item.unit_price
-      }));
 
       try {
         const { data, error } = await supabaseClient.rpc('submit_shop_order', {
-          p_name: name,
-          p_phone: phone,
-          p_address: addr,
-          p_shipping_method: delType,
+          p_name: document.getElementById('orderName').value.trim(),
+          p_phone: document.getElementById('orderPhone').value.trim(),
+          p_address: document.getElementById('orderAddress').value.trim(),
+          p_shipping_method: document.getElementById('orderDeliveryType').value,
           p_payment_method: selectedPayMethod === 'wechat' ? '微信支付' : '支付寶',
-          p_items: rpcItems,
+          p_items: cart.map(item => ({ id: item.id, part_no: item.part_no, part_name: item.part_name, qty: item.qty, unit_price: item.unit_price })),
           p_order_no: orderNo,
-          p_notes: '',
-          p_turnstile_token: turnstileToken
+          p_notes: '', p_turnstile_token: turnstileToken
         });
 
         if (error) throw new Error(error.message);
-
         lastSubmitTimestamp = Date.now();
-
-        closePayModal(); 
-        toggleCartDrawer();
-
-        const displayOrderNo = (data && data.order_no) ? data.order_no : orderNo;
-        document.getElementById('orderNumberShow').innerText = displayOrderNo;
+        closePayModal(); toggleCartDrawer();
+        document.getElementById('orderNumberShow').innerText = (data && data.order_no) ? data.order_no : orderNo;
         document.getElementById('officialAccountQrImg').src = OFFICIAL_ACCOUNT_QR_URL;
         document.getElementById('successModal').classList.replace('hidden', 'flex');
 
-        cart = []; 
-        updateCartUI(); 
-        document.getElementById('orderName').value = ''; 
-        document.getElementById('orderPhone').value = ''; 
-        document.getElementById('orderAddress').value = '';
-        clearError('orderName', 'errName'); 
-        clearError('orderPhone', 'errPhone'); 
-        clearError('orderAddress', 'errAddress');
-
+        cart = []; updateCartUI(); 
+        document.getElementById('orderName').value = ''; document.getElementById('orderPhone').value = ''; document.getElementById('orderAddress').value = '';
+        clearError('orderName', 'errName'); clearError('orderPhone', 'errPhone'); clearError('orderAddress', 'errAddress');
+        
         turnstileToken = '';
-        if (window.turnstile) {
-          try { turnstile.reset(); } catch(e) {}
-        }
-
+        if (window.turnstile) try { turnstile.reset(); } catch(e) {}
         fetchCatalog();
       } catch (err) { 
-        alert("下單失敗: " + err.message); 
-        if (window.turnstile) {
-          try { turnstile.reset(); } catch(e) {}
-        }
+        alert((currentLang === 'sc' ? "下单失败: " : "下單失敗: ") + err.message); 
+        if (window.turnstile) try { turnstile.reset(); } catch(e) {}
         turnstileToken = '';
       } finally { 
         btn.disabled = false; 
-        btn.innerText = "我已完成付款，立即送出訂單"; 
+        btn.innerText = currentLang === 'sc' ? "我已完成付款，立即送出订单" : "我已完成付款，立即送出訂單"; 
       }
     }
 
-    function closeSuccessModal() { 
-      document.getElementById('successModal').classList.replace('flex', 'hidden'); 
-    }
-
-    function openShareModal() {
-      const currentUrl = window.location.href.split('?')[0];
-      document.getElementById('shareQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(currentUrl)}`;
-      document.getElementById('shareModal').classList.replace('hidden', 'flex');
-    }
-
-    function closeShareModal() { 
-      document.getElementById('shareModal').classList.replace('flex', 'hidden'); 
-    }
-
+    function closeSuccessModal() { document.getElementById('successModal').classList.replace('flex', 'hidden'); }
+    function openShareModal() { document.getElementById('shareQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(window.location.href.split('?')[0])}`; document.getElementById('shareModal').classList.replace('hidden', 'flex'); }
+    function closeShareModal() { document.getElementById('shareModal').classList.replace('flex', 'hidden'); }
+    
     function copyStoreLink() {
-      const url = window.location.href.split('?')[0];
-      navigator.clipboard.writeText(url).then(() => { 
-        alert("店鋪網址已成功複製到剪貼簿！"); 
-      }).catch(() => { 
-        alert("複製失敗，請手動複製網址。"); 
-      });
+      navigator.clipboard.writeText(window.location.href.split('?')[0]).then(() => { 
+        alert(currentLang === 'sc' ? "店铺网址已成功复制到剪贴簿！" : "店鋪網址已成功複製到剪貼簿！"); 
+      }).catch(() => { alert(currentLang === 'sc' ? "复制失败，请手动复制网址。" : "複製失敗，請手動複製網址。"); });
     }
 
     function nativeShare() {
       const url = window.location.href.split('?')[0];
       if (navigator.share) {
-        navigator.share({ title: '艾草生活體驗館', text: '發現一家優質天然艾草草本館，產地直送官方正品！', url: url });
+        navigator.share({ title: '艾草生活體驗館', text: currentLang === 'sc' ? '发现一家优质天然艾草草本馆，产地直送官方正品！' : '發現一家優質天然艾草草本館，產地直送官方正品！', url: url });
       } else {
-        alert("您的裝置暫不支援直接調用系統分享，請點擊「複製連結」分享給好友！");
+        alert(currentLang === 'sc' ? "您的装置暂不支持直接调用系统分享，请点击「复制连结」分享给好友！" : "您的裝置暫不支援直接調用系統分享，請點擊「複製連結」分享給好友！");
       }
     }
 
@@ -1032,101 +1018,24 @@
   <script>
     (function () {
       'use strict';
-
-      document.addEventListener('contextmenu', function (e) {
-        e.preventDefault();
-        return false;
-      }, { capture: true });
-
-      document.addEventListener('dragstart', function (e) {
-        e.preventDefault();
-        return false;
-      }, { capture: true });
-
+      document.addEventListener('contextmenu', function (e) { e.preventDefault(); return false; }, { capture: true });
+      document.addEventListener('dragstart', function (e) { e.preventDefault(); return false; }, { capture: true });
       document.addEventListener('keydown', function (e) {
         const isModifier = e.ctrlKey || e.metaKey;
-        const key = (e.key || '').toLowerCase();
-        const keyCode = e.keyCode || e.which;
-
-        if (key === 'f12' || keyCode === 123) {
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
-        }
-
+        const key = (e.key || '').toLowerCase(); const keyCode = e.keyCode || e.which;
+        if (key === 'f12' || keyCode === 123) { e.preventDefault(); e.stopPropagation(); return false; }
         if (isModifier) {
-          if (key === 'u' || keyCode === 85) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }
-          if (key === 's' || keyCode === 83) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }
-          if (key === 'p' || keyCode === 80) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }
-          if (e.shiftKey && ['i', 'j', 'c'].includes(key)) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }
+          if (['u','s','p'].includes(key)) { e.preventDefault(); e.stopPropagation(); return false; }
+          if (e.shiftKey && ['i', 'j', 'c'].includes(key)) { e.preventDefault(); e.stopPropagation(); return false; }
         }
       }, { capture: true });
 
       let devToolsDetected = false;
-
       function triggerDefense() {
-        if (devToolsDetected) return;
-        devToolsDetected = true;
-
-        document.body.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#0f172a;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;padding:24px;box-sizing:border-box;">
-            <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
-            <h2 style="font-size:22px;margin:0 0 12px;color:#ef4444;font-weight:700;">系統安全防護觸發</h2>
-            <p style="font-size:14px;color:#94a3b8;line-height:1.6;max-width:480px;margin:0 0 20px;">
-              偵測到異常的除錯環境或開發人員工具已啟動。為保護交易連線與資料安全性，當前存取作業已終止。
-            </p>
-            <button onclick="window.location.reload()" style="background:#2563eb;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:14px;cursor:pointer;">
-              關閉除錯工具後重新載入
-            </button>
-          </div>
-        `;
+        if (devToolsDetected) return; devToolsDetected = true;
+        document.body.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#0f172a;color:#f8fafc;font-family:sans-serif;text-align:center;padding:24px;"><div style="font-size:48px;margin-bottom:16px;">⚠️</div><h2 style="font-size:22px;margin:0 0 12px;color:#ef4444;font-weight:700;">系統安全防護觸發</h2><p style="font-size:14px;color:#94a3b8;line-height:1.6;max-width:480px;margin:0 0 20px;">偵測到異常的除錯環境或開發人員工具已啟動。為保護交易連線與資料安全性，當前存取作業已終止。</p><button onclick="window.location.reload()" style="background:#2563eb;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:14px;cursor:pointer;">重新載入</button></div>`;
       }
-
-      function checkDebugger() {
-        const startTime = performance.now();
-        debugger;
-        if (performance.now() - startTime > 100) {
-          triggerDefense();
-        }
-      }
-
-      function checkWindowDiff() {
-        const widthThreshold = window.outerWidth - window.innerWidth > 160;
-        const heightThreshold = window.outerHeight - window.innerHeight > 160;
-        if (widthThreshold || heightThreshold) {
-          triggerDefense();
-        }
-      }
-
-      setInterval(function () {
-        try {
-          checkDebugger();
-          checkWindowDiff();
-        } catch (err) {}
-      }, 800);
-
-      try {
-        const noop = function () {};
-        ['log', 'debug', 'info', 'warn', 'error'].forEach(function (method) {
-          console[method] = noop;
-        });
-      } catch (err) {}
+      setInterval(function () { try { const s = performance.now(); debugger; if (performance.now() - s > 100) { triggerDefense(); } } catch (err) {} }, 800);
     })();
   </script>
 </body>
