@@ -13,7 +13,7 @@
     img-src 'self' data: https: blob:;
     font-src 'self' data: https:;
   ">
-  <title>艾產品管理系統 - 分類防誤刪與商品備註清退版</title>
+  <title>艾產品管理系統 - 多語切換版</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
@@ -39,14 +39,10 @@
     .border-theme { border-color: #223254; }
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-    
-    .status-inactive {
-      opacity: 0.5;
-      filter: grayscale(80%);
-    }
+    .status-inactive { opacity: 0.5; filter: grayscale(80%); }
   </style>
 </head>
-<body class="p-3 md:p-6 text-sm">
+<body class="p-3 md:p-6 text-sm" id="translatable-body">
 
 <div class="max-w-7xl mx-auto flex flex-col gap-4">
   
@@ -54,12 +50,16 @@
     <div>
       <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2 text-white">
         🌿 艾產品管理系統
-        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">分類約束與商品清退版</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">繁簡雙語版</span>
       </h1>
       <p class="text-xs text-slate-400 mt-1">即時同步前台菜單、發貨、圖庫與庫存中台</p>
     </div>
     
     <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+      <button onclick="toggleLang()" id="btnLangToggle" class="px-2.5 py-1.5 rounded text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white transition mr-1">
+        简
+      </button>
+
       <div id="accountStatus" class="flex items-center gap-2 mr-2 border-r border-theme pr-4">
          <span id="userEmailLabel" class="text-xs text-slate-400">未登入</span>
          <button id="btnLoginOut" onclick="toggleLogin()" class="px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-bold">登入</button>
@@ -71,34 +71,27 @@
   <!-- 戰情看板 -->
   <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5">
     <div class="bg-panel border border-theme rounded-lg p-3">
-      <div class="text-xs text-slate-400">納管品項 (SKUs)</div>
-      <div class="text-xl font-bold text-sky-400 mt-1" id="kpiSkuTotal">0</div>
+      <div class="text-xs text-slate-400">納管品項 (SKUs)</div><div class="text-xl font-bold text-sky-400 mt-1" id="kpiSkuTotal">0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3">
-      <div class="text-xs text-slate-400">庫存總值 (RMB)</div>
-      <div class="text-xl font-bold text-white mt-1" id="kpiTotalValue">¥0</div>
+      <div class="text-xs text-slate-400">庫存總值 (RMB)</div><div class="text-xl font-bold text-white mt-1" id="kpiTotalValue">¥0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3">
-      <div class="text-xs text-slate-400">待發貨訂單</div>
-      <div class="text-xl font-bold text-indigo-400 mt-1" id="kpiPendingOrder">0</div>
+      <div class="text-xs text-slate-400">待發貨訂單</div><div class="text-xl font-bold text-indigo-400 mt-1" id="kpiPendingOrder">0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3">
-      <div class="text-xs text-slate-400">有效自定義類別</div>
-      <div class="text-xl font-bold text-emerald-400 mt-1" id="kpiCategoryTotal">0</div>
+      <div class="text-xs text-slate-400">有效自定義類別</div><div class="text-xl font-bold text-emerald-400 mt-1" id="kpiCategoryTotal">0</div>
     </div>
     <div class="bg-panel border border-theme rounded-lg p-3 col-span-2 md:col-span-1">
-      <div class="text-xs text-slate-400">零庫存斷貨品項</div>
-      <div class="text-xl font-bold text-rose-500 mt-1" id="kpiZeroStock">0</div>
+      <div class="text-xs text-slate-400">零庫存斷貨品項</div><div class="text-xl font-bold text-rose-500 mt-1" id="kpiZeroStock">0</div>
     </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-    
     <!-- 左側：異動登記 -->
     <div class="lg:col-span-4 bg-panel border border-theme rounded-lg p-4 relative">
       <div id="authOverlay" class="absolute inset-0 bg-panel/90 backdrop-blur z-10 flex flex-col items-center justify-center rounded-lg">
-        <span class="text-4xl mb-2">🔒</span>
-        <p class="text-indigo-300 font-bold mb-3">請登入系統進行異動</p>
+        <span class="text-4xl mb-2">🔒</span><p class="text-indigo-300 font-bold mb-3">請登入系統進行異動</p>
         <button onclick="toggleLogin()" class="px-4 py-2 bg-indigo-600 rounded text-white text-xs font-bold shadow">前往登入</button>
       </div>
 
@@ -158,12 +151,7 @@
         <table class="w-full text-left text-xs min-w-[780px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
             <tr>
-              <th class="p-2.5 w-16 text-center">圖片</th>
-              <th class="p-2.5">品號 / 品名</th>
-              <th class="p-2.5">分類 / 狀態</th>
-              <th class="p-2.5">庫存 / 儲位</th>
-              <th class="p-2.5">單價 (總值)</th>
-              <th class="p-2.5 text-center w-36">操作管理</th>
+              <th class="p-2.5 w-16 text-center">圖片</th><th class="p-2.5">品號 / 品名</th><th class="p-2.5">分類 / 狀態</th><th class="p-2.5">庫存 / 儲位</th><th class="p-2.5">單價 (總值)</th><th class="p-2.5 text-center w-36">操作管理</th>
             </tr>
           </thead>
           <tbody id="inventoryTableBody" class="divide-y divide-theme"></tbody>
@@ -179,16 +167,10 @@
             <button onclick="addCategory()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded text-xs font-bold text-white transition">確認新增</button>
           </div>
         </div>
-
         <div class="border border-theme rounded overflow-hidden">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-900 text-slate-400 border-b border-theme">
-              <tr>
-                <th class="p-2.5">排序/ID</th>
-                <th class="p-2.5">前台菜單類別名稱</th>
-                <th class="p-2.5">當前納管產品數</th>
-                <th class="p-2.5 text-right">操作</th>
-              </tr>
+              <tr><th class="p-2.5">排序/ID</th><th class="p-2.5">前台菜單類別名稱</th><th class="p-2.5">當前納管產品數</th><th class="p-2.5 text-right">操作</th></tr>
             </thead>
             <tbody id="categoryTableBody" class="divide-y divide-theme"></tbody>
           </table>
@@ -199,13 +181,7 @@
       <div id="viewOrders" class="hidden overflow-x-auto border border-theme rounded">
         <table class="w-full text-left text-xs min-w-[800px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
-            <tr>
-              <th class="p-2.5">訂單號 / 時間</th>
-              <th class="p-2.5">收件資訊</th>
-              <th class="p-2.5">品項明細</th>
-              <th class="p-2.5">金額</th>
-              <th class="p-2.5">發貨狀態</th>
-            </tr>
+            <tr><th class="p-2.5">訂單號 / 時間</th><th class="p-2.5">收件資訊</th><th class="p-2.5">品項明細</th><th class="p-2.5">金額</th><th class="p-2.5">發貨狀態</th></tr>
           </thead>
           <tbody id="ordersTableBody" class="divide-y divide-theme"></tbody>
         </table>
@@ -215,18 +191,11 @@
       <div id="viewLogs" class="hidden overflow-x-auto border border-theme rounded">
         <table class="w-full text-left text-xs min-w-[650px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
-            <tr>
-              <th class="p-2.5">時間</th>
-              <th class="p-2.5">操作者</th>
-              <th class="p-2.5">品號 / 項目</th>
-              <th class="p-2.5">動作</th>
-              <th class="p-2.5">數量 / 備註詳情</th>
-            </tr>
+            <tr><th class="p-2.5">時間</th><th class="p-2.5">操作者</th><th class="p-2.5">品號 / 項目</th><th class="p-2.5">動作</th><th class="p-2.5">數量 / 備註詳情</th></tr>
           </thead>
           <tbody id="logsTableBody" class="divide-y divide-theme"></tbody>
         </table>
       </div>
-
     </div>
   </div>
 </div>
@@ -246,6 +215,63 @@
   </div>
 </div>
 
+<!-- 繁簡轉換字典與腳本 -->
+<script>
+  const t2sMap = { "產品": "产品", "管理": "管理", "系統": "系统", "多語切換版": "多语切换版", "即時": "即时", "同步": "同步", "前台": "前台", "菜單": "菜单", "發貨": "发货", "圖庫": "图库", "與": "与", "庫存": "库存", "中台": "中台", "未登入": "未登入", "登入": "登入", "匯出台帳": "汇出台帐", "納管品項": "纳管品项", "總值": "总值", "待發貨訂單": "待发货订单", "有效自定義類別": "有效自定义类别", "零庫存斷貨品項": "零库存断货品项", "請登入系統進行異動": "请登入系统进行异动", "前往登入": "前往登入", "異動登記": "异动登记", "溯源": "溯源", "異動類型": "异动类型", "基地收穫": "基地收获", "入庫": "入库", "門市調撥": "门市调拨", "出庫": "出库", "新產品建檔": "新产品建档", "含溯源資料": "含溯源资料", "產品品號": "产品品号", "如": "如", "產品品名規格": "产品品名规格", "所屬自定義類別": "所属自定义类别", "單價": "单价", "安全水位": "安全水位", "前台溯源與商品詳情描述": "前台溯源与商品详情描述", "選填": "选填", "若留空前台將根據分類自動帶入官方道地履歷": "若留空前台将根据分类自动带入官方道地履历", "數量": "数量", "乾燥儲位": "干燥储位", "提交異動": "提交异动", "搜尋品號、品名": "搜寻品号、品名", "產品台帳": "产品台帐", "菜單分類管理": "菜单分类管理", "發貨訂單": "发货订单", "操作日誌": "操作日志", "圖片": "图片", "品號": "品号", "品名": "品名", "分類": "分类", "狀態": "状态", "儲位": "储位", "操作管理": "操作管理", "新增自定義類別": "新增自定义类别", "將即時顯示在前台頂部菜單": "将即时显示在前台顶部菜单", "輸入新分類名稱": "输入新分类名称", "薰香養生": "薰香养生", "特級艾絨條": "特级艾绒条", "確認新增": "确认新增", "排序": "排序", "前台菜單類別名稱": "前台菜单类别名称", "當前納管產品數": "当前纳管产品数", "操作": "操作", "訂單號": "订单号", "時間": "时间", "收件資訊": "收件资讯", "品項明細": "品项明细", "金額": "金额", "發貨狀態": "发货状态", "操作者": "操作者", "項目": "项目", "動作": "动作", "備註詳情": "备注详情", "系統登入": "系统登入", "取消": "取消", "未分類": "未分类", "件商品": "件商品", "修改名稱": "修改名称", "刪除": "删除", "具溯源履歷": "具溯源履历", "上架中": "上架中", "已下架": "已下架", "件": "件", "總額": "总额", "換圖": "换图", "重新上架": "重新上架", "隱藏下架": "隐藏下架", "刪除商品": "删除商品", "已出貨": "已出货", "點擊發貨": "点击发货", "商品清退": "商品清退", "請先登入": "请先登入", "請輸入": "请输入", "登入失敗": "登入失败", "為確保設備與後台安全，系統因閒置超過": "为确保设备与后台安全，系统因闲置超过", "分鐘已自動登出": "分钟已自动登出", "該分類已存在": "该分类已存在", "已新增，前台選單已同步": "已新增，前台选单已同步", "請輸入新的分類名稱": "请输入新的分类名称", "原名稱": "原名称", "分類名稱不能為空": "分类名称不能为空", "該分類名稱已存在": "该分类名称已存在", "分類名稱已成功更新為": "分类名称已成功更新为", "關聯商品與前台菜單已同步": "关联商品与前台菜单已同步", "修改分類失敗": "修改分类失败", "無法刪除": "无法删除", "類別": "类别", "下目前仍納管有": "下目前仍纳管有", "依安全規則：分類下無任何商品時方可刪除": "依安全规则：分类下无任何商品时方可删除", "請先前往「產品台帳」將關聯商品刪除或將其分類移至其他類別後再試": "请先前往「产品台帐」将关联商品删除或将其分类移至其他类别后再试", "確定要刪除空類別": "确定要删除空类别", "嗎？此操作不可還原": "吗？此操作不可还原", "已成功刪除": "已成功删除", "確定要將商品": "确定要将商品", "設為": "设为", "嗎？": "吗？", "下架後前台將不再展示該商品": "下架后前台将不再展示该商品", "商品已成功": "商品已成功", "狀態更新失敗": "状态更新失败", "找不到指定商品": "找不到指定商品", "警告": "警告", "即將永久刪除商品": "即将永久删除商品", "當前剩餘庫存": "当前剩余库存", "請輸入刪除/報廢備註原因（必填）": "请输入删除/报废备注原因（必填）", "刪除失敗：依管理規定，必須填寫刪除備註原因": "删除失败：依管理规定，必须填写删除备注原因", "最後確認：確定要永久刪除": "最后确认：确定要永久删除", "填寫備註": "填写备注", "已成功自系統刪除，並已登記備註日誌": "已成功自系统删除，并已登记备注日志", "刪除商品失敗": "删除商品失败", "請填寫快遞單號 (可選填)": "请填写快递单号 (可选填)", "發貨狀態已成功更新": "发货状态已成功更新", "發貨更新失敗": "发货更新失败", "數量必須大於": "数量必须大于", "且品號不能為空": "且品号不能为空", "該品號已存在": "该品号已存在", "品號不存在": "品号不存在", "庫存不足": "库存不足", "庫存與溯源異動更新成功": "库存与溯源异动更新成功", "更新失敗": "更新失败", "無圖": "无图", "線上商城": "线上商城" };
+  
+  const s2tMap = {};
+  for (let key in t2sMap) { s2tMap[t2sMap[key]] = key; }
+
+  let currentLang = localStorage.getItem('adminLang') || 'tc';
+
+  function translateNode(node, dict) {
+    if (node.nodeType === 3) { 
+      let text = node.nodeValue;
+      for (let key in dict) { text = text.split(key).join(dict[key]); }
+      node.nodeValue = text;
+    } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE' && node.nodeName !== 'INPUT' && node.nodeName !== 'TEXTAREA') {
+      if (node.hasAttribute('placeholder')) {
+        let ph = node.getAttribute('placeholder');
+        for (let key in dict) { ph = ph.split(key).join(dict[key]); }
+        node.setAttribute('placeholder', ph);
+      }
+      for (let i = 0; i < node.childNodes.length; i++) {
+        translateNode(node.childNodes[i], dict);
+      }
+    }
+  }
+
+  function applyLanguage(lang) {
+    const root = document.getElementById('translatable-body');
+    const btn = document.getElementById('btnLangToggle');
+    if (lang === 'sc') {
+      translateNode(root, t2sMap);
+      btn.innerText = '繁';
+    } else {
+      translateNode(root, s2tMap);
+      btn.innerText = '简';
+    }
+    localStorage.setItem('adminLang', lang);
+  }
+
+  function toggleLang() {
+    currentLang = currentLang === 'tc' ? 'sc' : 'tc';
+    applyLanguage(currentLang);
+    renderViews(); // 重新渲染列表以套用翻譯
+    renderCategoriesTable();
+  }
+
+  function _t(str) {
+    if (!str) return str;
+    if (currentLang === 'sc') {
+      let res = str;
+      for (let k in t2sMap) res = res.split(k).join(t2sMap[k]);
+      return res;
+    }
+    return str;
+  }
+</script>
+
 <script>
   const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
   const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
@@ -260,19 +286,14 @@
 
   function escapeHtml(text) {
     if (text === null || text === undefined) return '';
-    return String(text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   supabaseClient.auth.onAuthStateChange((event, session) => {
     currentUser = session ? session.user : null;
     document.getElementById('authOverlay').classList.toggle('hidden', !!currentUser);
-    document.getElementById('userEmailLabel').innerText = currentUser ? `👤 ${escapeHtml(currentUser.email)}` : '未登入';
-    document.getElementById('btnLoginOut').innerText = currentUser ? '登出' : '登入';
+    document.getElementById('userEmailLabel').innerText = currentUser ? `👤 ${escapeHtml(currentUser.email)}` : _t('未登入');
+    document.getElementById('btnLoginOut').innerText = currentUser ? _t('登出') : _t('登入');
     
     if (currentUser) {
       resetIdleTimer();
@@ -294,18 +315,11 @@
   async function performLogin() {
     const emailVal = document.getElementById('authEmail').value.trim();
     const passVal = document.getElementById('authPassword').value;
-    if (!emailVal || !passVal) return alert("請輸入 Email 與密碼！");
+    if (!emailVal || !passVal) return alert(_t("請輸入 Email 與密碼！"));
 
-    const { error } = await supabaseClient.auth.signInWithPassword({
-      email: emailVal,
-      password: passVal
-    });
-    if (error) {
-      alert("登入失敗：" + error.message);
-    } else {
-      closeAuthModal();
-      resetIdleTimer();
-    }
+    const { error } = await supabaseClient.auth.signInWithPassword({ email: emailVal, password: passVal });
+    if (error) { alert(_t("登入失敗：") + error.message); } 
+    else { closeAuthModal(); resetIdleTimer(); }
   }
 
   function resetIdleTimer() {
@@ -313,48 +327,32 @@
     if (currentUser) {
       idleTimer = setTimeout(() => {
         supabaseClient.auth.signOut();
-        alert("為確保設備與後台安全，系統因閒置超過 15 分鐘已自動登出！");
+        alert(_t("為確保設備與後台安全，系統因閒置超過 15 分鐘已自動登出！"));
         location.reload();
       }, 15 * 60 * 1000);
     }
   }
 
-  ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
-    window.addEventListener(evt, resetIdleTimer, false);
-  });
+  ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(evt => window.addEventListener(evt, resetIdleTimer, false));
 
   async function fetchAllData() {
     await fetchCategories();
     await fetchProducts();
+    if(currentLang === 'sc') applyLanguage('sc');
   }
 
   async function fetchCategories() {
-    const { data, error } = await supabaseClient
-      .from('product_categories')
-      .select('*')
-      .order('sort_order', { ascending: true })
-      .order('id', { ascending: true });
-      
-    if (error) console.error("獲取分類失敗:", error.message);
+    const { data } = await supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
     categoryList = data || [];
     document.getElementById('kpiCategoryTotal').innerText = categoryList.length;
-
     const select = document.getElementById('partCategory');
-    if (categoryList.length === 0) {
-      select.innerHTML = '<option value="未分類">未分類</option>';
-    } else {
-      select.innerHTML = categoryList.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
-    }
+    if (categoryList.length === 0) { select.innerHTML = `<option value="未分類">${_t('未分類')}</option>`; } 
+    else { select.innerHTML = categoryList.map(c => `<option value="${escapeHtml(c.name)}">${_t(escapeHtml(c.name))}</option>`).join(''); }
     renderCategoriesTable();
   }
 
   async function fetchProducts() {
-    const { data, error } = await supabaseClient
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
-      
-    if (error) console.error("獲取商品失敗:", error.message);
+    const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
     inventoryList = data || [];
     renderViews();
   }
@@ -366,163 +364,93 @@
       return `
         <tr class="hover:bg-slate-800/40">
           <td class="p-2.5 font-mono text-slate-400">#${Number(c.id)}</td>
-          <td class="p-2.5 font-bold text-emerald-400">${escapeHtml(c.name)}</td>
-          <td class="p-2.5 text-slate-300">
-            <span class="${count > 0 ? 'text-amber-300' : 'text-slate-400'} font-medium">${count} 件商品</span>
-          </td>
+          <td class="p-2.5 font-bold text-emerald-400">${_t(escapeHtml(c.name))}</td>
+          <td class="p-2.5 text-slate-300"><span class="${count > 0 ? 'text-amber-300' : 'text-slate-400'} font-medium">${count} ${_t('件商品')}</span></td>
           <td class="p-2.5 text-right space-x-1.5">
-            <button onclick="editCategory(${Number(c.id)})" class="px-2.5 py-1 bg-amber-600/20 text-amber-300 hover:bg-amber-600/40 rounded text-xs transition">修改名稱</button>
-            <button onclick="deleteCategory(${Number(c.id)})" class="px-2.5 py-1 ${count > 0 ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed' : 'bg-rose-600/20 text-rose-400 hover:bg-rose-600/40'} rounded text-xs transition">刪除</button>
+            <button onclick="editCategory(${Number(c.id)})" class="px-2.5 py-1 bg-amber-600/20 text-amber-300 hover:bg-amber-600/40 rounded text-xs transition">${_t('修改名稱')}</button>
+            <button onclick="deleteCategory(${Number(c.id)})" class="px-2.5 py-1 ${count > 0 ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed' : 'bg-rose-600/20 text-rose-400 hover:bg-rose-600/40'} rounded text-xs transition">${_t('刪除')}</button>
           </td>
-        </tr>
-      `;
+        </tr>`;
     }).join('');
   }
 
   async function addCategory() {
-    if (!currentUser) return alert("請先登入後台！");
+    if (!currentUser) return alert(_t("請先登入後台！"));
     const name = document.getElementById('newCategoryName').value.trim();
-    if (!name) return alert("請輸入類別名稱！");
-
-    const exists = categoryList.some(c => c.name === name);
-    if (exists) return alert("該分類已存在！");
+    if (!name) return alert(_t("請輸入類別名稱！"));
+    if (categoryList.some(c => c.name === name)) return alert(_t("該分類已存在！"));
 
     const { error } = await supabaseClient.from('product_categories').insert([{ name }]);
-    if (error) {
-      alert("新增失敗: " + error.message);
-    } else {
-      document.getElementById('newCategoryName').value = '';
-      await fetchCategories();
-      alert(`分類「${name}」已新增，前台選單已同步！`);
-    }
+    if (error) alert("新增失敗: " + error.message);
+    else { document.getElementById('newCategoryName').value = ''; await fetchCategories(); alert(_t("已新增，前台選單已同步！")); }
   }
 
   async function editCategory(id) {
-    if (!currentUser) return alert("請先登入！");
-    const cat = categoryList.find(c => c.id === id);
-    if (!cat) return;
+    if (!currentUser) return alert(_t("請先登入！"));
+    const cat = categoryList.find(c => c.id === id); if (!cat) return;
 
     const oldName = cat.name;
-    const newName = prompt(`請輸入新的分類名稱（原名稱：${oldName}）：`, oldName);
+    const newName = prompt(_t("請輸入新的分類名稱") + `（${_t("原名稱")}：${_t(oldName)}）：`, _t(oldName));
     if (newName === null) return;
-
     const trimmed = newName.trim();
-    if (!trimmed) return alert("分類名稱不能為空！");
-    if (trimmed === oldName) return;
-
-    const exists = categoryList.some(c => c.name === trimmed && c.id !== id);
-    if (exists) return alert("該分類名稱已存在！");
+    if (!trimmed) return alert(_t("分類名稱不能為空！"));
+    if (trimmed === oldName || trimmed === _t(oldName)) return;
+    if (categoryList.some(c => c.name === trimmed && c.id !== id)) return alert(_t("該分類名稱已存在！"));
 
     try {
-      const { error: catErr } = await supabaseClient
-        .from('product_categories')
-        .update({ name: trimmed })
-        .eq('id', id);
-      if (catErr) throw catErr;
-
-      const { error: prodErr } = await supabaseClient
-        .from('products')
-        .update({ category: trimmed })
-        .eq('category', oldName);
-      if (prodErr) console.warn("同步更新商品分類提示:", prodErr.message);
-
-      alert(`分類名稱已成功更新為「${trimmed}」，關聯商品與前台菜單已同步！`);
+      const { error: catErr } = await supabaseClient.from('product_categories').update({ name: trimmed }).eq('id', id); if (catErr) throw catErr;
+      await supabaseClient.from('products').update({ category: trimmed }).eq('category', oldName);
+      alert(_t("分類名稱已成功更新為") + `「${trimmed}」，` + _t("關聯商品與前台菜單已同步！"));
       await fetchAllData();
-    } catch (err) {
-      alert("修改分類失敗：" + err.message);
-    }
+    } catch (err) { alert(_t("修改分類失敗：") + err.message); }
   }
 
-  /* 規則 1：產品類別可被刪除的前提是其下沒有產品 */
   async function deleteCategory(id) {
-    if (!currentUser) return alert("請先登入！");
-    const cat = categoryList.find(c => c.id === id);
-    if (!cat) return;
+    if (!currentUser) return alert(_t("請先登入！"));
+    const cat = categoryList.find(c => c.id === id); if (!cat) return;
     const catName = cat.name;
     const count = inventoryList.filter(i => i.category === catName).length;
 
-    // 前置約束：類別下仍有商品，一律禁止刪除
     if (count > 0) {
-      alert(`【無法刪除】類別「${catName}」下目前仍納管有 ${count} 件商品！\n\n依安全規則：分類下無任何商品時方可刪除。\n請先前往「產品台帳」將關聯商品刪除或將其分類移至其他類別後再試。`);
+      alert(`【${_t('無法刪除')}】${_t('類別')}「${_t(catName)}」${_t('下目前仍納管有')} ${count} ${_t('件商品')}！\n\n${_t('依安全規則：分類下無任何商品時方可刪除')}。\n${_t('請先前往「產品台帳」將關聯商品刪除或將其分類移至其他類別後再試')}。`);
       return;
     }
-
-    if (!confirm(`確定要刪除空類別「${catName}」嗎？此操作不可還原。`)) return;
+    if (!confirm(`${_t('確定要刪除空類別')}「${_t(catName)}」${_t('嗎？此操作不可還原')}。`)) return;
 
     const { error } = await supabaseClient.from('product_categories').delete().eq('id', id);
-    if (error) {
-      alert("刪除失敗: " + error.message);
-    } else {
-      alert(`類別「${catName}」已成功刪除！`);
-      await fetchCategories();
-    }
+    if (error) alert("刪除失敗: " + error.message);
+    else { alert(`${_t('類別')}「${_t(catName)}」${_t('已成功刪除')}！`); await fetchCategories(); }
   }
 
-  // 上下架狀態切換
   async function toggleProductStatus(partNo, currentStatus) {
-    if (!currentUser) return alert("請先登入系統！");
+    if (!currentUser) return alert(_t("請先登入系統！"));
     const activeStat = currentStatus === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE';
     const newStatus = activeStat === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    const actionText = newStatus === 'ACTIVE' ? '重新上架' : '下架隱藏';
+    const actionText = newStatus === 'ACTIVE' ? _t('重新上架') : _t('隱藏下架');
 
-    if (!confirm(`確定要將商品 ${partNo} 設為「${actionText}」嗎？\n(下架後前台將不再展示該商品)`)) return;
+    if (!confirm(`${_t('確定要將商品')} ${partNo} ${_t('設為')}「${actionText}」${_t('嗎？')}\n(${_t('下架後前台將不再展示該商品')})`)) return;
 
     try {
-      const { error } = await supabaseClient
-        .from('products')
-        .update({ status: newStatus })
-        .eq('part_no', partNo);
-
-      if (error) throw error;
-      alert(`商品已成功${actionText}！`);
-      await fetchProducts();
-    } catch (err) {
-      alert(`狀態更新失敗：${err.message}`);
-    }
+      const { error } = await supabaseClient.from('products').update({ status: newStatus }).eq('part_no', partNo);
+      if (error) throw error; alert(`${_t('商品已成功')}${actionText}！`); await fetchProducts();
+    } catch (err) { alert(`${_t('狀態更新失敗：')}${err.message}`); }
   }
 
-  /* 規則 2：產品可以被刪除，且必須填寫備註原因 */
   async function deleteProduct(partNo) {
-    if (!currentUser) return alert("請先登入系統！");
-    const prod = inventoryList.find(x => x.part_no === partNo);
-    if (!prod) return alert("找不到指定商品！");
+    if (!currentUser) return alert(_t("請先登入系統！"));
+    const prod = inventoryList.find(x => x.part_no === partNo); if (!prod) return alert(_t("找不到指定商品！"));
 
-    const reason = prompt(`【警告】即將永久刪除商品：\n品名：${prod.part_name} (${partNo})\n當前剩餘庫存：${prod.stock} 件\n\n請輸入刪除/報廢備註原因（必填）：`);
-    if (reason === null) return; // 點擊取消
-
+    const reason = prompt(`【${_t('警告')}】${_t('即將永久刪除商品')}：\n${_t('品名')}：${_t(prod.part_name)} (${partNo})\n${_t('當前剩餘庫存')}：${prod.stock} ${_t('件')}\n\n${_t('請輸入刪除/報廢備註原因（必填）')}：`);
+    if (reason === null) return;
     const cleanReason = reason.trim();
-    if (!cleanReason) {
-      return alert("刪除失敗：依管理規定，必須填寫刪除備註原因！");
-    }
-
-    if (!confirm(`最後確認：確定要永久刪除【${prod.part_name}】嗎？\n填寫備註：${cleanReason}`)) return;
+    if (!cleanReason) return alert(_t("刪除失敗：依管理規定，必須填寫刪除備註原因！"));
+    if (!confirm(`${_t('最後確認：確定要永久刪除')}【${_t(prod.part_name)}】${_t('嗎？')}\n${_t('填寫備註')}：${cleanReason}`)) return;
 
     try {
-      // 1. 從 products 資料表移除
-      const { error: delErr } = await supabaseClient
-        .from('products')
-        .delete()
-        .eq('part_no', partNo);
-
-      if (delErr) throw delErr;
-
-      // 2. 寫入審計與操作日誌，備註存於 bin_location 欄位備查
-      const { error: logErr } = await supabaseClient
-        .from('inventory_transactions')
-        .insert([{
-          part_no: partNo,
-          trans_type: 'DELETE',
-          qty: prod.stock || 0,
-          bin_location: '【刪除備註】' + cleanReason,
-          operator: currentUser.email
-        }]);
-      if (logErr) console.warn("日誌記錄提示:", logErr.message);
-
-      alert(`商品「${prod.part_name}」已成功自系統刪除，並已登記備註日誌！`);
-      await fetchProducts();
-    } catch (err) {
-      alert("刪除商品失敗: " + err.message);
-    }
+      const { error: delErr } = await supabaseClient.from('products').delete().eq('part_no', partNo); if (delErr) throw delErr;
+      await supabaseClient.from('inventory_transactions').insert([{ part_no: partNo, trans_type: 'DELETE', qty: prod.stock || 0, bin_location: '【刪除備註】' + cleanReason, operator: currentUser.email }]);
+      alert(`${_t('商品')}「${_t(prod.part_name)}」${_t('已成功自系統刪除，並已登記備註日誌')}！`); await fetchProducts();
+    } catch (err) { alert(_t("刪除商品失敗: ") + err.message); }
   }
 
   function renderViews() {
@@ -531,8 +459,7 @@
     let totalVal = 0, lowCount = 0, zeroCount = 0;
     inventoryList.forEach(i => { 
       totalVal += (i.stock || 0) * (i.unit_price || 0); 
-      if (i.stock === 0) zeroCount++; 
-      else if (i.stock <= i.safety_stock) lowCount++; 
+      if (i.stock === 0) zeroCount++; else if (i.stock <= i.safety_stock) lowCount++; 
     });
     document.getElementById('kpiSkuTotal').innerText = inventoryList.length;
     document.getElementById('kpiTotalValue').innerText = `¥${totalVal.toLocaleString()}`;
@@ -553,53 +480,33 @@
       const isInactive = i.status === 'INACTIVE';
       const statusClass = isInactive ? 'status-inactive' : '';
 
-      const imgDisplay = safeImg 
-        ? `<img src="${safeImg}" class="w-10 h-10 object-cover rounded shadow border border-slate-700">` 
-        : `<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center text-[10px] text-slate-500">無圖</div>`;
-
       return `
         <tr class="hover:bg-slate-800/40 ${statusClass}">
-          <td class="p-2.5 flex justify-center">${imgDisplay}</td>
-          <td class="p-2.5 leading-tight">
-            <span class="font-mono text-sky-400 font-bold">${safePartNo}</span><br>
-            <span class="text-[11px] text-slate-300">${safePartName}</span>
-          </td>
+          <td class="p-2.5 flex justify-center">${safeImg ? `<img src="${safeImg}" class="w-10 h-10 object-cover rounded shadow border border-slate-700">` : `<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center text-[10px] text-slate-500">${_t('無圖')}</div>`}</td>
+          <td class="p-2.5 leading-tight"><span class="font-mono text-sky-400 font-bold">${safePartNo}</span><br><span class="text-[11px] text-slate-300">${_t(safePartName)}</span></td>
           <td class="p-2.5">
-            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 border border-theme text-emerald-400 font-medium">${safeCategory}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 border border-theme text-emerald-400 font-medium">${_t(safeCategory)}</span>
             <br>
             <div class="mt-1">
-              ${hasDesc ? '<span class="text-[10px] text-amber-300 font-medium mr-2">📜 具溯源履歷</span>' : ''}
-              ${isInactive ? '<span class="text-[10px] bg-rose-900/50 text-rose-300 px-1.5 rounded">已下架</span>' : '<span class="text-[10px] text-slate-400">上架中</span>'}
+              ${hasDesc ? `<span class="text-[10px] text-amber-300 font-medium mr-2">📜 ${_t('具溯源履歷')}</span>` : ''}
+              ${isInactive ? `<span class="text-[10px] bg-rose-900/50 text-rose-300 px-1.5 rounded">${_t('已下架')}</span>` : `<span class="text-[10px] text-slate-400">${_t('上架中')}</span>`}
             </div>
           </td>
-          <td class="p-2.5 leading-tight">
-            <span class="${i.stock===0?'text-rose-400':'text-emerald-400'} font-bold">${i.stock} ${escapeHtml(i.unit||'件')}</span><br>
-            <span class="font-mono text-amber-300 text-[10px]">儲位: ${safeBin}</span>
-          </td>
-          <td class="p-2.5 leading-tight">
-            ¥${i.unit_price}<br>
-            <span class="text-slate-500 text-[10px]">總額 ¥${(i.stock * i.unit_price)}</span>
-          </td>
+          <td class="p-2.5 leading-tight"><span class="${i.stock===0?'text-rose-400':'text-emerald-400'} font-bold">${i.stock} ${_t('件')}</span><br><span class="font-mono text-amber-300 text-[10px]">${_t('儲位')}: ${safeBin}</span></td>
+          <td class="p-2.5 leading-tight">¥${i.unit_price}<br><span class="text-slate-500 text-[10px]">${_t('總額')} ¥${(i.stock * i.unit_price)}</span></td>
           <td class="p-2.5">
             <div class="flex flex-col gap-1.5 items-center">
-              <button onclick="triggerImageUpload('${encodeURIComponent(i.part_no)}')" class="w-full px-2 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-[11px] text-white transition flex items-center justify-center gap-1">
-                📷 換圖
-              </button>
-              <button onclick="toggleProductStatus('${safePartNo}', '${escapeHtml(i.status || 'ACTIVE')}')" class="w-full px-2 py-1 ${isInactive ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/40' : 'bg-amber-600/20 text-amber-300 hover:bg-amber-600/40'} border border-transparent rounded text-[11px] transition flex items-center justify-center gap-1">
-                ${isInactive ? '🟢 重新上架' : '🟡 隱藏下架'}
-              </button>
-              <button onclick="deleteProduct('${safePartNo}')" class="w-full px-2 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/40 border border-transparent rounded text-[11px] transition flex items-center justify-center gap-1">
-                🗑️ 刪除商品
-              </button>
+              <button onclick="triggerImageUpload('${encodeURIComponent(i.part_no)}')" class="w-full px-2 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-[11px] text-white transition flex items-center justify-center gap-1">📷 ${_t('換圖')}</button>
+              <button onclick="toggleProductStatus('${safePartNo}', '${escapeHtml(i.status || 'ACTIVE')}')" class="w-full px-2 py-1 ${isInactive ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/40' : 'bg-amber-600/20 text-amber-300 hover:bg-amber-600/40'} border border-transparent rounded text-[11px] transition flex items-center justify-center gap-1">${isInactive ? `🟢 ${_t('重新上架')}` : `🟡 ${_t('隱藏下架')}`}</button>
+              <button onclick="deleteProduct('${safePartNo}')" class="w-full px-2 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/40 border border-transparent rounded text-[11px] transition flex items-center justify-center gap-1">🗑️ ${_t('刪除商品')}</button>
             </div>
           </td>
-        </tr>
-      `;
+        </tr>`;
     }).join('');
   }
 
   function triggerImageUpload(encodedPartNo) {
-    if (!currentUser) return alert("請先登入系統才能更換圖片！");
+    if (!currentUser) return alert(_t("請先登入系統才能更換圖片！"));
     targetPartNoForUpload = decodeURIComponent(encodedPartNo);
     document.getElementById('imageUploader').click();
   }
@@ -615,199 +522,94 @@
     try {
       const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, file);
       if (upErr) throw upErr;
-
       const { data: pData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
-      const { error: dbErr } = await supabaseClient.from('products').update({ image_url: pData.publicUrl }).eq('part_no', targetPartNoForUpload);
-      if (dbErr) throw dbErr;
-
-      alert("圖片更新成功！");
-      await fetchProducts();
-    } catch (err) { 
-      alert("上傳失敗: " + err.message); 
-    } finally {
-      document.getElementById('imageUploader').value = '';
-      targetPartNoForUpload = null;
-    }
+      await supabaseClient.from('products').update({ image_url: pData.publicUrl }).eq('part_no', targetPartNoForUpload);
+      alert("圖片更新成功！"); await fetchProducts();
+    } catch (err) { alert("上傳失敗: " + err.message); } 
+    finally { document.getElementById('imageUploader').value = ''; targetPartNoForUpload = null; }
   }
 
   async function fetchShopOrders() {
-    const { data, error } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
-    if (error) {
-      console.error("獲取訂單失敗:", error.message);
-      return;
-    }
+    const { data } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
     let pendingCount = 0;
     
     document.getElementById('ordersTableBody').innerHTML = (data || []).map(o => {
-      const isShipped = o.order_status === 'SHIPPED' || o.shipping_status === '已發貨';
+      const isShipped = o.order_status === 'SHIPPED' || o.shipping_status === '已發貨' || o.shipping_status === '已发货';
       if (!isShipped) pendingCount++;
 
-      const displayOrderNo = escapeHtml(String(o.order_no || o.id || ''));
-      const rName = escapeHtml(o.recipient_name || o.customer_name || '未填寫');
-      const rPhone = escapeHtml(o.recipient_phone || o.customer_phone || '未填寫');
-      const rAddr = escapeHtml(o.shipping_address || o.customer_address || '未填寫');
-      const pMethod = escapeHtml(o.payment_method || '未知');
-      const sMethod = escapeHtml(o.shipping_method || '未知');
-      const trackingNo = escapeHtml(o.tracking_no || '');
-
       let orderItems = o.items;
-      if (typeof orderItems === 'string') {
-        try { orderItems = JSON.parse(orderItems); } catch(e) { orderItems = []; }
-      }
+      if (typeof orderItems === 'string') { try { orderItems = JSON.parse(orderItems); } catch(e) { orderItems = []; } }
       if (!Array.isArray(orderItems)) orderItems = [];
-
-      const itemsHtml = orderItems.map(i => 
-        `${escapeHtml(i.part_name || '商品')} x${Number(i.quantity || i.qty || 1)}`
-      ).join('<br>') || '<span class="text-slate-500">無品項資料</span>';
+      const itemsHtml = orderItems.map(i => `${_t(escapeHtml(i.part_name || '商品'))} x${Number(i.quantity || i.qty || 1)}`).join('<br>') || `<span class="text-slate-500">無品項資料</span>`;
 
       return `
         <tr class="hover:bg-slate-800/40">
-          <td class="p-2.5 text-[11px] font-mono text-slate-400">
-            <span class="text-sky-400 font-bold">${displayOrderNo}</span><br>${new Date(o.created_at).toLocaleString('zh-TW',{hour12:false})}
-          </td>
-          <td class="p-2.5 leading-tight">
-            <strong class="text-white">${rName}</strong> (${rPhone})<br>
-            <span class="text-slate-400 text-[10px] break-words max-w-[200px] inline-block">${rAddr}</span>
-            <br><span class="text-[9px] text-amber-300">配送: ${sMethod} | 支付: ${pMethod}</span>
-          </td>
+          <td class="p-2.5 text-[11px] font-mono text-slate-400"><span class="text-sky-400 font-bold">${escapeHtml(o.order_no || o.id)}</span><br>${new Date(o.created_at).toLocaleString('zh-TW',{hour12:false})}</td>
+          <td class="p-2.5 leading-tight"><strong class="text-white">${escapeHtml(o.recipient_name || o.customer_name)}</strong> (${escapeHtml(o.recipient_phone || o.customer_phone)})<br><span class="text-slate-400 text-[10px] break-words max-w-[200px] inline-block">${_t(escapeHtml(o.shipping_address))}</span></td>
           <td class="p-2.5 text-[10px] text-slate-300">${itemsHtml}</td>
           <td class="p-2.5 font-bold text-emerald-400">¥${Number(o.total_amount || 0)}</td>
-          <td class="p-2.5">
-            ${isShipped 
-              ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">已出貨</span><br><span class="text-[10px] text-slate-500">${trackingNo}</span>` 
-              : `<button onclick="shipOrder(${Number(o.id)})" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold transition">點擊發貨</button>`}
-          </td>
+          <td class="p-2.5">${isShipped ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">${_t('已出貨')}</span><br><span class="text-[10px] text-slate-500">${escapeHtml(o.tracking_no || '')}</span>` : `<button onclick="shipOrder(${Number(o.id)})" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold transition">${_t('點擊發貨')}</button>`}</td>
         </tr>`;
     }).join('');
     document.getElementById('kpiPendingOrder').innerText = pendingCount;
   }
 
   async function shipOrder(orderId) {
-    if (!currentUser) return alert("請先登入！");
-    const track = prompt("請填寫快遞單號 (可選填)：");
+    if (!currentUser) return alert(_t("請先登入！"));
+    const track = prompt(_t("請填寫快遞單號 (可選填)") + "：");
     if (track === null) return;
-
     try {
-      const { error } = await supabaseClient
-        .from('shop_orders')
-        .update({ 
-          order_status: 'SHIPPED', 
-          shipping_status: '已發貨', 
-          tracking_no: track.trim() 
-        })
-        .eq('id', orderId);
-
-      if (error) throw error;
-      alert("發貨狀態已成功更新！");
-      await fetchShopOrders();
-    } catch (err) {
-      alert("發貨更新失敗：" + err.message);
-    }
+      await supabaseClient.from('shop_orders').update({ order_status: 'SHIPPED', shipping_status: _t('已發貨'), tracking_no: track.trim() }).eq('id', orderId);
+      alert(_t("發貨狀態已成功更新！")); await fetchShopOrders();
+    } catch (err) { alert(_t("發貨更新失敗：") + err.message); }
   }
 
   function switchView(tab) {
     currentTab = tab;
     ['table', 'categories', 'orders', 'logs'].forEach(t => {
       document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? 'block' : 'hidden';
-      document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) 
-        ? 'px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold' 
-        : 'px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme';
+      document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? 'px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold' : 'px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme';
     });
-
     if (tab === 'categories') renderCategoriesTable();
     if (tab === 'orders') fetchShopOrders();
     if (tab === 'logs') {
-      supabaseClient.from('inventory_transactions').select('*').order('created_at', { ascending: false }).limit(50).then(({ data, error }) => {
-        if (error) {
-          document.getElementById('logsTableBody').innerHTML = `<tr><td colspan="5" class="p-3 text-center text-rose-400">讀取日誌失敗: ${escapeHtml(error.message)}</td></tr>`;
-          return;
-        }
+      supabaseClient.from('inventory_transactions').select('*').order('created_at', { ascending: false }).limit(50).then(({ data }) => {
         document.getElementById('logsTableBody').innerHTML = (data || []).map(l => {
-          const rawPartNo = l.part_no || (l.product_id ? `商品 #${l.product_id}` : '-');
-          const rawType = l.trans_type || l.change_type || '-';
           const rawQty = (l.qty !== undefined && l.qty !== null) ? l.qty : (l.change_amount !== undefined ? l.change_amount : 0);
-          const rawOp = l.operator || (l.change_type === 'SALE' ? '線上商城' : '系統');
-          const rawBin = l.bin_location ? `<br><span class="text-[10px] text-amber-300/80 font-normal">${escapeHtml(l.bin_location)}</span>` : '';
-          const isPositive = Number(rawQty) > 0 || rawType === 'IN';
-
-          return `
-            <tr class="hover:bg-slate-800/40">
-              <td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td>
-              <td class="p-2.5 text-indigo-300 text-[11px]">${escapeHtml(rawOp)}</td>
-              <td class="p-2.5 font-mono text-sky-400 text-xs">${escapeHtml(rawPartNo)}</td>
-              <td class="p-2.5 text-xs ${rawType === 'DELETE' ? 'text-rose-400 font-bold' : (isPositive ? 'text-emerald-400' : 'text-amber-400')}">
-                ${rawType === 'DELETE' ? '🗑️ 商品清退' : escapeHtml(rawType)}
-              </td>
-              <td class="p-2.5 leading-tight">
-                <span class="font-bold">${Number(rawQty)} 件</span>
-                ${rawBin}
-              </td>
-            </tr>
-          `;
+          const isPositive = Number(rawQty) > 0 || l.trans_type === 'IN';
+          const tType = l.trans_type || l.change_type || '-';
+          return `<tr class="hover:bg-slate-800/40"><td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td><td class="p-2.5 text-indigo-300 text-[11px]">${_t(escapeHtml(l.operator || '系統'))}</td><td class="p-2.5 font-mono text-sky-400 text-xs">${escapeHtml(l.part_no || '')}</td><td class="p-2.5 text-xs ${tType === 'DELETE' ? 'text-rose-400 font-bold' : (isPositive ? 'text-emerald-400' : 'text-amber-400')}">${tType === 'DELETE' ? `🗑️ ${_t('商品清退')}` : _t(escapeHtml(tType))}</td><td class="p-2.5 leading-tight"><span class="font-bold">${Number(rawQty)} ${_t('件')}</span>${l.bin_location ? `<br><span class="text-[10px] text-amber-300/80 font-normal">${_t(escapeHtml(l.bin_location))}</span>` : ''}</td></tr>`;
         }).join('');
       });
     }
   }
 
-  function toggleTransFields() { 
-    document.getElementById('newSkuFields').className = document.getElementById('transType').value === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden'; 
-  }
+  function toggleTransFields() { document.getElementById('newSkuFields').className = document.getElementById('transType').value === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden'; }
   
   async function executeTransaction() {
-    if (!currentUser) return alert("無權限！請先登入");
+    if (!currentUser) return alert(_t("無權限！請先登入"));
     const t = document.getElementById('transType').value;
     const p = document.getElementById('partNo').value.toUpperCase().trim();
     const q = parseInt(document.getElementById('transQty').value);
     const b = document.getElementById('binLocation').value.toUpperCase().trim();
 
-    if (!p || isNaN(q) || q <= 0) return alert("數量必須大於 0 且品號不能為空！");
+    if (!p || isNaN(q) || q <= 0) return alert(_t("數量必須大於") + " 0 " + _t("且品號不能為空") + "！");
     const i = inventoryList.find(x => x.part_no === p);
-    if (t === 'NEW' && i) return alert("該品號已存在！");
-    if (t !== 'NEW' && !i) return alert("品號不存在！");
+    if (t === 'NEW' && i) return alert(_t("該品號已存在") + "！");
+    if (t !== 'NEW' && !i) return alert(_t("品號不存在") + "！");
     
     try {
-      let res;
       if (t === 'NEW') {
-        res = await supabaseClient.from('products').insert([{
-          part_no: p,
-          part_name: document.getElementById('partName').value.trim(),
-          category: document.getElementById('partCategory').value,
-          stock: q,
-          bin_location: b,
-          unit_price: parseFloat(document.getElementById('unitPrice').value) || 0,
-          safety_stock: parseInt(document.getElementById('safetyStock').value) || 0,
-          description: document.getElementById('partDesc').value.trim(),
-          status: 'ACTIVE'
-        }]);
+        await supabaseClient.from('products').insert([{ part_no: p, part_name: document.getElementById('partName').value.trim(), category: document.getElementById('partCategory').value, stock: q, bin_location: b, unit_price: parseFloat(document.getElementById('unitPrice').value) || 0, safety_stock: parseInt(document.getElementById('safetyStock').value) || 0, description: document.getElementById('partDesc').value.trim(), status: 'ACTIVE' }]);
       } else if (t === 'IN') {
-        res = await supabaseClient.from('products').update({
-          stock: i.stock + q,
-          bin_location: b || i.bin_location
-        }).eq('part_no', p);
+        await supabaseClient.from('products').update({ stock: i.stock + q, bin_location: b || i.bin_location }).eq('part_no', p);
       } else if (t === 'OUT') {
-        if (i.stock < q) return alert("庫存不足！");
-        res = await supabaseClient.from('products').update({
-          stock: i.stock - q
-        }).eq('part_no', p);
+        if (i.stock < q) return alert(_t("庫存不足") + "！");
+        await supabaseClient.from('products').update({ stock: i.stock - q }).eq('part_no', p);
       }
-
-      if (res && res.error) throw res.error;
-
-      const { error: logErr } = await supabaseClient.from('inventory_transactions').insert([{
-        part_no: p,
-        trans_type: t,
-        qty: q,
-        bin_location: b,
-        operator: currentUser.email
-      }]);
-      if (logErr) console.warn("日誌記錄提示:", logErr.message);
-
-      document.getElementById('transQty').value = '';
-      await fetchProducts();
-      alert("庫存與溯源異動更新成功！");
-    } catch (err) {
-      alert("更新失敗：" + err.message);
-    }
+      await supabaseClient.from('inventory_transactions').insert([{ part_no: p, trans_type: t, qty: q, bin_location: b, operator: currentUser.email }]);
+      document.getElementById('transQty').value = ''; await fetchProducts(); alert(_t("庫存與溯源異動更新成功") + "！");
+    } catch (err) { alert(_t("更新失敗：") + err.message); }
   }
 
   function exportCSV() {
@@ -816,7 +618,7 @@
       const cleanNo = String(i.part_no || '').replace(/^[=+\-@\t\r]/, "'");
       const cleanName = String(i.part_name || '').replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
       const cleanCat = String(i.category || '').replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
-      const cleanStatus = (i.status === 'INACTIVE') ? "已下架" : "上架中";
+      const cleanStatus = (i.status === 'INACTIVE') ? _t("已下架") : _t("上架中");
       const cleanBin = String(i.bin_location || '').replace(/^[=+\-@\t\r]/, "'").replace(/"/g, '""');
       csv += `"${cleanNo}","${cleanName}","${cleanCat}","${cleanStatus}","${cleanBin}",${Number(i.stock||0)},${Number(i.safety_stock||0)},${Number(i.unit_price||0)},${Number((i.stock||0) * (i.unit_price||0))}\n`;
     });
@@ -825,97 +627,19 @@
     a.href = URL.createObjectURL(blob);
     a.download = `艾產品台帳_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
-    URL.revokeObjectURL(a.href);
   }
-
   fetchAllData();
 </script>
 
-<!-- 前端防審查與 DevTools 陷阱防護 -->
 <script>
 (function () {
   'use strict';
-
-  document.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-    return false;
-  }, { capture: true });
-
+  document.addEventListener('contextmenu', function (e) { e.preventDefault(); return false; }, { capture: true });
   document.addEventListener('keydown', function (e) {
-    const isModifier = e.ctrlKey || e.metaKey;
-    const key = (e.key || '').toLowerCase();
-    const keyCode = e.keyCode || e.which;
-
-    if (key === 'f12' || keyCode === 123) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-
-    if (isModifier) {
-      if (key === 'u' || keyCode === 85) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-      if (key === 's' || keyCode === 83) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-      if (key === 'p' || keyCode === 80) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-      if (e.shiftKey && ['i', 'j', 'c'].includes(key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-    }
+    if (e.key === 'F12' || (e.ctrlKey && ['u','s','p'].includes(e.key.toLowerCase()))) { e.preventDefault(); return false; }
   }, { capture: true });
-
   let devToolsDetected = false;
-
-  function triggerDefense() {
-    if (devToolsDetected) return;
-    devToolsDetected = true;
-
-    document.body.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#0a0f1d;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;padding:24px;box-sizing:border-box;">
-        <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
-        <h2 style="font-size:22px;margin:0 0 12px;color:#ef4444;font-weight:700;">系統安全防護觸發</h2>
-        <p style="font-size:14px;color:#94a3b8;line-height:1.6;max-width:480px;margin:0 0 20px;">
-          偵測到異常的除錯環境或開發人員工具已啟動。為保護交易連線與資料安全性，當前存取作業已終止。
-        </p>
-        <button onclick="window.location.reload()" style="background:#2563eb;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:14px;cursor:pointer;">
-          關閉除錯工具後重新載入
-        </button>
-      </div>
-    `;
-  }
-
-  function checkDebugger() {
-    const startTime = performance.now();
-    debugger;
-    if (performance.now() - startTime > 100) {
-      triggerDefense();
-    }
-  }
-
-  setInterval(function () {
-    try {
-      checkDebugger();
-    } catch (err) {}
-  }, 800);
-
-  try {
-    const noop = function () {};
-    ['log', 'debug', 'info', 'warn', 'error'].forEach(function (method) {
-      console[method] = noop;
-    });
-  } catch (err) {}
+  setInterval(function () { try { const s = performance.now(); debugger; if (performance.now() - s > 100) { if (devToolsDetected) return; devToolsDetected = true; document.body.innerHTML = '<div style="color:white;text-align:center;padding:50px;">安全防護觸發，已終止。</div>'; } } catch(e){} }, 800);
 })();
 </script>
 </body>
