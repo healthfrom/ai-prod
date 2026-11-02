@@ -1,0 +1,56 @@
+name: Supabase Keep-Alive and Automated Backup
+
+on:
+  schedule:
+    # 每 3 天於凌晨 02:00 (UTC) 自動執行一次，防範 7 天休眠
+    - cron: '0 2 */3 * *'
+  workflow_dispatch: # 支援在 GitHub 頁面手動點擊「Run workflow」測試
+
+jobs:
+  keepalive-and-backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. 建立備份目錄
+        run: mkdir -p backups
+
+      - name: 2. 存取 Supabase API 啟動保活 (Keep-Alive) 並下載備份資料
+        env:
+          SUPA_URL: ${{ secrets.SUPABASE_URL }}
+          SUPA_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          DATE_STR=$(date +'%Y%m%d_%H%M%S')
+          echo "執行時間: $DATE_STR"
+
+          # 備份產品清單 (同時發起資料庫讀取以重置休眠計時器)
+          curl -s -f -X GET "$SUPA_URL/rest/v1/products?select=*" \
+            -H "apikey: $SUPA_KEY" \
+            -H "Authorization: Bearer $SUPA_KEY" \
+            -o "backups/products_${DATE_STR}.json"
+
+          # 備份商品分類
+          curl -s -f -X GET "$SUPA_URL/rest/v1/product_categories?select=*" \
+            -H "apikey: $SUPA_KEY" \
+            -H "Authorization: Bearer $SUPA_KEY" \
+            -o "backups/categories_${DATE_STR}.json"
+
+          # 備份商城訂單 (使用 service_role 讀取完整訂單紀錄)
+          curl -s -f -X GET "$SUPA_URL/rest/v1/shop_orders?select=*" \
+            -H "apikey: $SUPA_KEY" \
+            -H "Authorization: Bearer $SUPA_KEY" \
+            -o "backups/shop_orders_${DATE_STR}.json"
+
+          # 備份庫存異動台帳
+          curl -s -f -X GET "$SUPA_URL/rest/v1/inventory_transactions?select=*" \
+            -H "apikey: $SUPA_KEY" \
+            -H "Authorization: Bearer $SUPA_KEY" \
+            -o "backups/inventory_transactions_${DATE_STR}.json"
+
+          echo "所有核心資料表備份與保活請求已順利完成！"
+
+      - name: 3. 上傳備份檔案至 GitHub Artifacts (保存 90 天)
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: backups/
+          retention-days: 90
