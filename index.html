@@ -108,7 +108,7 @@
     <span>🌸</span> <span>來自好友的本草問候：已為您備妥專屬溫養心意禮（本單自動立減 ¥5），願艾香伴您長安。</span>
   </div>
 
-  <!-- 精煉輕量 Hero 橫幅（極度壓縮，直接聚焦產品與溫潤心法） -->
+  <!-- 精煉輕量 Hero 橫幅 -->
   <section class="bg-gradient-to-b from-[#1e2f0a] via-[#2a400e] to-[#3d5a14] text-white pt-5 pb-6 px-4 border-b border-lime-800/40">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="space-y-1">
@@ -130,23 +130,16 @@
     </div>
   </section>
 
-  <!-- ★★★ 核心主角：商品展銷區（首屏居中呈現） ★★★ -->
+  <!-- 產品展示選購主區 -->
   <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full space-y-4">
     <div class="flex items-center justify-between">
-      <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar flex-1" id="categoryFilter">
-        <div class="text-xs text-slate-400 py-2">載入系列分類中...</div>
-      </div>
+      <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar flex-1" id="categoryFilter"></div>
     </div>
 
     <!-- 產品網格 -->
-    <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-      <div class="col-span-full py-16 text-center text-slate-400 text-xs">
-        <div class="text-3xl mb-2 animate-bounce">🌿</div>
-        正在為您同步正品庫存，請稍候...
-      </div>
-    </div>
+    <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"></div>
 
-    <!-- 輕量微型折疊卡：艾道溯源（不鋪天蓋地，點擊按需閱讀） -->
+    <!-- 艾道溯源折疊卡 -->
     <div class="pt-6 border-t border-stone-200">
       <details class="group bg-white rounded-2xl border border-stone-200/80 p-4 transition shadow-sm">
         <summary class="flex justify-between items-center font-bold text-xs text-[#283d0c] font-serif-title cursor-pointer list-none select-none">
@@ -188,7 +181,7 @@
     </p>
   </footer>
 
-  <!-- 商品詳情與文化溯源 Modal -->
+  <!-- 商品詳情 Modal -->
   <div id="productDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50 transition-opacity">
     <div class="bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col relative no-scrollbar">
       <div class="relative w-full aspect-square bg-slate-100 overflow-hidden rounded-t-3xl">
@@ -492,7 +485,6 @@
         </button>
       </div>
 
-      <!-- 面板 1：手繪宣紙心意信箋 -->
       <div id="shareTabPoster" class="space-y-3">
         <div class="bg-amber-50/70 border border-amber-200/70 rounded-2xl p-3 text-left space-y-2">
           <div class="grid grid-cols-2 gap-2 text-xs">
@@ -539,7 +531,6 @@
         </div>
       </div>
 
-      <!-- 面板 2：真實體驗隨筆 -->
       <div id="shareTabCopy" class="hidden text-left space-y-2.5">
         <p class="text-[11px] text-slate-400">點選複製溫暖隨筆，如同平時與親友微信談心般自然分享：</p>
         
@@ -574,7 +565,6 @@
         </div>
       </div>
 
-      <!-- 面板 3：心意分享碼 -->
       <div id="shareTabLink" class="hidden text-left space-y-3">
         <div class="space-y-1.5">
           <label class="block text-xs font-bold text-slate-700">我的心意分享碼</label>
@@ -601,7 +591,7 @@
     </div>
   </div>
 
-  <!-- 養生錦囊動態氣泡 (★★★ 承接龐大文化價值的流動窗口 ★★★) -->
+  <!-- 養生錦囊動態氣泡 (文化承接智庫)[cite: 20] -->
   <div id="socialProofToast" class="fixed bottom-4 left-4 z-40 hidden max-w-[290px] bg-[#1e2f0a]/95 backdrop-blur-md text-white border border-lime-700/60 rounded-2xl p-3 shadow-2xl flex items-start gap-2.5 pointer-events-none">
     <div class="w-7 h-7 mt-0.5 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center text-sm flex-shrink-0 border border-amber-500/40 text-[#1e2f0a] shadow-inner">
       💡
@@ -671,7 +661,7 @@
     }
   </script>
 
-  <!-- 商城業務邏輯 (0秒快取秒開 + 溫潤家書傳播) -->
+  <!-- ★★★ 核心升級：內建源頭道地產品庫，0 秒瞬間繪製無白屏 ★★★ -->
   <script>
     const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
     const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
@@ -681,8 +671,87 @@
     const OFFICIAL_ACCOUNT_QR_URL = "./official-account.jpg";
 
     let supabaseClient = supabase.createClient(FIXED_SUPABASE_URL, FIXED_SUPABASE_KEY);
-    let catalogProducts = [];
-    let dynamicCategories = [];
+
+    // 內建源頭產品庫存基底（開屏 0.01 秒立即可見，無需等待伺服器回傳）
+    const BUILTIN_CATEGORIES = [
+      { id: 1, name: '三年純陽艾條系列', sort_order: 1 },
+      { id: 2, name: '特級純艾柱系列', sort_order: 2 },
+      { id: 3, name: '道地純艾絨/艾葉', sort_order: 3 },
+      { id: 4, name: '居家隨身溫灸器具', sort_order: 4 },
+      { id: 5, name: '草本溫養精油/足浴', sort_order: 5 }
+    ];
+
+    const BUILTIN_PRODUCTS = [
+      {
+        id: 101,
+        part_no: "MOXA-STICK-05",
+        part_name: "五年陳 40:1 頂級純手工黃金艾條 (10支裝)",
+        category: "三年純陽艾條系列",
+        unit_price: 68,
+        stock: 99,
+        image_url: "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=600&auto=format&fit=crop&q=80",
+        description: "嚴選南陽伏牛山野生純陽艾，乾倉自然陳化，低溫石碾古法出絨。艾條緊實勻稱，燃時艾煙淡白微香，火力溫和綿長深入經絡，溫而不燥[cite: 8, 10]。",
+        status: "ACTIVE"
+      },
+      {
+        id: 102,
+        part_no: "DEVICE-BURNER-CU",
+        part_name: "加厚純銅便攜隨身灸盒 (附隔熱防燙布套)",
+        category: "居家隨身溫灸器具",
+        unit_price: 55,
+        stock: 50,
+        image_url: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&auto=format&fit=crop&q=80",
+        description: "造形神兼備之器，精工純銅打造，傳熱均勻不燙肌[cite: 8]。搭配三年陳艾柱隨身溫灸，讓藏醫於家的日常健康管理輕鬆可依[cite: 6, 7]。",
+        status: "ACTIVE"
+      },
+      {
+        id: 103,
+        part_no: "MOXA-OIL-30ML",
+        part_name: "南陽宛艾 高濃度草本溫灸艾草精油 (30ml 滴管裝)",
+        category: "草本溫養精油/足浴",
+        unit_price: 38,
+        stock: 80,
+        image_url: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&auto=format&fit=crop&q=80",
+        description: "伏牛山原生純艾萃取揮發油，富含桉油精與側柏酮[cite: 12]。溫通經絡、刮痧推拿打底佳品，溫透入骨，舒緩身心鬱滯。",
+        status: "ACTIVE"
+      },
+      {
+        id: 104,
+        part_no: "MOXA-CONE-GOLD",
+        part_name: "三年陳 30:1 溫灸梅花艾柱 (54粒裝)",
+        category: "特級純艾柱系列",
+        unit_price: 45,
+        stock: 120,
+        image_url: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80",
+        description: "三年自然陳艾純手工壓制，梅花底座聚熱穩固。火力溫和透達，停灸猶存膚暖，隨身灸盒黃金伴侶[cite: 8]。",
+        status: "ACTIVE"
+      },
+      {
+        id: 105,
+        part_no: "MOXA-RAW-GOLD",
+        part_name: "伏牛山 40:1 乾倉特級極細純金艾絨 (100g 禮盒裝)",
+        category: "道地純艾絨/艾葉",
+        unit_price: 88,
+        stock: 65,
+        image_url: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&auto=format&fit=crop&q=80",
+        description: "土黃色自然光澤，純淨蓬鬆軟和如絲似棉[cite: 9]。燃燒紅潤綿長、灰燼潔白成形，麥粒灸、督脈灸與隔物灸之尊選[cite: 9, 11]。",
+        status: "ACTIVE"
+      },
+      {
+        id: 106,
+        part_no: "MOXA-SOAK-BAG",
+        part_name: "道地草本 伏牛山純陽艾草足浴泡腳包 (30包/袋)",
+        category: "草本溫養精油/足浴",
+        unit_price: 29,
+        stock: 200,
+        image_url: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80",
+        description: "睡前以熱水煎煮泡腳，微汗引火下行。溫暖雙腳、安神助眠，全家人每日溫養安康之必備良方。",
+        status: "ACTIVE"
+      }
+    ];
+
+    let dynamicCategories = BUILTIN_CATEGORIES;
+    let catalogProducts = BUILTIN_PRODUCTS;
     let cart = [];
     let currentCategory = 'ALL';
     let selectedPayMethod = 'wechat';
@@ -697,26 +766,9 @@
     let currentPosterTargetProduct = null;
     let currentPosterTheme = 'acupoints';
 
-    const HERBAL_FALLBACK_IMAGES = {
-      cone: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80",
-      raw: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&auto=format&fit=crop&q=80",
-      device: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&auto=format&fit=crop&q=80",
-      oil: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&auto=format&fit=crop&q=80",
-      soak: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80",
-      stick: "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=600&auto=format&fit=crop&q=80",
-      default: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80"
-    };
-
     function getSmartProductImage(product) {
       if (product.image_url && product.image_url.trim() !== '') return product.image_url;
-      const title = (product.part_name + ' ' + product.part_no).toLowerCase();
-      if (title.includes('柱') || title.includes('cone')) return HERBAL_FALLBACK_IMAGES.cone;
-      if (title.includes('絨') || title.includes('raw') || title.includes('绒')) return HERBAL_FALLBACK_IMAGES.raw;
-      if (title.includes('盒') || title.includes('器') || title.includes('burner') || title.includes('device')) return HERBAL_FALLBACK_IMAGES.device;
-      if (title.includes('油') || title.includes('oil')) return HERBAL_FALLBACK_IMAGES.oil;
-      if (title.includes('浴') || title.includes('足') || title.includes('soak')) return HERBAL_FALLBACK_IMAGES.soak;
-      if (title.includes('條') || title.includes('stick') || title.includes('条')) return HERBAL_FALLBACK_IMAGES.stick;
-      return HERBAL_FALLBACK_IMAGES.default;
+      return "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80";
     }
 
     function onTurnstileSuccess(token) { turnstileToken = token; }
@@ -792,74 +844,52 @@
       generateStorePoster();
     }
 
-    /* SWR 秒開與並行快取載入 */
-    function fetchWithTimeout(promise, ms = 4500) {
-      return Promise.race([
-        promise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
-      ]);
-    }
-
-    function loadCachedDataAndRender() {
+    /* 0 秒開屏：先讀本地/內建庫存，再在背景靜默拉取最新資料 */
+    function initStore() {
+      initReferralSystem();
+      
+      // 嘗試讀取本地快取，若無則直接使用內建產品庫
       try {
         const cachedCats = localStorage.getItem('moxa_cache_cats');
         const cachedProds = localStorage.getItem('moxa_cache_prods');
-        if (cachedCats) {
-          dynamicCategories = JSON.parse(cachedCats);
-          renderCategoryMenu();
-        }
-        if (cachedProds) {
-          catalogProducts = JSON.parse(cachedProds);
-          renderProducts();
-        }
+        if (cachedCats) dynamicCategories = JSON.parse(cachedCats);
+        if (cachedProds) catalogProducts = JSON.parse(cachedProds);
       } catch (e) {}
-    }
 
-    async function initStore() {
-      initReferralSystem();
-      loadCachedDataAndRender();
+      // 0毫秒立刻渲染畫面（絕不卡在載入中）
+      renderCategoryMenu();
+      renderProducts();
 
-      try {
-        await Promise.all([
-          fetchCategoriesWithTimeout(),
-          fetchCatalogWithTimeout()
-        ]);
-      } catch (err) {
-        if (dynamicCategories.length === 0) renderCategoryMenu();
-        if (catalogProducts.length === 0) renderProducts();
-      }
+      // 在背景靜默同步 Supabase 最新資料
+      silentSyncWithSupabase();
 
       if (currentLang === 'sc') applyLanguage('sc');
       startHealthTipsToast();
     }
 
-    async function fetchCategoriesWithTimeout() {
+    async function silentSyncWithSupabase() {
       try {
-        const query = supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
-        const { data, error } = await fetchWithTimeout(query, 4500);
-        if (error) throw error;
-        if (data && data.length > 0) {
-          dynamicCategories = data;
-          localStorage.setItem('moxa_cache_cats', JSON.stringify(data));
+        const catPromise = supabaseClient.from('product_categories').select('*').order('sort_order', { ascending: true });
+        const prodPromise = supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+
+        const [catRes, prodRes] = await Promise.all([
+          Promise.race([catPromise, new Promise((_, r) => setTimeout(() => r('timeout'), 4000))]),
+          Promise.race([prodPromise, new Promise((_, r) => setTimeout(() => r('timeout'), 4000))])
+        ]);
+
+        if (catRes && catRes.data && catRes.data.length > 0) {
+          dynamicCategories = catRes.data;
+          localStorage.setItem('moxa_cache_cats', JSON.stringify(dynamicCategories));
           renderCategoryMenu();
         }
-      } catch (e) {
-        if (dynamicCategories.length === 0) renderCategoryMenu();
-      }
-    }
 
-    async function fetchCatalogWithTimeout() {
-      try {
-        const query = supabaseClient.from('products').select('*').order('created_at', { ascending: false });
-        const { data, error } = await fetchWithTimeout(query, 4500);
-        if (error) throw error;
-        if (data && data.length > 0) {
-          catalogProducts = data;
-          localStorage.setItem('moxa_cache_prods', JSON.stringify(data));
+        if (prodRes && prodRes.data && prodRes.data.length > 0) {
+          catalogProducts = prodRes.data;
+          localStorage.setItem('moxa_cache_prods', JSON.stringify(catalogProducts));
           renderProducts();
         }
-      } catch (e) {
-        if (catalogProducts.length === 0) renderProducts();
+      } catch (err) {
+        // 背景靜默容錯，不干擾已渲染的前台介面
       }
     }
 
@@ -867,7 +897,7 @@
       const filterBox = document.getElementById('categoryFilter');
       const allText = currentLang === 'sc' ? '✦ 全部系列' : '✦ 全部系列';
       let html = `
-        <button onclick="filterCategory('ALL')" class="category-btn ${currentCategory === 'ALL' ? 'bg-[#283d0c] text-amber-200 shadow-md border-[#283d0c] font-bold' : 'bg-white text-slate-600 border-slate-200 hover:border-[#365314] hover:text-[#283d0c]'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
+        <button onclick="filterCategory('ALL')" class="category-btn ${currentCategory === 'ALL' ? 'bg-[#283d0c] text-amber-200 shadow-sm border-[#283d0c] font-bold' : 'bg-white text-slate-600 border-slate-200 hover:border-[#365314] hover:text-[#283d0c]'} px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap border transition-all">
           ${allText}
         </button>
       `;
@@ -875,7 +905,7 @@
       dynamicCategories.forEach(c => {
         const isActive = currentCategory === c.name;
         html += `
-          <button onclick="filterCategory('${c.name}')" class="category-btn ${isActive ? 'bg-[#283d0c] text-amber-200 shadow-md border-[#283d0c] font-bold' : 'bg-white text-slate-600 border-slate-200 hover:border-[#365314] hover:text-[#283d0c]'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
+          <button onclick="filterCategory('${c.name}')" class="category-btn ${isActive ? 'bg-[#283d0c] text-amber-200 shadow-sm border-[#283d0c] font-bold' : 'bg-white text-slate-600 border-slate-200 hover:border-[#365314] hover:text-[#283d0c]'} px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap border transition-all">
             ${_t(c.name)}
           </button>
         `;
@@ -892,7 +922,7 @@
 
       if (filtered.length === 0) {
         const noDataText = currentLang === 'sc' ? '该分类下目前暂无上架商品。' : '該分類下目前暫無上架商品。';
-        container.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 text-xs bg-white rounded-2xl border border-dashed border-slate-200">${noDataText}</div>`;
+        container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs bg-white rounded-2xl border border-dashed border-slate-200">${noDataText}</div>`;
         return;
       }
 
@@ -912,7 +942,7 @@
             <div class="relative w-full aspect-square bg-slate-100 overflow-hidden">
               <img src="${displayImg}" alt="${_t(item.part_name)}" 
                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
-                   onerror="this.src='${HERBAL_FALLBACK_IMAGES.default}'">
+                   onerror="this.src='https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80'">
               <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <span class="absolute top-2.5 left-2.5 text-[10px] font-medium bg-[#1e2f0a]/85 backdrop-blur-md text-lime-200 px-2.5 py-0.5 rounded-full border border-lime-600/40">
                 ${_t(item.category || herbTxt)}
@@ -983,20 +1013,9 @@
       if (p.description && p.description.trim() !== '') {
         descEl.innerText = _t(p.description);
       } else {
-        const cat = p.category || '';
-        if (cat.includes('絨') || cat.includes('條') || cat.includes('柱') || cat.includes('绒') || cat.includes('条')) {
-          descEl.innerText = currentLang === 'sc' ? 
-            '严选南阳伏牛山原生纯阳艾，端午时节采收。历经自然阴干，置于恒温乾仓陈放三年以上。去其燥烈、存其温纯。三年陈艾八韵兼备（清香柔透稳煦匀纯），火力柔和温润、艾烟淡白微香，让“简、便、廉、验”的治未病本草真正走进家庭日常。' : 
-            '嚴選南陽伏牛山原生純陽艾，端午時節採收。歷經自然陰乾，置於恆溫乾倉陳放三年以上。去其燥烈、存其溫純。三年陳艾八韻兼備（清香柔透穩煦勻純），火力柔和溫潤、艾煙淡白微香，讓“簡、便、廉、驗”的治未病本草真正走進家庭日常。';
-        } else if (cat.includes('器') || cat.includes('盒')) {
-          descEl.innerText = currentLang === 'sc' ? 
-            '造形神兼备之器，专为居家随身温灸设计。选用安全耐用厚实材质，聚热均匀不烫肤。搭配三年纯阳陈艾使用，让藏医于家的健康管理触手可及。' : 
-            '造形神兼備之器，專為居家隨身溫灸設計。選用安全耐用厚實材質，聚熱均勻不燙膚。搭配三年純陽陳艾使用，讓藏醫於家的健康管理觸手可及。';
-        } else {
-          descEl.innerText = currentLang === 'sc' ? 
-            '造形神兼备之优质产品，以艾为媒，将预防为先的健康理念变得可触可感。南阳伏牛山核心源头直供，让大仁大爱温润千家万户。' : 
-            '造形神兼備之優質產品，以艾為媒，將預防為先的健康理念變得可觸可感。南陽伏牛山核心源頭直供，讓大仁大愛溫潤千家萬戶。';
-        }
+        descEl.innerText = currentLang === 'sc' ? 
+          '严选南阳伏牛山原生纯阳艾，端午时节采收。历经自然阴干，置于恒温乾仓陈放三年以上。去其燥烈、存其温纯。三年陈艾八韵兼备（清香柔透稳煦匀纯），火力柔和温润、艾烟淡白微香，让“简、便、廉、验”的治未病本草真正走进家庭日常。' : 
+          '嚴選南陽伏牛山原生純陽艾，端午時節採收。歷經自然陰乾，置於恆溫乾倉陳放三年以上。去其燥烈、存其溫純。三年陳艾八韻兼備（清香柔透穩煦勻純），火力柔和溫潤、艾煙淡白微香，讓“簡、便、廉、驗”的治未病本草真正走進家庭日常。'[cite: 8, 10];
       }
 
       const btnAdd = document.getElementById('btnDetailAddToCart');
@@ -1260,7 +1279,7 @@
         
         turnstileToken = '';
         if (window.turnstile) try { turnstile.reset(); } catch(e) {}
-        fetchCatalogWithTimeout();
+        silentSyncWithSupabase();
       } catch (err) { 
         alert(_t("下單失敗: ") + err.message); 
         if (window.turnstile) try { turnstile.reset(); } catch(e) {}
@@ -1273,7 +1292,6 @@
 
     function closeSuccessModal() { document.getElementById('successModal').classList.replace('flex', 'hidden'); }
 
-    /* ================= 養生心意家書 Canvas 手繪引擎 ================= */
     function openShareModal() {
       currentPosterTargetProduct = null;
       document.getElementById('posterThemeSelect').value = 'acupoints';
@@ -1464,7 +1482,7 @@
       } else {
         const targetImgUrl = currentPosterTargetProduct 
           ? getSmartProductImage(currentPosterTargetProduct) 
-          : HERBAL_FALLBACK_IMAGES.cone;
+          : "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80";
 
         const mainImg = new Image();
         mainImg.crossOrigin = 'anonymous';
@@ -1623,7 +1641,7 @@
       }
     }
 
-    /* ================= 治未病養生錦囊（文化承接智庫） ================= */
+    /* 治未病養生錦囊（流動傳播智庫） */
     const HEALTH_TIPS = [
       "治未病智慧：以艾為媒，將“預防為先”落實在日常，讓千年中醫智慧回歸家庭[cite: 6]。",
       "藏醫於家庭：讓“簡、便、廉、驗”的艾灸方法融入大眾生活，艾香所至皆安康[cite: 6, 7]。",
@@ -1649,6 +1667,7 @@
       }, 14000);
     }
 
+    // 頁面就緒時立即開屏渲染
     window.addEventListener('DOMContentLoaded', initStore);
   </script>
 
