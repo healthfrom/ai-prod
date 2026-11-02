@@ -13,7 +13,7 @@
     img-src 'self' data: https: blob:;
     font-src 'self' data: https:;
   ">
-  <title>艾產品管理系統 - 分類編輯與上下架版</title>
+  <title>艾產品管理系統 - 分類防誤刪與商品備註清退版</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
@@ -40,7 +40,6 @@
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
     
-    /* 讓下架商品在列表中看起來暗沈一些 */
     .status-inactive {
       opacity: 0.5;
       filter: grayscale(80%);
@@ -55,7 +54,7 @@
     <div>
       <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2 text-white">
         🌿 艾產品管理系統
-        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">分類編輯與上下架版</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">分類約束與商品清退版</span>
       </h1>
       <p class="text-xs text-slate-400 mt-1">即時同步前台菜單、發貨、圖庫與庫存中台</p>
     </div>
@@ -156,7 +155,7 @@
 
       <!-- 視圖 1：台帳列表 -->
       <div id="viewTable" class="overflow-x-auto border border-theme rounded">
-        <table class="w-full text-left text-xs min-w-[750px]">
+        <table class="w-full text-left text-xs min-w-[780px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
             <tr>
               <th class="p-2.5 w-16 text-center">圖片</th>
@@ -164,14 +163,14 @@
               <th class="p-2.5">分類 / 狀態</th>
               <th class="p-2.5">庫存 / 儲位</th>
               <th class="p-2.5">單價 (總值)</th>
-              <th class="p-2.5 text-center">操作</th>
+              <th class="p-2.5 text-center w-36">操作管理</th>
             </tr>
           </thead>
           <tbody id="inventoryTableBody" class="divide-y divide-theme"></tbody>
         </table>
       </div>
 
-      <!-- 視圖 2：分類管理（支援新增、編輯修改名稱、刪除） -->
+      <!-- 視圖 2：分類管理 -->
       <div id="viewCategories" class="hidden space-y-4">
         <div class="bg-sub border border-theme rounded-lg p-3">
           <h3 class="text-xs font-bold text-sky-400 mb-2">➕ 新增自定義類別 (將即時顯示在前台頂部菜單)</h3>
@@ -214,14 +213,14 @@
 
       <!-- 視圖 4：日誌 -->
       <div id="viewLogs" class="hidden overflow-x-auto border border-theme rounded">
-        <table class="w-full text-left text-xs min-w-[600px]">
+        <table class="w-full text-left text-xs min-w-[650px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
             <tr>
               <th class="p-2.5">時間</th>
               <th class="p-2.5">操作者</th>
               <th class="p-2.5">品號 / 項目</th>
               <th class="p-2.5">動作</th>
-              <th class="p-2.5">數量</th>
+              <th class="p-2.5">數量 / 備註詳情</th>
             </tr>
           </thead>
           <tbody id="logsTableBody" class="divide-y divide-theme"></tbody>
@@ -368,10 +367,12 @@
         <tr class="hover:bg-slate-800/40">
           <td class="p-2.5 font-mono text-slate-400">#${Number(c.id)}</td>
           <td class="p-2.5 font-bold text-emerald-400">${escapeHtml(c.name)}</td>
-          <td class="p-2.5 text-slate-300">${count} 件商品</td>
+          <td class="p-2.5 text-slate-300">
+            <span class="${count > 0 ? 'text-amber-300' : 'text-slate-400'} font-medium">${count} 件商品</span>
+          </td>
           <td class="p-2.5 text-right space-x-1.5">
             <button onclick="editCategory(${Number(c.id)})" class="px-2.5 py-1 bg-amber-600/20 text-amber-300 hover:bg-amber-600/40 rounded text-xs transition">修改名稱</button>
-            <button onclick="deleteCategory(${Number(c.id)})" class="px-2.5 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/40 rounded text-xs transition">刪除</button>
+            <button onclick="deleteCategory(${Number(c.id)})" class="px-2.5 py-1 ${count > 0 ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed' : 'bg-rose-600/20 text-rose-400 hover:bg-rose-600/40'} rounded text-xs transition">刪除</button>
           </td>
         </tr>
       `;
@@ -396,7 +397,6 @@
     }
   }
 
-  // 修改分類名稱並自動批次更新所屬商品
   async function editCategory(id) {
     if (!currentUser) return alert("請先登入！");
     const cat = categoryList.find(c => c.id === id);
@@ -414,14 +414,12 @@
     if (exists) return alert("該分類名稱已存在！");
 
     try {
-      // 1. 更新分類表名稱
       const { error: catErr } = await supabaseClient
         .from('product_categories')
         .update({ name: trimmed })
         .eq('id', id);
       if (catErr) throw catErr;
 
-      // 2. 同步更新 products 表中既有商品的 category 欄位
       const { error: prodErr } = await supabaseClient
         .from('products')
         .update({ category: trimmed })
@@ -435,35 +433,39 @@
     }
   }
 
+  /* 規則 1：產品類別可被刪除的前提是其下沒有產品 */
   async function deleteCategory(id) {
     if (!currentUser) return alert("請先登入！");
     const cat = categoryList.find(c => c.id === id);
-    const catName = cat ? cat.name : `ID #${id}`;
-    const count = inventoryList.filter(i => i.category === (cat ? cat.name : '')).length;
+    if (!cat) return;
+    const catName = cat.name;
+    const count = inventoryList.filter(i => i.category === catName).length;
 
+    // 前置約束：類別下仍有商品，一律禁止刪除
     if (count > 0) {
-      if (!confirm(`類別「${catName}」下還有 ${count} 件商品，刪除後這些商品在前台將歸入未分類，確定刪除嗎？`)) return;
-    } else {
-      if (!confirm(`確定要刪除類別「${catName}」嗎？`)) return;
+      alert(`【無法刪除】類別「${catName}」下目前仍納管有 ${count} 件商品！\n\n依安全規則：分類下無任何商品時方可刪除。\n請先前往「產品台帳」將關聯商品刪除或將其分類移至其他類別後再試。`);
+      return;
     }
+
+    if (!confirm(`確定要刪除空類別「${catName}」嗎？此操作不可還原。`)) return;
 
     const { error } = await supabaseClient.from('product_categories').delete().eq('id', id);
     if (error) {
       alert("刪除失敗: " + error.message);
     } else {
+      alert(`類別「${catName}」已成功刪除！`);
       await fetchCategories();
     }
   }
 
-  // 修改商品上下架狀態
+  // 上下架狀態切換
   async function toggleProductStatus(partNo, currentStatus) {
     if (!currentUser) return alert("請先登入系統！");
-    // 預設為 ACTIVE (未填也視為 ACTIVE)
     const activeStat = currentStatus === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE';
     const newStatus = activeStat === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     const actionText = newStatus === 'ACTIVE' ? '重新上架' : '下架隱藏';
 
-    if (!confirm(`確定要將商品 ${partNo} 設為「${actionText}」嗎？\n(下架後前台將不再顯示該商品)`)) return;
+    if (!confirm(`確定要將商品 ${partNo} 設為「${actionText}」嗎？\n(下架後前台將不再展示該商品)`)) return;
 
     try {
       const { error } = await supabaseClient
@@ -473,9 +475,53 @@
 
       if (error) throw error;
       alert(`商品已成功${actionText}！`);
-      await fetchProducts(); // 重新拉取資料並渲染列表
+      await fetchProducts();
     } catch (err) {
       alert(`狀態更新失敗：${err.message}`);
+    }
+  }
+
+  /* 規則 2：產品可以被刪除，且必須填寫備註原因 */
+  async function deleteProduct(partNo) {
+    if (!currentUser) return alert("請先登入系統！");
+    const prod = inventoryList.find(x => x.part_no === partNo);
+    if (!prod) return alert("找不到指定商品！");
+
+    const reason = prompt(`【警告】即將永久刪除商品：\n品名：${prod.part_name} (${partNo})\n當前剩餘庫存：${prod.stock} 件\n\n請輸入刪除/報廢備註原因（必填）：`);
+    if (reason === null) return; // 點擊取消
+
+    const cleanReason = reason.trim();
+    if (!cleanReason) {
+      return alert("刪除失敗：依管理規定，必須填寫刪除備註原因！");
+    }
+
+    if (!confirm(`最後確認：確定要永久刪除【${prod.part_name}】嗎？\n填寫備註：${cleanReason}`)) return;
+
+    try {
+      // 1. 從 products 資料表移除
+      const { error: delErr } = await supabaseClient
+        .from('products')
+        .delete()
+        .eq('part_no', partNo);
+
+      if (delErr) throw delErr;
+
+      // 2. 寫入審計與操作日誌，備註存於 bin_location 欄位備查
+      const { error: logErr } = await supabaseClient
+        .from('inventory_transactions')
+        .insert([{
+          part_no: partNo,
+          trans_type: 'DELETE',
+          qty: prod.stock || 0,
+          bin_location: '【刪除備註】' + cleanReason,
+          operator: currentUser.email
+        }]);
+      if (logErr) console.warn("日誌記錄提示:", logErr.message);
+
+      alert(`商品「${prod.part_name}」已成功自系統刪除，並已登記備註日誌！`);
+      await fetchProducts();
+    } catch (err) {
+      alert("刪除商品失敗: " + err.message);
     }
   }
 
@@ -536,11 +582,14 @@
           </td>
           <td class="p-2.5">
             <div class="flex flex-col gap-1.5 items-center">
-              <button onclick="triggerImageUpload('${encodeURIComponent(i.part_no)}')" class="w-full px-2.5 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white transition flex items-center justify-center gap-1">
+              <button onclick="triggerImageUpload('${encodeURIComponent(i.part_no)}')" class="w-full px-2 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-[11px] text-white transition flex items-center justify-center gap-1">
                 📷 換圖
               </button>
-              <button onclick="toggleProductStatus('${safePartNo}', '${escapeHtml(i.status || 'ACTIVE')}')" class="w-full px-2.5 py-1 ${isInactive ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/40' : 'bg-rose-600/20 text-rose-400 hover:bg-rose-600/40'} border border-transparent rounded text-xs transition flex items-center justify-center gap-1">
-                ${isInactive ? '🟢 重新上架' : '🔴 隱藏下架'}
+              <button onclick="toggleProductStatus('${safePartNo}', '${escapeHtml(i.status || 'ACTIVE')}')" class="w-full px-2 py-1 ${isInactive ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/40' : 'bg-amber-600/20 text-amber-300 hover:bg-amber-600/40'} border border-transparent rounded text-[11px] transition flex items-center justify-center gap-1">
+                ${isInactive ? '🟢 重新上架' : '🟡 隱藏下架'}
+              </button>
+              <button onclick="deleteProduct('${safePartNo}')" class="w-full px-2 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600/40 border border-transparent rounded text-[11px] transition flex items-center justify-center gap-1">
+                🗑️ 刪除商品
               </button>
             </div>
           </td>
@@ -678,6 +727,7 @@
           const rawType = l.trans_type || l.change_type || '-';
           const rawQty = (l.qty !== undefined && l.qty !== null) ? l.qty : (l.change_amount !== undefined ? l.change_amount : 0);
           const rawOp = l.operator || (l.change_type === 'SALE' ? '線上商城' : '系統');
+          const rawBin = l.bin_location ? `<br><span class="text-[10px] text-amber-300/80 font-normal">${escapeHtml(l.bin_location)}</span>` : '';
           const isPositive = Number(rawQty) > 0 || rawType === 'IN';
 
           return `
@@ -685,8 +735,13 @@
               <td class="p-2.5 text-slate-400 text-[11px]">${new Date(l.created_at).toLocaleString('zh-TW',{hour12:false})}</td>
               <td class="p-2.5 text-indigo-300 text-[11px]">${escapeHtml(rawOp)}</td>
               <td class="p-2.5 font-mono text-sky-400 text-xs">${escapeHtml(rawPartNo)}</td>
-              <td class="p-2.5 text-xs ${isPositive ? 'text-emerald-400' : 'text-amber-400'}">${escapeHtml(rawType)}</td>
-              <td class="p-2.5 font-bold">${Number(rawQty)}</td>
+              <td class="p-2.5 text-xs ${rawType === 'DELETE' ? 'text-rose-400 font-bold' : (isPositive ? 'text-emerald-400' : 'text-amber-400')}">
+                ${rawType === 'DELETE' ? '🗑️ 商品清退' : escapeHtml(rawType)}
+              </td>
+              <td class="p-2.5 leading-tight">
+                <span class="font-bold">${Number(rawQty)} 件</span>
+                ${rawBin}
+              </td>
             </tr>
           `;
         }).join('');
@@ -722,7 +777,7 @@
           unit_price: parseFloat(document.getElementById('unitPrice').value) || 0,
           safety_stock: parseInt(document.getElementById('safetyStock').value) || 0,
           description: document.getElementById('partDesc').value.trim(),
-          status: 'ACTIVE' // 新建商品預設為上架狀態
+          status: 'ACTIVE'
         }]);
       } else if (t === 'IN') {
         res = await supabaseClient.from('products').update({
