@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- 阻擋搜尋引擎索引與快取，確保後台路徑隱匿 -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
@@ -12,10 +15,28 @@
     font-src 'self' data: https:;
   ">
   <title>艾產品管理系統 - 多端中台版</title>
+  
+  <!-- 鎖定穩定依賴版本 -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+
   <style>
-    body { background-color: #0a0f1d; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+    body { 
+      background-color: #0a0f1d; 
+      color: #f8fafc; 
+      -webkit-tap-highlight-color: transparent; 
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    /* 白名單：允許表單輸入框與資料表格文字選取，確保管理員能順暢複製地址與訂單號 */
+    input, textarea, select, td, th { 
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+      user-select: text !important;
+    }
     .bg-panel { background-color: #141e33; }
     .bg-sub { background-color: #0d1527; }
     .border-theme { border-color: #223254; }
@@ -215,7 +236,6 @@
 </div>
 
 <script>
-  // 嚴格僅使用受 RLS 約束的 Publishable key
   const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
   const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
 
@@ -227,7 +247,6 @@
   let targetPartNoForUpload = null;
   let idleTimer = null;
 
-  // ========== 全域安全性輔助函數 (防範儲存型 XSS 攻擊) ==========
   function escapeHtml(text) {
     if (text === null || text === undefined) return '';
     return String(text)
@@ -238,7 +257,7 @@
       .replace(/'/g, '&#39;');
   }
 
-  // 登入狀態監聽
+  // 登入狀態監聽：登入成功後即時拉取最新數據
   supabaseClient.auth.onAuthStateChange((event, session) => {
     currentUser = session ? session.user : null;
     document.getElementById('authOverlay').classList.toggle('hidden', !!currentUser);
@@ -247,6 +266,8 @@
     
     if (currentUser) {
       resetIdleTimer();
+      fetchAllData();
+      if (currentTab === 'orders') fetchShopOrders();
     } else if (idleTimer) {
       clearTimeout(idleTimer);
     }
@@ -276,7 +297,7 @@
     }
   }
 
-  // ========== 展場設備安全防護：閒置 15 分鐘強制自動登出 ==========
+  // 閒置 15 分鐘強制登出
   function resetIdleTimer() {
     if (idleTimer) clearTimeout(idleTimer);
     if (currentUser) {
@@ -292,7 +313,6 @@
     window.addEventListener(evt, resetIdleTimer, false);
   });
 
-  // 載入商品與分類
   async function fetchAllData() {
     await fetchCategories();
     await fetchProducts();
@@ -464,7 +484,6 @@
     }
   }
 
-  // 訂單管理：全面採用 escapeHtml 防止 Stored XSS，並綁定精準 ID 發貨
   async function fetchShopOrders() {
     const { data, error } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
     if (error) {
@@ -509,7 +528,7 @@
           <td class="p-2.5 font-bold text-emerald-400">¥${Number(o.total_amount || 0)}</td>
           <td class="p-2.5">
             ${isShipped 
-              ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">已出貨</span><br><span class="text-[10px] text-slate-500">${trackingNo}</span>`
+              ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">已出貨</span><br><span class="text-[10px] text-slate-500">${trackingNo}</span>` 
               : `<button onclick="shipOrder(${Number(o.id)})" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold transition">點擊發貨</button>`}
           </td>
         </tr>`;
@@ -517,7 +536,6 @@
     document.getElementById('kpiPendingOrder').innerText = pendingCount;
   }
 
-  // 發貨更新：以主鍵 ID 精準定位，避免非數值字串與 bigint 產生語法型別崩潰
   async function shipOrder(orderId) {
     if (!currentUser) return alert("請先登入！");
     const track = prompt("請填寫快遞單號 (可選填)：");
@@ -583,7 +601,6 @@
     document.getElementById('newSkuFields').className = document.getElementById('transType').value === 'NEW' ? 'space-y-2 border-l-2 border-sky-500 pl-2' : 'hidden'; 
   }
   
-  // 異動登記：加上嚴格例外捕捉與回傳驗證
   async function executeTransaction() {
     if (!currentUser) return alert("無權限！請先登入");
     const t = document.getElementById('transType').value;
@@ -622,7 +639,6 @@
 
       if (res && res.error) throw res.error;
 
-      // 寫入台帳審計流水
       const { error: logErr } = await supabaseClient.from('inventory_transactions').insert([{
         part_no: p,
         trans_type: t,
@@ -640,7 +656,6 @@
     }
   }
 
-  // 匯出台帳：過濾潛在 CSV 公式注入符號 (=, +, -, @)
   function exportCSV() {
     let csv = "\uFEFF品號,品名規格,類別,儲位,現存量,安全水位,單價,總值\n";
     inventoryList.forEach(i => {
@@ -660,24 +675,8 @@
 
   fetchAllData();
 </script>
-  <!-- ==================== 前端防常規審查與防逆向防護腳本 ==================== -->
-<style>
-  /* 禁用全局文字框外選取與圖片拖曳，增加抓取難度 */
-  body {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-  /* 允許表單輸入框正常點擊選取，避免影響正常顧客下單體驗 */
-  input, textarea, select {
-    -webkit-user-select: text !important;
-    -moz-user-select: text !important;
-    -ms-user-select: text !important;
-    user-select: text !important;
-  }
-</style>
 
+<!-- 前端防審查與 DevTools 陷阱防護 -->
 <script>
 (function () {
   'use strict';
@@ -688,19 +687,12 @@
     return false;
   }, { capture: true });
 
-  // 2. 攔截圖片與文字拖曳行為
-  document.addEventListener('dragstart', function (e) {
-    e.preventDefault();
-    return false;
-  }, { capture: true });
-
-  // 3. 攔截鍵盤常用檢視快捷鍵 (兼容 Windows Ctrl 與 macOS Command/Meta 鍵)
+  // 2. 攔截常見快捷鍵
   document.addEventListener('keydown', function (e) {
     const isModifier = e.ctrlKey || e.metaKey;
     const key = (e.key || '').toLowerCase();
     const keyCode = e.keyCode || e.which;
 
-    // 阻擋 F12
     if (key === 'f12' || keyCode === 123) {
       e.preventDefault();
       e.stopPropagation();
@@ -708,28 +700,21 @@
     }
 
     if (isModifier) {
-      // 阻擋檢視原始碼：Ctrl + U / Cmd + Option + U
       if (key === 'u' || keyCode === 85) {
         e.preventDefault();
         e.stopPropagation();
         return false;
       }
-
-      // 阻擋網頁另存新檔：Ctrl + S / Cmd + S
       if (key === 's' || keyCode === 83) {
         e.preventDefault();
         e.stopPropagation();
         return false;
       }
-
-      // 阻擋列印頁面 (抓取排版內容)：Ctrl + P / Cmd + P
       if (key === 'p' || keyCode === 80) {
         e.preventDefault();
         e.stopPropagation();
         return false;
       }
-
-      // 阻擋開啟開發人員工具：Ctrl + Shift + I / J / C 或 Cmd + Option + I / J / C
       if (e.shiftKey && ['i', 'j', 'c'].includes(key)) {
         e.preventDefault();
         e.stopPropagation();
@@ -738,16 +723,15 @@
     }
   }, { capture: true });
 
-  // 4. 定時 Debugger 陷阱與視窗維度監聽 (專門應對強行開啟 DevTools 的用戶)
+  // 3. 定時 Debugger 陷阱 (防強行開啟 DevTools)
   let devToolsDetected = false;
 
   function triggerDefense() {
     if (devToolsDetected) return;
     devToolsDetected = true;
 
-    // 清空 DOM，阻斷網頁功能並顯示警告資訊
     document.body.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#0f172a;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;padding:24px;box-sizing:border-box;">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#0a0f1d;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;padding:24px;box-sizing:border-box;">
         <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
         <h2 style="font-size:22px;margin:0 0 12px;color:#ef4444;font-weight:700;">系統安全防護觸發</h2>
         <p style="font-size:14px;color:#94a3b8;line-height:1.6;max-width:480px;margin:0 0 20px;">
@@ -760,7 +744,6 @@
     `;
   }
 
-  // 方式 A：Debugger 執行延遲比對 (當 DevTools 開啟時，debugger 會停留中斷)
   function checkDebugger() {
     const startTime = performance.now();
     debugger;
@@ -769,24 +752,14 @@
     }
   }
 
-  // 方式 B：視窗維度差偵測 (捕捉以停靠模式嵌入在瀏覽器內側的 DevTools)
-  function checkWindowDiff() {
-    const widthThreshold = window.outerWidth - window.innerWidth > 160;
-    const heightThreshold = window.outerHeight - window.innerHeight > 160;
-    if (widthThreshold || heightThreshold) {
-      triggerDefense();
-    }
-  }
-
-  // 輪詢檢查 (每 800 毫秒評估一次)
+  // 輪詢檢測 debugger
   setInterval(function () {
     try {
       checkDebugger();
-      checkWindowDiff();
     } catch (err) {}
   }, 800);
 
-  // 5. 覆蓋 console 物件，清空未處理的日誌洩漏
+  // 4. 清空 console 未處理的日誌回顯
   try {
     const noop = function () {};
     ['log', 'debug', 'info', 'warn', 'error'].forEach(function (method) {
@@ -795,6 +768,5 @@
   } catch (err) {}
 })();
 </script>
-<!-- ===================================================================== -->
 </body>
 </html>
