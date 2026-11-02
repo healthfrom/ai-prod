@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <!-- 內容安全策略 (CSP)：白名單納入 Cloudflare Turnstile、Supabase、QR 渲染及 Tailwind CDN -->
+  <!-- 內容安全策略 (CSP)：白名單納入 Cloudflare Turnstile、Supabase、QR 渲染及靜態資源 -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self' 'unsafe-inline' https:;
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net;
     frame-src 'self' https://challenges.cloudflare.com;
     connect-src 'self' https://xayagdicjwexwtehdjby.supabase.co wss://xayagdicjwexwtehdjby.supabase.co https://api.qrserver.com https://challenges.cloudflare.com;
     img-src 'self' data: https: blob:;
-    font-src 'self' data: https:;
+    font-src 'self' data: https: https://fonts.gstatic.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   ">
   <title>艾草生活體驗館 - 官方正品展銷中心</title>
   
+  <!-- 鎖定具體小版本 CDN，防範上游供應鏈投毒篡改 -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
@@ -27,11 +29,24 @@
       --accent-gold: #b45309;
     }
     
+    /* 禁用全局文字框外選取，增加複製與扒取難度 */
     body {
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       background-color: #fbfaf6;
       color: #1e293b;
       -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* 白名單：允許表單輸入框正常選取與輸入，不影響顧客體驗 */
+    input, textarea, select {
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+      user-select: text !important;
     }
 
     .font-serif-title {
@@ -63,7 +78,7 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-emerald-800 selection:text-white">
 
-  <!-- 頂部頂級導覽列 -->
+  <!-- 頂部導覽列 -->
   <header class="sticky top-0 z-40 bg-emerald-950/95 backdrop-blur-md text-white border-b border-emerald-900/60 shadow-lg">
     <div class="max-w-6xl mx-auto px-4 py-3 sm:py-3.5 flex justify-between items-center gap-3">
       
@@ -93,7 +108,7 @@
     </div>
   </header>
 
-  <!-- 品牌氛圍橫幅 -->
+  <!-- 品牌橫幅 -->
   <section class="bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-800 text-white pt-6 pb-8 px-4 border-b border-emerald-700/30">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div class="space-y-1">
@@ -149,7 +164,7 @@
       </div>
     </div>
 
-    <!-- 產品卡片網格 -->
+    <!-- 產品網格 -->
     <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
       <div class="col-span-full py-20 text-center text-slate-400 text-xs">
         <div class="text-3xl mb-2 animate-bounce">🌿</div>
@@ -158,7 +173,7 @@
     </div>
   </main>
 
-  <!-- 底部版權聲明 -->
+  <!-- 頁尾 -->
   <footer class="bg-emerald-950 text-emerald-400/80 text-[11px] py-6 border-t border-emerald-900/60 mt-12">
     <div class="max-w-6xl mx-auto px-4 text-center space-y-1">
       <p class="font-medium text-emerald-200">🌿 艾草生活體驗館 · 官方直營展銷中心</p>
@@ -166,9 +181,8 @@
     </div>
   </footer>
 
-  <!-- 購物車與收件資訊抽屜 -->
+  <!-- 購物車抽屜 -->
   <div id="cartDrawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-    
     <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-emerald-950 to-emerald-900 text-white">
       <div class="flex items-center gap-2">
         <span class="text-xl">🛍️</span>
@@ -191,7 +205,7 @@
         <div id="cartItemList" class="space-y-2"></div>
       </div>
 
-      <!-- 收件發貨資料填寫區 -->
+      <!-- 收件資訊 -->
       <div class="border-t border-slate-200 pt-4 space-y-3">
         <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
           <span class="text-emerald-700">📦</span> 收件人發貨資訊
@@ -234,7 +248,7 @@
         </div>
       </div>
 
-      <!-- 支付方式選擇區 -->
+      <!-- 結算方式 -->
       <div class="border-t border-slate-200 pt-4 space-y-2.5">
         <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
           <span class="text-emerald-700">💳</span> 選擇結算方式
@@ -282,7 +296,6 @@
   <!-- 掃碼結算 Modal -->
   <div id="payModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-3.5 shadow-2xl border border-slate-100">
-      
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
         <span id="payModalTitle" class="text-xs font-bold flex items-center gap-1.5"></span>
         <button onclick="closePayModal()" class="text-slate-400 hover:text-slate-600 w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 transition">✕</button>
@@ -293,7 +306,6 @@
         <div class="text-3xl font-extrabold text-slate-900 font-serif-title mt-0.5" id="payModalAmount">¥0</div>
       </div>
 
-      <!-- 收款二維碼容器 (自動帶有高質感兜底圖) -->
       <div id="qrCodeContainer" class="p-3.5 rounded-2xl border inline-block shadow-inner bg-slate-50/50">
         <img id="payQrImg" src="" alt="收款碼" class="w-48 h-48 mx-auto rounded-xl object-contain shadow-sm border border-slate-200/60">
         <p id="payInstruction" class="text-[11px] mt-2 font-medium"></p>
@@ -303,7 +315,6 @@
         💡 <b>溫馨提醒：</b>掃碼轉帳付款後，請務必點擊下方按鈕送出訂單，系統將第一時間為您核對並安排出貨！
       </div>
 
-      <!-- Cloudflare Turnstile 無感人機驗證容器 -->
       <div id="turnstileBox" class="my-1 flex justify-center min-h-[65px] items-center">
         <div class="cf-turnstile" 
              data-sitekey="0x4AAAAAAFsVEV188OjAti48" 
@@ -320,7 +331,7 @@
     </div>
   </div>
 
-  <!-- 下單成功 + 關注公眾號 Modal -->
+  <!-- 下單成功 Modal -->
   <div id="successModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
       <div class="w-14 h-14 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-inner">
@@ -352,7 +363,7 @@
     </div>
   </div>
 
-  <!-- 微信推廣分享 Modal -->
+  <!-- 分享 Modal -->
   <div id="shareModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -384,15 +395,14 @@
     </div>
   </div>
 
+  <!-- 商城主業務邏輯 -->
   <script>
-    // ========== ⚠️ 安全配置區 ⚠️ ==========
     const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
     const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
 
     const WECHAT_PAY_QR_URL = "./pay-wx.jpg";
     const ALIPAY_QR_URL = "./pay-ali.jpg";
     const OFFICIAL_ACCOUNT_QR_URL = "./official-account.jpg";
-    // =====================================
 
     let supabaseClient = supabase.createClient(FIXED_SUPABASE_URL, FIXED_SUPABASE_KEY);
     let catalogProducts = [];
@@ -403,21 +413,18 @@
     let lastSubmitTimestamp = 0;
     let turnstileToken = '';
 
-    // 草本品類專屬高品質高解析托底圖庫 (依品名關鍵字動態配對)
     const HERBAL_FALLBACK_IMAGES = {
-      cone: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80",   // 艾柱
-      raw: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&auto=format&fit=crop&q=80",    // 艾絨
-      device: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&auto=format&fit=crop&q=80", // 灸具銅盒
-      oil: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&auto=format&fit=crop&q=80",    // 艾草精油
-      soak: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80",   // 足浴包
-      stick: "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=600&auto=format&fit=crop&q=80",  // 艾條
+      cone: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80",
+      raw: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=600&auto=format&fit=crop&q=80",
+      device: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600&auto=format&fit=crop&q=80",
+      oil: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&auto=format&fit=crop&q=80",
+      soak: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80",
+      stick: "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=600&auto=format&fit=crop&q=80",
       default: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80"
     };
 
     function getSmartProductImage(product) {
-      if (product.image_url && product.image_url.trim() !== '') {
-        return product.image_url;
-      }
+      if (product.image_url && product.image_url.trim() !== '') return product.image_url;
       const title = (product.part_name + ' ' + product.part_no).toLowerCase();
       if (title.includes('柱') || title.includes('cone')) return HERBAL_FALLBACK_IMAGES.cone;
       if (title.includes('絨') || title.includes('raw')) return HERBAL_FALLBACK_IMAGES.raw;
@@ -428,7 +435,6 @@
       return HERBAL_FALLBACK_IMAGES.default;
     }
 
-    // Turnstile 回呼函式
     function onTurnstileSuccess(token) { turnstileToken = token; }
     function onTurnstileExpired() { turnstileToken = ''; }
     function onTurnstileError() { turnstileToken = ''; }
@@ -450,7 +456,6 @@
 
     function renderCategoryMenu() {
       const filterBox = document.getElementById('categoryFilter');
-      
       let html = `
         <button onclick="filterCategory('ALL')" class="category-btn ${currentCategory === 'ALL' ? 'bg-emerald-900 text-amber-200 shadow-md border-emerald-900 font-bold' : 'bg-white text-slate-600 border-slate-200/80 hover:border-emerald-600 hover:text-emerald-800'} px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all duration-200">
           ✦ 全部系列
@@ -465,7 +470,6 @@
           </button>
         `;
       });
-
       filterBox.innerHTML = html;
     }
 
@@ -495,18 +499,14 @@
         
         return `
           <div class="group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-emerald-700/30 transition-all duration-300 flex flex-col justify-between overflow-hidden">
-            
             <div class="relative w-full aspect-square bg-slate-100 overflow-hidden">
               <img src="${displayImg}" alt="${item.part_name}" 
                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
                    onerror="this.src='${HERBAL_FALLBACK_IMAGES.default}'">
-              
               <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              
               <span class="absolute top-2.5 left-2.5 text-[10px] font-medium bg-emerald-950/80 backdrop-blur-md text-emerald-200 px-2.5 py-0.5 rounded-full border border-emerald-700/50">
                 ${item.category || '道地艾草'}
               </span>
-
               ${isOutOfStock ? `
                 <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center">
                   <span class="bg-rose-600 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg">已售罄</span>
@@ -707,7 +707,6 @@
       const qrImg = document.getElementById('payQrImg');
       const targetSrc = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
       
-      // 若尚未上傳收款碼圖片，優雅降級為高畫質美化 QR 範例卡，不阻斷下單操作
       qrImg.onerror = function() {
         const fallbackText = isWx ? 'WeChatPay_StoreTransfer' : 'Alipay_StoreTransfer';
         qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(fallbackText)}`;
@@ -824,6 +823,7 @@
       document.getElementById('shareQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(currentUrl)}`;
       document.getElementById('shareModal').classList.replace('hidden', 'flex');
     }
+
     function closeShareModal() { 
       document.getElementById('shareModal').classList.replace('flex', 'hidden'); 
     }
@@ -848,141 +848,122 @@
 
     window.addEventListener('DOMContentLoaded', initStore);
   </script>
-  <!-- ==================== 前端防常規審查與防逆向防護腳本 ==================== -->
-<style>
-  /* 禁用全局文字框外選取與圖片拖曳，增加抓取難度 */
-  body {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-  /* 允許表單輸入框正常點擊選取，避免影響正常顧客下單體驗 */
-  input, textarea, select {
-    -webkit-user-select: text !important;
-    -moz-user-select: text !important;
-    -ms-user-select: text !important;
-    user-select: text !important;
-  }
-</style>
 
-<script>
-(function () {
-  'use strict';
+  <!-- 前端防審查、防扒取與 DevTools 陷阱防護 -->
+  <script>
+    (function () {
+      'use strict';
 
-  // 1. 攔截滑鼠右鍵選單
-  document.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-    return false;
-  }, { capture: true });
-
-  // 2. 攔截圖片與文字拖曳行為
-  document.addEventListener('dragstart', function (e) {
-    e.preventDefault();
-    return false;
-  }, { capture: true });
-
-  // 3. 攔截鍵盤常用檢視快捷鍵 (兼容 Windows Ctrl 與 macOS Command/Meta 鍵)
-  document.addEventListener('keydown', function (e) {
-    const isModifier = e.ctrlKey || e.metaKey;
-    const key = (e.key || '').toLowerCase();
-    const keyCode = e.keyCode || e.which;
-
-    // 阻擋 F12
-    if (key === 'f12' || keyCode === 123) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-
-    if (isModifier) {
-      // 阻擋檢視原始碼：Ctrl + U / Cmd + Option + U
-      if (key === 'u' || keyCode === 85) {
+      // 1. 攔截滑鼠右鍵選單
+      document.addEventListener('contextmenu', function (e) {
         e.preventDefault();
-        e.stopPropagation();
         return false;
+      }, { capture: true });
+
+      // 2. 攔截圖片與文字拖曳
+      document.addEventListener('dragstart', function (e) {
+        e.preventDefault();
+        return false;
+      }, { capture: true });
+
+      // 3. 攔截常見快捷鍵 (Win / macOS 雙系統適配)
+      document.addEventListener('keydown', function (e) {
+        const isModifier = e.ctrlKey || e.metaKey;
+        const key = (e.key || '').toLowerCase();
+        const keyCode = e.keyCode || e.which;
+
+        // 阻擋 F12
+        if (key === 'f12' || keyCode === 123) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        if (isModifier) {
+          // 阻擋檢視原始碼：Ctrl + U / Cmd + Option + U
+          if (key === 'u' || keyCode === 85) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+
+          // 阻擋網頁另存新檔：Ctrl + S / Cmd + S
+          if (key === 's' || keyCode === 83) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+
+          // 阻擋列印：Ctrl + P / Cmd + P
+          if (key === 'p' || keyCode === 80) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+
+          // 阻擋開啟開發人員工具：Ctrl + Shift + I / J / C 或 Cmd + Option + I / J / C
+          if (e.shiftKey && ['i', 'j', 'c'].includes(key)) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        }
+      }, { capture: true });
+
+      // 4. 定時 Debugger 陷阱與視窗維度監聽 (DevTools Trap)
+      let devToolsDetected = false;
+
+      function triggerDefense() {
+        if (devToolsDetected) return;
+        devToolsDetected = true;
+
+        document.body.innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#0f172a;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;padding:24px;box-sizing:border-box;">
+            <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
+            <h2 style="font-size:22px;margin:0 0 12px;color:#ef4444;font-weight:700;">系統安全防護觸發</h2>
+            <p style="font-size:14px;color:#94a3b8;line-height:1.6;max-width:480px;margin:0 0 20px;">
+              偵測到異常的除錯環境或開發人員工具已啟動。為保護交易連線與資料安全性，當前存取作業已終止。
+            </p>
+            <button onclick="window.location.reload()" style="background:#2563eb;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:14px;cursor:pointer;">
+              關閉除錯工具後重新載入
+            </button>
+          </div>
+        `;
       }
 
-      // 阻擋網頁另存新檔：Ctrl + S / Cmd + S
-      if (key === 's' || keyCode === 83) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+      // 方式 A：Debugger 延遲檢查
+      function checkDebugger() {
+        const startTime = performance.now();
+        debugger;
+        if (performance.now() - startTime > 100) {
+          triggerDefense();
+        }
       }
 
-      // 阻擋列印頁面 (抓取排版內容)：Ctrl + P / Cmd + P
-      if (key === 'p' || keyCode === 80) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+      // 方式 B：視窗維度差偵測 (捕捉嵌入式 DevTools)
+      function checkWindowDiff() {
+        const widthThreshold = window.outerWidth - window.innerWidth > 160;
+        const heightThreshold = window.outerHeight - window.innerHeight > 160;
+        if (widthThreshold || heightThreshold) {
+          triggerDefense();
+        }
       }
 
-      // 阻擋開啟開發人員工具：Ctrl + Shift + I / J / C 或 Cmd + Option + I / J / C
-      if (e.shiftKey && ['i', 'j', 'c'].includes(key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-    }
-  }, { capture: true });
+      setInterval(function () {
+        try {
+          checkDebugger();
+          checkWindowDiff();
+        } catch (err) {}
+      }, 800);
 
-  // 4. 定時 Debugger 陷阱與視窗維度監聽 (專門應對強行開啟 DevTools 的用戶)
-  let devToolsDetected = false;
-
-  function triggerDefense() {
-    if (devToolsDetected) return;
-    devToolsDetected = true;
-
-    // 清空 DOM，阻斷網頁功能並顯示警告資訊
-    document.body.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#0f172a;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;padding:24px;box-sizing:border-box;">
-        <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
-        <h2 style="font-size:22px;margin:0 0 12px;color:#ef4444;font-weight:700;">系統安全防護觸發</h2>
-        <p style="font-size:14px;color:#94a3b8;line-height:1.6;max-width:480px;margin:0 0 20px;">
-          偵測到異常的除錯環境或開發人員工具已啟動。為保護交易連線與資料安全性，當前存取作業已終止。
-        </p>
-        <button onclick="window.location.reload()" style="background:#2563eb;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:14px;cursor:pointer;">
-          關閉除錯工具後重新載入
-        </button>
-      </div>
-    `;
-  }
-
-  // 方式 A：Debugger 執行延遲比對 (當 DevTools 開啟時，debugger 會停留中斷)
-  function checkDebugger() {
-    const startTime = performance.now();
-    debugger;
-    if (performance.now() - startTime > 100) {
-      triggerDefense();
-    }
-  }
-
-  // 方式 B：視窗維度差偵測 (捕捉以停靠模式嵌入在瀏覽器內側的 DevTools)
-  function checkWindowDiff() {
-    const widthThreshold = window.outerWidth - window.innerWidth > 160;
-    const heightThreshold = window.outerHeight - window.innerHeight > 160;
-    if (widthThreshold || heightThreshold) {
-      triggerDefense();
-    }
-  }
-
-  // 輪詢檢查 (每 800 毫秒評估一次)
-  setInterval(function () {
-    try {
-      checkDebugger();
-      checkWindowDiff();
-    } catch (err) {}
-  }, 800);
-
-  // 5. 覆蓋 console 物件，清空未處理的日誌洩漏
-  try {
-    const noop = function () {};
-    ['log', 'debug', 'info', 'warn', 'error'].forEach(function (method) {
-      console[method] = noop;
-    });
-  } catch (err) {}
-})();
-</script>
-<!-- ===================================================================== -->
+      // 5. 覆蓋 console 物件，清空未處理的日誌回顯
+      try {
+        const noop = function () {};
+        ['log', 'debug', 'info', 'warn', 'error'].forEach(function (method) {
+          console[method] = noop;
+        });
+      } catch (err) {}
+    })();
+  </script>
 </body>
 </html>
