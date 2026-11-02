@@ -13,7 +13,7 @@
     img-src 'self' data: https: blob:;
     font-src 'self' data: https:;
   ">
-  <title>艾產品管理系統 - 多語切換版</title>
+  <title>艾產品管理系統 - 推廣分潤面板版</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
@@ -50,7 +50,7 @@
     <div>
       <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2 text-white">
         🌿 艾產品管理系統
-        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">繁簡雙語版</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 font-normal">社交推廣分潤版</span>
       </h1>
       <p class="text-xs text-slate-400 mt-1">即時同步前台菜單、發貨、圖庫與庫存中台</p>
     </div>
@@ -142,6 +142,7 @@
           <button onclick="switchView('table')" id="btnTabTable" class="px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold">產品台帳</button>
           <button onclick="switchView('categories')" id="btnTabCategories" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">🗂️ 菜單分類管理</button>
           <button onclick="switchView('orders')" id="btnTabOrders" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">📦 發貨訂單</button>
+          <button onclick="switchView('commissions')" id="btnTabCommissions" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">🤝 推廣分潤</button>
           <button onclick="switchView('logs')" id="btnTabLogs" class="px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme">📖 操作日誌</button>
         </div>
       </div>
@@ -187,7 +188,37 @@
         </table>
       </div>
 
-      <!-- 視圖 4：日誌 -->
+      <!-- 視圖 4：推廣分潤面板 -->
+      <div id="viewCommissions" class="hidden space-y-4">
+        <div class="bg-sub border border-theme rounded-lg p-3 flex justify-between items-center">
+          <div>
+            <h3 class="text-sm font-bold text-amber-300">🤝 社交推廣員對賬清單</h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">自動抓取已發貨訂單中的推薦代碼進行分潤統計</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-300">目前設定佣金比例：</label>
+            <input type="number" id="commissionRate" value="15" onchange="fetchShopOrders()" class="w-16 bg-panel border border-theme rounded px-2 py-1 text-xs text-center text-amber-300 font-bold outline-none">
+            <span class="text-xs text-slate-300">%</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto border border-theme rounded">
+          <table class="w-full text-left text-xs min-w-[600px]">
+            <thead class="bg-slate-900 text-slate-400 border-b border-theme">
+              <tr>
+                <th class="p-2.5">推薦人代碼 (Affiliate ID)</th>
+                <th class="p-2.5">有效已發貨單數</th>
+                <th class="p-2.5">累積帶貨營業額</th>
+                <th class="p-2.5 font-bold text-amber-300">應結算佣金預估</th>
+                <th class="p-2.5 text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody id="commissionsTableBody" class="divide-y divide-theme"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 視圖 5：日誌 -->
       <div id="viewLogs" class="hidden overflow-x-auto border border-theme rounded">
         <table class="w-full text-left text-xs min-w-[650px]">
           <thead class="bg-slate-900 text-slate-400 border-b border-theme">
@@ -217,7 +248,7 @@
 
 <!-- 繁簡轉換字典與腳本 -->
 <script>
-  const t2sMap = { "產品": "产品", "管理": "管理", "系統": "系统", "多語切換版": "多语切换版", "即時": "即时", "同步": "同步", "前台": "前台", "菜單": "菜单", "發貨": "发货", "圖庫": "图库", "與": "与", "庫存": "库存", "中台": "中台", "未登入": "未登入", "登入": "登入", "匯出台帳": "汇出台帐", "納管品項": "纳管品项", "總值": "总值", "待發貨訂單": "待发货订单", "有效自定義類別": "有效自定义类别", "零庫存斷貨品項": "零库存断货品项", "請登入系統進行異動": "请登入系统进行异动", "前往登入": "前往登入", "異動登記": "异动登记", "溯源": "溯源", "異動類型": "异动类型", "基地收穫": "基地收获", "入庫": "入库", "門市調撥": "门市调拨", "出庫": "出库", "新產品建檔": "新产品建档", "含溯源資料": "含溯源资料", "產品品號": "产品品号", "如": "如", "產品品名規格": "产品品名规格", "所屬自定義類別": "所属自定义类别", "單價": "单价", "安全水位": "安全水位", "前台溯源與商品詳情描述": "前台溯源与商品详情描述", "選填": "选填", "若留空前台將根據分類自動帶入官方道地履歷": "若留空前台将根据分类自动带入官方道地履历", "數量": "数量", "乾燥儲位": "干燥储位", "提交異動": "提交异动", "搜尋品號、品名": "搜寻品号、品名", "產品台帳": "产品台帐", "菜單分類管理": "菜单分类管理", "發貨訂單": "发货订单", "操作日誌": "操作日志", "圖片": "图片", "品號": "品号", "品名": "品名", "分類": "分类", "狀態": "状态", "儲位": "储位", "操作管理": "操作管理", "新增自定義類別": "新增自定义类别", "將即時顯示在前台頂部菜單": "将即时显示在前台顶部菜单", "輸入新分類名稱": "输入新分类名称", "薰香養生": "薰香养生", "特級艾絨條": "特级艾绒条", "確認新增": "确认新增", "排序": "排序", "前台菜單類別名稱": "前台菜单类别名称", "當前納管產品數": "当前纳管产品数", "操作": "操作", "訂單號": "订单号", "時間": "时间", "收件資訊": "收件资讯", "品項明細": "品项明细", "金額": "金额", "發貨狀態": "发货状态", "操作者": "操作者", "項目": "项目", "動作": "动作", "備註詳情": "备注详情", "系統登入": "系统登入", "取消": "取消", "未分類": "未分类", "件商品": "件商品", "修改名稱": "修改名称", "刪除": "删除", "具溯源履歷": "具溯源履历", "上架中": "上架中", "已下架": "已下架", "件": "件", "總額": "总额", "換圖": "换图", "重新上架": "重新上架", "隱藏下架": "隐藏下架", "刪除商品": "删除商品", "已出貨": "已出货", "點擊發貨": "点击发货", "商品清退": "商品清退", "請先登入": "请先登入", "請輸入": "请输入", "登入失敗": "登入失败", "為確保設備與後台安全，系統因閒置超過": "为确保设备与后台安全，系统因闲置超过", "分鐘已自動登出": "分钟已自动登出", "該分類已存在": "该分类已存在", "已新增，前台選單已同步": "已新增，前台选单已同步", "請輸入新的分類名稱": "请输入新的分类名称", "原名稱": "原名称", "分類名稱不能為空": "分类名称不能为空", "該分類名稱已存在": "该分类名称已存在", "分類名稱已成功更新為": "分类名称已成功更新为", "關聯商品與前台菜單已同步": "关联商品与前台菜单已同步", "修改分類失敗": "修改分类失败", "無法刪除": "无法删除", "類別": "类别", "下目前仍納管有": "下目前仍纳管有", "依安全規則：分類下無任何商品時方可刪除": "依安全规则：分类下无任何商品时方可删除", "請先前往「產品台帳」將關聯商品刪除或將其分類移至其他類別後再試": "请先前往「产品台帐」将关联商品删除或将其分类移至其他类别后再试", "確定要刪除空類別": "确定要删除空类别", "嗎？此操作不可還原": "吗？此操作不可还原", "已成功刪除": "已成功删除", "確定要將商品": "确定要将商品", "設為": "设为", "嗎？": "吗？", "下架後前台將不再展示該商品": "下架后前台将不再展示该商品", "商品已成功": "商品已成功", "狀態更新失敗": "状态更新失败", "找不到指定商品": "找不到指定商品", "警告": "警告", "即將永久刪除商品": "即将永久删除商品", "當前剩餘庫存": "当前剩余库存", "請輸入刪除/報廢備註原因（必填）": "请输入删除/报废备注原因（必填）", "刪除失敗：依管理規定，必須填寫刪除備註原因": "删除失败：依管理规定，必须填写删除备注原因", "最後確認：確定要永久刪除": "最后确认：确定要永久删除", "填寫備註": "填写备注", "已成功自系統刪除，並已登記備註日誌": "已成功自系统删除，并已登记备注日志", "刪除商品失敗": "删除商品失败", "請填寫快遞單號 (可選填)": "请填写快递单号 (可选填)", "發貨狀態已成功更新": "发货状态已成功更新", "發貨更新失敗": "发货更新失败", "數量必須大於": "数量必须大于", "且品號不能為空": "且品号不能为空", "該品號已存在": "该品号已存在", "品號不存在": "品号不存在", "庫存不足": "库存不足", "庫存與溯源異動更新成功": "库存与溯源异动更新成功", "更新失敗": "更新失败", "無圖": "无图", "線上商城": "线上商城" };
+  const t2sMap = { "產品": "产品", "管理": "管理", "系統": "系统", "社交推廣分潤版": "社交推广分润版", "即時": "即时", "同步": "同步", "前台": "前台", "菜單": "菜单", "發貨": "发货", "圖庫": "图库", "與": "与", "庫存": "库存", "中台": "中台", "未登入": "未登入", "登入": "登入", "匯出台帳": "汇出台帐", "納管品項": "纳管品项", "總值": "总值", "待發貨訂單": "待发货订单", "有效自定義類別": "有效自定义类别", "零庫存斷貨品項": "零库存断货品项", "請登入系統進行異動": "请登入系统进行异动", "前往登入": "前往登入", "異動登記": "异动登记", "溯源": "溯源", "異動類型": "异动类型", "基地收穫": "基地收获", "入庫": "入库", "門市調撥": "门市调拨", "出庫": "出库", "新產品建檔": "新产品建档", "含溯源資料": "含溯源资料", "產品品號": "产品品号", "如": "如", "產品品名規格": "产品品名规格", "所屬自定義類別": "所属自定义类别", "單價": "单价", "安全水位": "安全水位", "前台溯源與商品詳情描述": "前台溯源与商品详情描述", "選填": "选填", "若留空前台將根據分類自動帶入官方道地履歷": "若留空前台将根据分类自动带入官方道地履历", "數量": "数量", "乾燥儲位": "干燥储位", "提交異動": "提交异动", "搜尋品號、品名": "搜寻品号、品名", "產品台帳": "产品台帐", "菜單分類管理": "菜单分类管理", "發貨訂單": "发货订单", "推廣分潤": "推广分润", "操作日誌": "操作日志", "圖片": "图片", "品號": "品号", "品名": "品名", "分類": "分类", "狀態": "状态", "儲位": "储位", "操作管理": "操作管理", "新增自定義類別": "新增自定义类别", "將即時顯示在前台頂部菜單": "将即时显示在前台顶部菜单", "輸入新分類名稱": "输入新分类名称", "薰香養生": "薰香养生", "特級艾絨條": "特级艾绒条", "確認新增": "确认新增", "排序": "排序", "前台菜單類別名稱": "前台菜单类别名称", "當前納管產品數": "当前纳管产品数", "操作": "操作", "訂單號": "订单号", "時間": "时间", "收件資訊": "收件资讯", "品項明細": "品项明细", "金額": "金额", "發貨狀態": "发货状态", "社交推廣員對賬清單": "社交推广员对帐清单", "自動抓取已發貨訂單中的推薦代碼進行分潤統計": "自动抓取已发货订单中的推荐代码进行分润统计", "目前設定佣金比例：": "目前设定佣金比例：", "推薦人代碼": "推荐人代码", "有效已發貨單數": "有效已发货单数", "累積帶貨營業額": "累积带货营业额", "應結算佣金預估": "应结算佣金预估", "操作者": "操作者", "項目": "项目", "動作": "动作", "備註詳情": "备注详情", "系統登入": "系统登入", "取消": "取消", "未分類": "未分类", "件商品": "件商品", "修改名稱": "修改名称", "刪除": "删除", "具溯源履歷": "具溯源履历", "上架中": "上架中", "已下架": "已下架", "件": "件", "總額": "总额", "換圖": "换图", "重新上架": "重新上架", "隱藏下架": "隐藏下架", "刪除商品": "删除商品", "已出貨": "已出货", "點擊發貨": "点击发货", "商品清退": "商品清退", "標記已結算": "标记已结算", "請先登入": "请先登入", "請輸入": "请输入", "登入失敗": "登入失败", "為確保設備與後台安全，系統因閒置超過": "为确保设备与后台安全，系统因闲置超过", "分鐘已自動登出": "分钟已自动登出", "該分類已存在": "该分类已存在", "已新增，前台選單已同步": "已新增，前台选单已同步", "請輸入新的分類名稱": "请输入新的分类名称", "原名稱": "原名称", "分類名稱不能為空": "分类名称不能为空", "該分類名稱已存在": "该分类名称已存在", "分類名稱已成功更新為": "分类名称已成功更新为", "關聯商品與前台菜單已同步": "关联商品与前台菜单已同步", "修改分類失敗": "修改分类失败", "無法刪除": "无法删除", "類別": "类别", "下目前仍納管有": "下目前仍纳管有", "依安全規則：分類下無任何商品時方可刪除": "依安全规则：分类下无任何商品时方可删除", "請先前往「產品台帳」將關聯商品刪除或將其分類移至其他類別後再試": "请先前往「产品台帐」将关联商品删除或将其分类移至其他类别后再试", "確定要刪除空類別": "确定要删除空类别", "嗎？此操作不可還原": "吗？此操作不可还原", "已成功刪除": "已成功删除", "確定要將商品": "确定要将商品", "設為": "设为", "嗎？": "吗？", "下架後前台將不再展示該商品": "下架后前台将不再展示该商品", "商品已成功": "商品已成功", "狀態更新失敗": "状态更新失败", "找不到指定商品": "找不到指定商品", "警告": "警告", "即將永久刪除商品": "即将永久删除商品", "當前剩餘庫存": "当前剩余库存", "請輸入刪除/報廢備註原因（必填）": "请输入删除/报废备注原因（必填）", "刪除失敗：依管理規定，必須填寫刪除備註原因": "删除失败：依管理规定，必须填写删除备注原因", "最後確認：確定要永久刪除": "最后确认：确定要永久删除", "填寫備註": "填写备注", "已成功自系統刪除，並已登記備註日誌": "已成功自系统删除，并已登记备注日志", "刪除商品失敗": "删除商品失败", "請填寫快遞單號 (可選填)": "请填写快递单号 (可选填)", "發貨狀態已成功更新": "发货状态已成功更新", "發貨更新失敗": "发货更新失败", "僅作標記，本系統不會執行真實轉帳。確定要將該推薦人的本期佣金標記為已結清嗎？": "仅作标记，本系统不会执行真实转帐。确定要将该推荐人的本期佣金标记为已结清吗？", "數量必須大於": "数量必须大于", "且品號不能為空": "且品号不能为空", "該品號已存在": "该品号已存在", "品號不存在": "品号不存在", "庫存不足": "库存不足", "庫存與溯源異動更新成功": "库存与溯源异动更新成功", "更新失敗": "更新失败", "無圖": "无图", "線上商城": "线上商城" };
   
   const s2tMap = {};
   for (let key in t2sMap) { s2tMap[t2sMap[key]] = key; }
@@ -257,7 +288,7 @@
   function toggleLang() {
     currentLang = currentLang === 'tc' ? 'sc' : 'tc';
     applyLanguage(currentLang);
-    renderViews(); // 重新渲染列表以套用翻譯
+    renderViews(); 
     renderCategoriesTable();
   }
 
@@ -283,6 +314,9 @@
   let currentUser = null;
   let targetPartNoForUpload = null;
   let idleTimer = null;
+  
+  // 全域變數存放最新抓取的訂單，便於分潤計算
+  let allShopOrders = []; 
 
   function escapeHtml(text) {
     if (text === null || text === undefined) return '';
@@ -298,7 +332,7 @@
     if (currentUser) {
       resetIdleTimer();
       fetchAllData();
-      if (currentTab === 'orders') fetchShopOrders();
+      fetchShopOrders();
     } else if (idleTimer) {
       clearTimeout(idleTimer);
     }
@@ -530,10 +564,13 @@
   }
 
   async function fetchShopOrders() {
-    const { data } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabaseClient.from('shop_orders').select('*').order('created_at', { ascending: false });
+    if (error) { console.error("獲取訂單失敗:", error.message); return; }
+    
+    allShopOrders = data || [];
     let pendingCount = 0;
     
-    document.getElementById('ordersTableBody').innerHTML = (data || []).map(o => {
+    document.getElementById('ordersTableBody').innerHTML = allShopOrders.map(o => {
       const isShipped = o.order_status === 'SHIPPED' || o.shipping_status === '已發貨' || o.shipping_status === '已发货';
       if (!isShipped) pendingCount++;
 
@@ -541,17 +578,22 @@
       if (typeof orderItems === 'string') { try { orderItems = JSON.parse(orderItems); } catch(e) { orderItems = []; } }
       if (!Array.isArray(orderItems)) orderItems = [];
       const itemsHtml = orderItems.map(i => `${_t(escapeHtml(i.part_name || '商品'))} x${Number(i.quantity || i.qty || 1)}`).join('<br>') || `<span class="text-slate-500">無品項資料</span>`;
+      
+      const hasRef = (o.notes || '').includes('【推薦人代碼】') || (o.notes || '').includes('【推荐人代码】');
+      const refTag = hasRef ? `<br><span class="text-[10px] text-amber-300 bg-amber-900/30 px-1 rounded border border-amber-700/50">🤝 具推薦碼</span>` : '';
 
       return `
         <tr class="hover:bg-slate-800/40">
           <td class="p-2.5 text-[11px] font-mono text-slate-400"><span class="text-sky-400 font-bold">${escapeHtml(o.order_no || o.id)}</span><br>${new Date(o.created_at).toLocaleString('zh-TW',{hour12:false})}</td>
           <td class="p-2.5 leading-tight"><strong class="text-white">${escapeHtml(o.recipient_name || o.customer_name)}</strong> (${escapeHtml(o.recipient_phone || o.customer_phone)})<br><span class="text-slate-400 text-[10px] break-words max-w-[200px] inline-block">${_t(escapeHtml(o.shipping_address))}</span></td>
           <td class="p-2.5 text-[10px] text-slate-300">${itemsHtml}</td>
-          <td class="p-2.5 font-bold text-emerald-400">¥${Number(o.total_amount || 0)}</td>
+          <td class="p-2.5 font-bold text-emerald-400">¥${Number(o.total_amount || 0)} ${refTag}</td>
           <td class="p-2.5">${isShipped ? `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-400">${_t('已出貨')}</span><br><span class="text-[10px] text-slate-500">${escapeHtml(o.tracking_no || '')}</span>` : `<button onclick="shipOrder(${Number(o.id)})" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 rounded text-xs text-white font-bold transition">${_t('點擊發貨')}</button>`}</td>
         </tr>`;
     }).join('');
+    
     document.getElementById('kpiPendingOrder').innerText = pendingCount;
+    renderCommissions(); // 訂單載入完成後同步渲染分潤清單
   }
 
   async function shipOrder(orderId) {
@@ -564,14 +606,98 @@
     } catch (err) { alert(_t("發貨更新失敗：") + err.message); }
   }
 
+  /* ================= 社交推廣佣金動態計算邏輯 ================= */
+  function renderCommissions() {
+    const rateInput = document.getElementById('commissionRate').value;
+    const rate = (parseFloat(rateInput) || 15) / 100;
+    const affiliateStats = {};
+
+    allShopOrders.forEach(o => {
+      // 僅計算已發貨訂單
+      const isShipped = o.order_status === 'SHIPPED' || o.shipping_status === '已發貨' || o.shipping_status === '已发货';
+      if (!isShipped) return;
+
+      const notes = o.notes || '';
+      // 支援繁簡兩種正規表達式抓取
+      const match = notes.match(/【推薦人代碼】([A-Za-z0-9_-]+)/) || notes.match(/【推荐人代码】([A-Za-z0-9_-]+)/);
+      if (match) {
+        const refCode = match[1].toUpperCase();
+        if (!affiliateStats[refCode]) {
+          affiliateStats[refCode] = { totalSales: 0, orderCount: 0 };
+        }
+        // 如果備註裡有標記 [已結算]，就不計入本期
+        if (!notes.includes('[已結算]') && !notes.includes('[已结算]')) {
+           affiliateStats[refCode].totalSales += Number(o.total_amount || 0);
+           affiliateStats[refCode].orderCount += 1;
+        }
+      }
+    });
+
+    const tbody = document.getElementById('commissionsTableBody');
+    const codes = Object.keys(affiliateStats);
+    
+    if (codes.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 text-xs">目前無待結算的推廣分潤紀錄</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = codes.map(code => {
+      const stat = affiliateStats[code];
+      const comm = Math.round(stat.totalSales * rate);
+      return `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3 font-mono font-bold text-emerald-400 text-sm">${escapeHtml(code)}</td>
+          <td class="p-3 text-slate-300 font-bold">${stat.orderCount} 筆</td>
+          <td class="p-3 text-slate-300">¥${stat.totalSales.toLocaleString()}</td>
+          <td class="p-3 font-bold text-amber-300 text-base">¥${comm.toLocaleString()}</td>
+          <td class="p-3 text-center">
+             <button onclick="markCommissionPaid('${escapeHtml(code)}')" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 rounded text-xs text-white transition shadow" ${stat.orderCount === 0 ? 'disabled style="opacity:0.3"' : ''}>
+               ✓ ${_t('標記已結算')}
+             </button>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // 將某個推薦人的本期待結算訂單標記為已結算
+  async function markCommissionPaid(refCode) {
+    if (!currentUser) return alert(_t("請先登入！"));
+    if (!confirm(_t("僅作標記，本系統不會執行真實轉帳。確定要將該推薦人的本期佣金標記為已結清嗎？"))) return;
+
+    try {
+      // 找出該代碼下，未標記過結算的已出貨訂單
+      const targetOrders = allShopOrders.filter(o => {
+        const isShipped = o.order_status === 'SHIPPED' || o.shipping_status === '已發貨' || o.shipping_status === '已发货';
+        if (!isShipped) return false;
+        const notes = o.notes || '';
+        const match = notes.match(/【推薦人代碼】([A-Za-z0-9_-]+)/) || notes.match(/【推荐人代码】([A-Za-z0-9_-]+)/);
+        if (!match || match[1].toUpperCase() !== refCode.toUpperCase()) return false;
+        return (!notes.includes('[已結算]') && !notes.includes('[已结算]'));
+      });
+
+      if (targetOrders.length === 0) return alert("該推薦人目前無待結算的訂單。");
+
+      // 批次更新備註加上 [已結算] 標籤
+      for (const order of targetOrders) {
+        const appendedNote = (order.notes || '') + `\n[已結算 ${new Date().toISOString().slice(0,10)}]`;
+        await supabaseClient.from('shop_orders').update({ notes: appendedNote }).eq('id', order.id);
+      }
+
+      alert("標記成功！本期分潤已歸檔。");
+      await fetchShopOrders();
+    } catch (err) {
+      alert("更新失敗：" + err.message);
+    }
+  }
+
   function switchView(tab) {
     currentTab = tab;
-    ['table', 'categories', 'orders', 'logs'].forEach(t => {
-      document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? 'block' : 'hidden';
+    ['table', 'categories', 'orders', 'commissions', 'logs'].forEach(t => {
+      document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? (tab==='commissions'?'space-y-4':'block') : 'hidden';
       document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? 'px-3 py-1.5 rounded text-xs bg-sky-500 text-slate-900 font-semibold' : 'px-3 py-1.5 rounded text-xs bg-slate-800 text-slate-300 border border-theme';
     });
     if (tab === 'categories') renderCategoriesTable();
-    if (tab === 'orders') fetchShopOrders();
+    if (tab === 'orders' || tab === 'commissions') fetchShopOrders();
     if (tab === 'logs') {
       supabaseClient.from('inventory_transactions').select('*').order('created_at', { ascending: false }).limit(50).then(({ data }) => {
         document.getElementById('logsTableBody').innerHTML = (data || []).map(l => {
