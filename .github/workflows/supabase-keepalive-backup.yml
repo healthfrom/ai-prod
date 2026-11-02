@@ -48,9 +48,18 @@ jobs:
 
           echo "所有核心資料表備份與保活請求已順利完成！"
 
-      - name: 3. 上傳備份檔案至 GitHub Artifacts (保存 90 天)
+      - name: 3. 使用 AES-256 對備份目錄進行高強度加密
+        env:
+          ENC_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          # 打包為 tar.gz 並以 openssl 加密成單一 .enc 密文檔案
+          tar -czf - backups | openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 -out encrypted_backup.tar.gz.enc -pass "pass:$ENC_KEY"
+          # 徹底刪除未加密的原始資料夾，防止日誌或臨時空間殘留
+          rm -rf backups
+
+      - name: 4. 上傳加密檔案至 GitHub Artifacts (保存 90 天)
         uses: actions/upload-artifact@v4
         with:
-          name: supabase-backup-${{ github.run_id }}
-          path: backups/
+          name: supabase-encrypted-backup-${{ github.run_id }}
+          path: encrypted_backup.tar.gz.enc
           retention-days: 90
