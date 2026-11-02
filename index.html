@@ -15,7 +15,6 @@
   ">
   <title>艾草生活體驗館 - 官方正品展銷中心</title>
   
-  <!-- 鎖定具體小版本 CDN，防範上游供應鏈投毒篡改 -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -54,6 +53,16 @@
     input[type="radio"]:checked + div { box-shadow: 0 4px 14px -2px rgba(6, 78, 59, 0.12); }
     .radio-wechat:checked + div { border-color: #059669; background-color: #ecfdf5; color: #065f46; }
     .radio-alipay:checked + div { border-color: #0284c7; background-color: #f0f9ff; color: #075985; }
+
+    @keyframes socialToastIn {
+      0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+      15% { opacity: 1; transform: translateY(0) scale(1); }
+      85% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+    }
+    .animate-social-toast {
+      animation: socialToastIn 5s ease-in-out forwards;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-emerald-800 selection:text-white" id="translatable-body">
@@ -76,13 +85,12 @@
       </div>
       
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- 繁簡切換按鈕 -->
         <button onclick="toggleLang()" id="btnLangToggle" class="px-2.5 py-1.5 rounded-full text-xs font-bold text-amber-200 bg-emerald-900 border border-emerald-700/60 transition shadow-sm active:scale-95">
           简
         </button>
 
         <button onclick="openShareModal()" class="px-3 py-1.5 rounded-full text-xs font-medium text-emerald-100 bg-emerald-900/80 hover:bg-emerald-800 border border-emerald-700/60 transition flex items-center gap-1.5 shadow-sm active:scale-95">
-          <span>📢</span> <span class="hidden sm:inline">推廣分享</span>
+          <span class="text-amber-300">📢</span> <span class="hidden sm:inline">推廣分享</span>
         </button>
         
         <button onclick="toggleCartDrawer()" class="relative px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-950 bg-gradient-to-r from-amber-300 to-amber-400 hover:from-amber-200 hover:to-amber-300 transition flex items-center gap-1.5 shadow-md active:scale-95">
@@ -92,6 +100,11 @@
       </div>
     </div>
   </header>
+
+  <!-- 好友專屬推薦標籤 -->
+  <div id="referrerBanner" class="hidden bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-amber-950 px-4 py-1.5 text-xs text-center font-medium shadow-inner flex items-center justify-center gap-2">
+    <span>🎁</span> 您正在透過好友專屬推薦選購，全場官方包郵正品保障！
+  </div>
 
   <!-- 品牌橫幅 -->
   <section class="bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-800 text-white pt-6 pb-8 px-4 border-b border-emerald-700/30">
@@ -162,7 +175,6 @@
   <div id="productDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50 transition-opacity">
     <div class="bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col relative no-scrollbar">
       
-      <!-- 頂部圖片區 -->
       <div class="relative w-full aspect-square bg-slate-100 overflow-hidden rounded-t-3xl">
         <img id="detailImg" src="" alt="商品圖片" class="w-full h-full object-cover">
         <button onclick="closeProductDetail()" class="absolute top-4 right-4 w-8 h-8 bg-black/40 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-black/60 transition shadow-lg">✕</button>
@@ -171,7 +183,6 @@
         </div>
       </div>
       
-      <!-- 內容資訊區 -->
       <div class="p-5 space-y-4">
         <div>
           <div class="flex justify-between items-start gap-2">
@@ -209,15 +220,20 @@
           </div>
         </div>
 
-        <!-- 購買操作區 -->
-        <div class="pt-2 flex items-center gap-3">
-          <div class="flex items-center gap-3 bg-slate-50 px-3 py-2.5 rounded-xl border border-slate-200">
-            <button onclick="changeDetailQty(-1)" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-emerald-700 font-bold text-lg transition">-</button>
-            <span id="detailQty" class="text-sm font-mono font-bold w-6 text-center text-slate-800">1</span>
-            <button onclick="changeDetailQty(1)" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-emerald-700 font-bold text-lg transition">+</button>
+        <div class="space-y-2.5 pt-1">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 bg-slate-50 px-3 py-2.5 rounded-xl border border-slate-200">
+              <button onclick="changeDetailQty(-1)" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-emerald-700 font-bold text-lg transition">-</button>
+              <span id="detailQty" class="text-sm font-mono font-bold w-6 text-center text-slate-800">1</span>
+              <button onclick="changeDetailQty(1)" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-emerald-700 font-bold text-lg transition">+</button>
+            </div>
+            <button id="btnDetailAddToCart" onclick="confirmDetailAddToCart()" class="flex-1 py-3.5 bg-emerald-900 hover:bg-emerald-800 text-amber-200 font-bold rounded-xl shadow-lg shadow-emerald-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 text-sm disabled:bg-slate-300 disabled:shadow-none">
+              <span>🛒</span> 加入選購清單
+            </button>
           </div>
-          <button id="btnDetailAddToCart" onclick="confirmDetailAddToCart()" class="flex-1 py-3.5 bg-emerald-900 hover:bg-emerald-800 text-amber-200 font-bold rounded-xl shadow-lg shadow-emerald-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 text-sm disabled:bg-slate-300 disabled:shadow-none">
-            <span>🛒</span> 加入選購清單
+          
+          <button onclick="generateProductPoster(currentDetailPartNo)" class="w-full py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300/80 text-amber-900 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-[0.99]">
+            <span>🎨</span> 生成該商品專屬宣傳海報（發朋友圈）
           </button>
         </div>
       </div>
@@ -286,6 +302,16 @@
                     class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none text-xs transition focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/10" 
                     oninput="clearError('orderAddress', 'errAddress')"></textarea>
           <p id="errAddress" class="text-[10px] text-rose-500 hidden mt-1">地址過於簡略，請填寫完整街道門牌 (至少8字)</p>
+        </div>
+
+        <!-- 推薦人代碼輸入框 -->
+        <div class="text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
+          <label class="block text-slate-600 font-medium mb-1 flex items-center justify-between">
+            <span>🤝 推薦人代碼 / 邀請碼 (選填)</span>
+            <span class="text-[10px] text-emerald-700">享專屬售後健康指導</span>
+          </label>
+          <input type="text" id="orderReferralCode" placeholder="如無可留空，或填寫推薦人邀請碼" 
+                 class="w-full bg-white border border-slate-200 rounded-lg p-2 outline-none text-xs uppercase font-mono text-slate-700">
         </div>
       </div>
 
@@ -398,70 +424,152 @@
         </p>
       </div>
 
-      <button onclick="closeSuccessModal()" class="w-full py-3 bg-emerald-900 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs transition shadow-md">
-        完成
-      </button>
+      <div class="flex gap-2">
+        <button onclick="closeSuccessModal(); openShareModal();" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1">
+          <span>📢</span> 分享好物給朋友
+        </button>
+        <button onclick="closeSuccessModal()" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+          完成
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- 分享 Modal -->
+  <!-- 社交推廣中心 Modal (Canvas 合成海報) -->
   <div id="shareModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+    <div class="bg-white rounded-3xl p-5 max-w-md w-full text-center space-y-3.5 shadow-2xl max-h-[92vh] overflow-y-auto no-scrollbar">
+      
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2.5">
         <span class="text-sm font-bold text-emerald-950 flex items-center gap-1.5 font-serif-title">
-          <span>📢</span> 分享艾草生活館
+          <span>📢</span> 社交推廣與裂變中心
         </span>
         <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
       </div>
       
-      <p class="text-xs text-slate-500">邀請好友體驗道地純陽艾灸草本好物</p>
-      
-      <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 inline-block shadow-inner">
-        <img id="shareQrImg" src="" alt="店鋪二維碼" class="w-44 h-44 mx-auto rounded-xl object-contain shadow bg-white border border-slate-100">
-      </div>
-      
-      <div class="text-[11px] text-emerald-800 bg-emerald-50 p-3 rounded-xl text-left flex gap-2 border border-emerald-200/50">
-        <span class="text-base">💡</span> 
-        <span>在微信內長按二維碼點選「發送給朋友」，或讓好友直接掃碼開啟選購。</span>
+      <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-medium">
+        <button onclick="switchShareTab('poster')" id="tabBtnPoster" class="flex-1 py-1.5 rounded-lg bg-white text-emerald-900 font-bold shadow-sm transition">
+          🖼️ 宣傳海報
+        </button>
+        <button onclick="switchShareTab('copy')" id="tabBtnCopy" class="flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition">
+          📝 種草文案庫
+        </button>
+        <button onclick="switchShareTab('link')" id="tabBtnLink" class="flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition">
+          🔗 專屬連結
+        </button>
       </div>
 
-      <div class="flex gap-2.5 pt-1">
-        <button onclick="copyStoreLink()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
-          🔗 複製連結
-        </button>
-        <button onclick="nativeShare()" class="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md transition">
-          📤 系統分享
+      <!-- 面板 1：海報繪製 -->
+      <div id="shareTabPoster" class="space-y-3">
+        <div class="relative bg-slate-50 border border-slate-200 rounded-2xl p-2 inline-block shadow-inner max-w-full">
+          <canvas id="posterCanvas" width="600" height="850" class="w-64 max-w-full rounded-xl mx-auto shadow-md"></canvas>
+          <div id="posterLoading" class="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-2xl text-white text-xs gap-2">
+            <span class="animate-spin text-2xl">🌿</span>
+            <span>正在為您精心繪製海報...</span>
+          </div>
+        </div>
+        
+        <p class="text-[11px] text-amber-800 bg-amber-50 py-1.5 px-3 rounded-lg border border-amber-200/50 leading-tight">
+          💡 長按上方海報可直接儲存至手機相簿，分享至微信朋友圈或小紅書！
+        </p>
+        
+        <div class="flex gap-2">
+          <button onclick="downloadPoster()" class="flex-1 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-amber-200 font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-1.5">
+            <span>💾</span> 儲存高清海報
+          </button>
+          <button onclick="nativeShare()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+            📤 分享
+          </button>
+        </div>
+      </div>
+
+      <!-- 面板 2：文案庫 -->
+      <div id="shareTabCopy" class="hidden text-left space-y-2.5">
+        <p class="text-[11px] text-slate-400">點擊下方任一文案，即可一鍵複製「文案 + 專屬連結」發送至微信群或朋友圈：</p>
+        
+        <div onclick="copyPresetText(1)" class="p-3 bg-emerald-50/60 hover:bg-emerald-100/60 border border-emerald-200/70 rounded-xl cursor-pointer transition active:scale-[0.99] group">
+          <div class="flex justify-between items-center text-xs font-bold text-emerald-950 mb-1">
+            <span>🌿 朋友圈養生自用推薦</span>
+            <span class="text-[10px] text-emerald-700 group-hover:underline">一鍵複製 📋</span>
+          </div>
+          <p id="copyText1" class="text-[11px] text-slate-600 leading-relaxed font-normal">
+            家裡常備的好艾條！採自南陽伏牛山端午純陽艾，乾倉三年陳放，溫通經絡不燥熱。產地直供品質真的很正，守護全家人的日常元氣，推薦給注重養生的朋友！👇
+          </p>
+        </div>
+
+        <div onclick="copyPresetText(2)" class="p-3 bg-amber-50/60 hover:bg-amber-100/60 border border-amber-200/70 rounded-xl cursor-pointer transition active:scale-[0.99] group">
+          <div class="flex justify-between items-center text-xs font-bold text-amber-950 mb-1">
+            <span>👵 孝敬長輩/親友關懷文案</span>
+            <span class="text-[10px] text-amber-800 group-hover:underline">一鍵複製 📋</span>
+          </div>
+          <p id="copyText2" class="text-[11px] text-slate-600 leading-relaxed font-normal">
+            天涼給父母備了伏牛山的道地陳艾。古法工藝不摻雜質，艾香純陽溫潤。驅寒暖身舒緩關節，比送什麼保健品都貼心實用，支持官方正品包郵直送！👇
+          </p>
+        </div>
+
+        <div onclick="copyPresetText(3)" class="p-3 bg-sky-50/60 hover:bg-sky-100/60 border border-sky-200/70 rounded-xl cursor-pointer transition active:scale-[0.99] group">
+          <div class="flex justify-between items-center text-xs font-bold text-sky-950 mb-1">
+            <span>🔥 社群/辦公室久坐種草文案</span>
+            <span class="text-[10px] text-sky-800 group-hover:underline">一鍵複製 📋</span>
+          </div>
+          <p id="copyText3" class="text-[11px] text-slate-600 leading-relaxed font-normal">
+            天天對著電腦肩頸酸痛的看過來！體驗了這家的無煙隨身灸和陳艾柱，聚熱快不燙傷，隨時隨地溫通氣血。核心產地一手好貨，強烈安利！👇
+          </p>
+        </div>
+      </div>
+
+      <!-- 面板 3：專屬連結 -->
+      <div id="shareTabLink" class="hidden text-left space-y-3">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-700">我的自訂推薦人代碼 (Affiliate ID)</label>
+          <div class="flex gap-2">
+            <input type="text" id="customRefInput" maxlength="12" placeholder="如：VIP888 或您的姓名" 
+                   class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs uppercase font-mono font-bold text-emerald-950 outline-none focus:border-emerald-600">
+            <button onclick="applyCustomRefCode()" class="px-3.5 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-amber-200 font-bold rounded-xl text-xs transition">
+              生成專屬碼
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-400">生成的專屬連結將帶有您的推薦代碼，好友開啟時將自動綁定為您的推薦訂單。</p>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1.5">
+          <span class="text-[10px] text-slate-400 font-bold uppercase block">專屬推廣分享網址</span>
+          <div id="myShareUrlText" class="font-mono text-emerald-900 break-all text-[11px] bg-white p-2 rounded-lg border border-slate-200"></div>
+        </div>
+
+        <button onclick="copyStoreLink()" class="w-full py-3 bg-emerald-800 hover:bg-emerald-700 text-amber-200 font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-1.5">
+          <span>🔗</span> 複製我的專屬推薦連結
         </button>
       </div>
+
     </div>
   </div>
 
-  <!-- 頁尾 -->
-  <footer class="bg-emerald-950 text-emerald-400/80 text-[11px] py-6 border-t border-emerald-900/60 mt-12">
-    <div class="max-w-6xl mx-auto px-4 text-center space-y-1">
-      <p class="font-medium text-emerald-200">🌿 艾草生活體驗館 · 官方直營展銷中心</p>
-      <p class="text-[10px] text-emerald-500/70">本站商品均經安全嚴格品控 · 支持微信/支付寶安全結算 · 發貨進度請關注微信公眾號</p>
+  <!-- 社交從眾動態氣泡 -->
+  <div id="socialProofToast" class="fixed bottom-4 left-4 z-40 hidden max-w-[280px] bg-emerald-950/90 backdrop-blur-md text-white border border-emerald-700/60 rounded-2xl p-2.5 shadow-2xl flex items-center gap-2.5 pointer-events-none">
+    <div class="w-8 h-8 rounded-full bg-emerald-800 flex items-center justify-center text-sm flex-shrink-0 border border-emerald-500/40">
+      🌿
     </div>
-  </footer>
+    <div class="text-[11px] leading-tight overflow-hidden">
+      <div id="socialToastUser" class="font-bold text-amber-200 truncate">來自 廣東 的 張女士</div>
+      <div id="socialToastAction" class="text-emerald-300/90 text-[10px] truncate mt-0.5">剛剛選購了 伏牛山五年陳艾柱</div>
+    </div>
+  </div>
 
-  <!-- 繁簡轉換腳本與字典 -->
+  <!-- 繁簡語言轉換核心腳本 -->
   <script>
-    const t2sMap = { "體驗": "体验", "館": "馆", "官方": "官方", "正品": "正品", "展銷": "展销", "中心": "中心", "產地": "产地", "直供": "直供", "南陽": "南阳", "伏牛山": "伏牛山", "地道": "地道", "純": "纯", "艾": "艾", "匠心": "匠心", "溫養": "温养", "推廣": "推广", "分享": "分享", "購物車": "购物车", "傳統": "传统", "中醫": "中医", "本草": "本草", "現代": "现代", "健康": "健康", "美學": "美学", "溫通": "温通", "經絡": "经络", "靜享": "静享", "艾香": "艾香", "純陽": "纯阳", "之韻": "之韵", "全系列": "全系列", "產品": "产品", "遵循": "遵循", "古法": "古法", "製作": "制作", "精選": "精选", "三年": "三年", "及": "及", "五年": "五年", "陳放": "陈放", "天然": "天然", "艾絨": "艾绒", "不摻": "不掺", "雜質": "杂质", "溫煦": "温煦", "為您": "为您", "與家人": "与家人", "守護": "守护", "日常": "日常", "元氣": "元气", "核心": "核心", "直送": "直送", "精純": "精纯", "陳年": "陈年", "全國": "全国", "包郵寄": "包邮寄", "安心": "安心", "密封": "密封", "發貨": "发货", "保證": "保证", "品質": "品质", "售後": "售后", "無憂": "无忧", "精選產品分類": "精选产品分类", "點選圖片檢視溯源詳情": "点选图片检视溯源详情", "載入系列分類中": "载入系列分类中", "全部系列": "全部系列", "正在為您同步正品庫存": "正在为您同步正品库存", "請稍候": "请稍候", "已售罄": "已售罄", "品號": "品号", "特惠價": "特惠价", "補貨中": "补货中", "選購": "选购", "官方溯源正品保證": "官方溯源正品保证", "庫存充足": "库存充足", "道地溯源與品質履歷": "道地溯源与品质履历", "原產": "原产", "端午純陽採": "端午纯阳采", "乾倉古法陳": "乾仓古法陈", "加入選購清單": "加入选购清单", "結帳與收件資訊": "结帐与收件资讯", "全場官方包郵": "全场官方包邮", "當天極速發貨": "当天极速发货", "已選購產品": "已选购产品", "確認數量後填寫下方收件資料": "确认数量后填写下方收件资料", "收件人發貨資訊": "收件人发货资讯", "收件人姓名": "收件人姓名", "如：張先生 / 李華": "如：张先生 / 李华", "請填寫真實姓名": "请填写真实姓名", "聯絡電話": "联络电话", "位手機號": "位手机号", "請填寫有效": "请填写有效", "收件方式": "收件方式", "快遞包郵寄送至指定地址": "快递包邮寄送至指定地址", "現場展台自提": "现场展台自提", "詳細收貨地址": "详细收货地址", "請詳細填寫：省、市、區/縣、街道及詳細門牌號": "请详细填写：省、市、区/县、街道及详细门牌号", "地址過於簡略": "地址过于简略", "請填寫完整街道門牌": "请填写完整街道门牌", "選擇結算方式": "选择结算方式", "微信支付": "微信支付", "官方掃碼結算": "官方扫码结算", "支付寶": "支付宝", "安全掃碼結算": "安全扫码结算", "訂單應付總額（包郵）": "订单应付总额（包邮）", "前往安全掃碼結算": "前往安全扫码结算", "實付結算金額": "实付结算金额", "溫馨提醒": "温馨提醒", "掃碼轉帳付款後，請務必點擊下方按鈕送出訂單，系統將第一時間為您核對並安排出貨！": "扫码转帐付款后，请务必点击下方按钮送出订单，系统将第一时间为您核对并安排出货！", "我已完成付款，立即送出訂單": "我已完成付款，立即送出订单", "選購登記已成功": "选购登记已成功", "訂單編號": "订单编号", "長按識別二維碼關注官方公眾號": "长按识别二维码关注官方公众号", "關注後發送您的": "关注后发送您的", "即可即時查詢物流動態與領取節氣艾灸養生錦囊！": "即可即时查询物流动态与领取节气艾灸养生锦囊！", "完成": "完成", "邀請好友體驗道地純陽艾灸草本好物": "邀请好友体验道地纯阳艾灸草本好物", "在微信內長按二維碼點選「發送給朋友」，或讓好友直接掃碼開啟選購。": "在微信内长按二维码点选「发送给朋友」，或让好友直接扫码开启选购。", "複製連結": "复制连结", "系統分享": "系统分享", "本站商品均經安全嚴格品控": "本站商品均经安全严格品控", "支持微信/支付寶安全結算": "支持微信/支付宝安全结算", "發貨進度請關注微信公眾號": "发货进度请关注微信公众号", "嚴選": "严选", "野生": "野生", "端午時節純陽之氣最盛時採摘": "端午时节纯阳之气最盛时采摘", "歷經自然陰乾": "历经自然阴干", "置於恆溫乾倉陳放三年以上": "置于恒温乾仓陈放三年以上", "古法石碾工藝": "古法石碾工艺", "艾煙淡白": "艾烟淡白", "溫潤入經絡": "温润入经络", "專為現代居家溫灸設計": "专为现代居家温灸设计", "選用耐高溫安全材質": "选用耐高温安全材质", "聚熱不燙傷": "聚热不烫伤", "防灰網設計確保施灸安全": "防灰网设计确保施灸安全", "搭配道地艾柱": "搭配道地艾柱", "讓養生更純粹簡捷": "让养生更纯粹简捷", "本館所售產品均源自南陽核心產區": "本馆所售产品均源自南阳核心产区", "嚴格把控採收、炮製與封存環節": "严格把控采收、炮制与封存环节", "將傳統中醫草本智慧與現代品控結合": "将传统中医草本智慧与现代品控结合", "為您呈獻最純正的健康養生佳品": "为您呈献最纯正的健康养生佳品", "未分類": "未分类", "該商品庫存僅剩": "该商品库存仅剩", "件": "件", "自提展位 / 備註資訊": "自提展位 / 备注资讯", "請註明您的展位號或預計自提時間（如：A08展台、下午3點自提）": "请注明您的展位号或预计自提时间（如：A08展台、下午3点自提）", "自提請填寫展位號或備註（至少2字）": "自提请填写展位号或备注（至少2字）", "請包含省市區/縣及詳細門牌（至少8字）": "请包含省市区/县及详细门牌（至少8字）", "收貨人發貨資料填寫有誤，請依紅字提示修正後再結算！": "收货人发货资料填写有误，请依红字提示修正后再结算！", "微信官方安全支付": "微信官方安全支付", "支付寶官方安全支付": "支付宝官方安全支付", "請長按二維碼識別，或截圖後使用微信掃一掃付款": "请长按二维码识别，或截图后使用微信扫一扫付款", "請截圖後使用支付寶掃一掃結算": "请截图后使用支付宝扫一扫结算", "請勿頻繁點擊，訂單正安全佇列中，請稍候 15 秒！": "请勿频繁点击，订单正安全伫列中，请稍候 15 秒！", "人機安全檢查進行中，請稍候片刻再點擊送出！": "人机安全检查进行中，请稍候片刻再点击送出！", "正在為您安全建立訂單...": "正在为您安全建立订单...", "下單失敗": "下单失败", "店鋪網址已成功複製到剪貼簿！": "店铺网址已成功复制到剪贴簿！", "複製失敗，請手動複製網址。": "复制失败，请手动复制网址。", "發現一家優質天然艾草草本館，產地直送官方正品！": "发现一家优质天然艾草草本馆，产地直送官方正品！", "您的裝置暫不支援直接調用系統分享，請點擊「複製連結」分享給好友！": "您的装置暂不支持直接调用系统分享，请点击「复制连结」分享给好友！", "購物車內暫無選購商品": "购物车内暂无选购商品" };
+    const t2sMap = { "體驗": "体验", "館": "馆", "官方": "官方", "正品": "正品", "展銷": "展销", "中心": "中心", "產地": "产地", "直供": "直供", "南陽": "南阳", "伏牛山": "伏牛山", "地道": "地道", "純": "纯", "艾": "艾", "匠心": "匠心", "溫養": "温养", "推廣": "推广", "分享": "分享", "購物車": "购物车", "傳統": "传统", "中醫": "中医", "本草": "本草", "現代": "现代", "健康": "健康", "美學": "美学", "溫通": "温通", "經絡": "经络", "靜享": "静享", "艾香": "艾香", "純陽": "纯阳", "之韻": "之韵", "全系列": "全系列", "產品": "产品", "遵循": "遵循", "古法": "古法", "製作": "制作", "精選": "精选", "三年": "三年", "及": "及", "五年": "五年", "陳放": "陈放", "天然": "天然", "艾絨": "艾绒", "不摻": "不掺", "雜質": "杂质", "溫煦": "温煦", "為您": "为您", "與家人": "与家人", "守護": "守护", "日常": "日常", "元氣": "元气", "核心": "核心", "直送": "直送", "精純": "精纯", "陳年": "陈年", "全國": "全国", "包郵寄": "包邮寄", "安心": "安心", "密封": "密封", "發貨": "发货", "保證": "保证", "品質": "品质", "售後": "售后", "無憂": "无忧", "精選產品分類": "精选产品分类", "點選圖片檢視溯源詳情": "点选图片检视溯源详情", "載入系列分類中": "载入系列分类中", "全部系列": "全部系列", "正在為您同步正品庫存": "正在为您同步正品库存", "請稍候": "请稍候", "已售罄": "已售罄", "品號": "品号", "特惠價": "特惠价", "補貨中": "补货中", "選購": "选购", "官方溯源正品保證": "官方溯源正品保证", "庫存充足": "库存充足", "道地溯源與品質履歷": "道地溯源与品质履历", "原產": "原产", "端午純陽採": "端午纯阳采", "乾倉古法陳": "乾仓古法陈", "加入選購清單": "加入选购清单", "結帳與收件資訊": "结帐与收件资讯", "全場官方包郵": "全场官方包邮", "當天極速發貨": "当天极速发货", "已選購產品": "已选购产品", "確認數量後填寫下方收件資料": "确认数量后填写下方收件资料", "收件人發貨資訊": "收件人发货资讯", "收件人姓名": "收件人姓名", "如：張先生 / 李華": "如：张先生 / 李华", "請填寫真實姓名": "请填写真实姓名", "聯絡電話": "联络电话", "位手機號": "位手机号", "請填寫有效": "请填写有效", "收件方式": "收件方式", "快遞包郵寄送至指定地址": "快递包邮寄送至指定地址", "現場展台自提": "现场展台自提", "詳細收貨地址": "详细收货地址", "請詳細填寫：省、市、區/縣、街道及詳細門牌號": "请详细填写：省、市、区/县、街道及详细门牌号", "地址過於簡略": "地址过于简略", "請填寫完整街道門牌": "请填写完整街道门牌", "選擇結算方式": "选择结算方式", "微信支付": "微信支付", "官方掃碼結算": "官方扫码结算", "支付寶": "支付宝", "安全掃碼結算": "安全扫码结算", "訂單應付總額（包郵）": "订单应付总额（包邮）", "前往安全掃碼結算": "前往安全扫码结算", "實付結算金額": "实付结算金额", "溫馨提醒": "温馨提醒", "掃碼轉帳付款後，請務必點擊下方按鈕送出訂單，系統將第一時間為您核對並安排出貨！": "扫码转帐付款后，请务必点击下方按钮送出订单，系统将第一时间为您核对并安排出货！", "我已完成付款，立即送出訂單": "我已完成付款，立即送出订单", "選購登記已成功": "选购登记已成功", "訂單編號": "订单编号", "長按識別二維碼關注官方公眾號": "长按识别二维码关注官方公众号", "關注後發送您的": "关注后发送您的", "即可即時查詢物流動態與領取節氣艾灸養生錦囊！": "即可即时查询物流动态与领取节气艾灸养生锦囊！", "完成": "完成", "複製連結": "复制连结", "系統分享": "系统分享", "本站商品均經安全嚴格品控": "本站商品均经安全严格品控", "支持微信/支付寶安全結算": "支持微信/支付宝安全结算", "發貨進度請關注微信公眾號": "发货进度请关注微信公众号", "推薦人代碼 / 邀請碼": "推荐人代码 / 邀请码", "享專屬售後健康指導": "享专属售后健康指导", "如無可留空，或填寫推薦人邀請碼": "如无可留空，或填写推荐人邀请码", "社交推廣與裂變中心": "社交推广与裂变中心", "宣傳海報": "宣传海报", "種草文案庫": "种草文案库", "專屬連結": "专属连结", "儲存高清海報": "储存高清海报", "生成該商品專屬宣傳海報（發朋友圈）": "生成该商品专属宣传海报（发朋友圈）", "分享好物給朋友": "分享好物给朋友" };
     
-    // 生成反向字典 (簡轉繁)
     const s2tMap = {};
     for (let key in t2sMap) { s2tMap[t2sMap[key]] = key; }
 
-    let currentLang = localStorage.getItem('storeLang') || 'tc'; // 'tc' (繁) 或 'sc' (簡)
+    let currentLang = localStorage.getItem('storeLang') || 'tc';
 
-    // 遞迴替換文字節點 (排除 input/textarea 以免干擾使用者輸入)
     function translateNode(node, dict) {
-      if (node.nodeType === 3) { // Text node
+      if (node.nodeType === 3) {
         let text = node.nodeValue;
         for (let key in dict) { text = text.split(key).join(dict[key]); }
         node.nodeValue = text;
       } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE' && node.nodeName !== 'INPUT' && node.nodeName !== 'TEXTAREA') {
-        // 處理 placeholder 屬性
         if (node.hasAttribute('placeholder')) {
           let ph = node.getAttribute('placeholder');
           for (let key in dict) { ph = ph.split(key).join(dict[key]); }
@@ -491,14 +599,21 @@
     function toggleLang() {
       currentLang = currentLang === 'tc' ? 'sc' : 'tc';
       applyLanguage(currentLang);
-      
-      // 動態更新載入的商品庫資料 (因為這部分是 JS 變數，替換 DOM 不會改到原始資料)
-      // 若後續切換分類或加入購物車，需要保證資料層也是目標語言
       initStore(); 
+    }
+
+    function _t(str) {
+      if (!str) return str;
+      if (currentLang === 'sc') {
+        let res = str;
+        for (let k in t2sMap) res = res.split(k).join(t2sMap[k]);
+        return res;
+      }
+      return str;
     }
   </script>
 
-  <!-- 商城主業務邏輯 -->
+  <!-- 商城主業務與下單同步邏輯 -->
   <script>
     const FIXED_SUPABASE_URL = "https://xayagdicjwexwtehdjby.supabase.co";
     const FIXED_SUPABASE_KEY = "sb_publishable_ehe3Q13ZWq3552zzWQmGvg_2RnhkJIV";
@@ -516,9 +631,10 @@
     let lastSubmitTimestamp = 0;
     let turnstileToken = '';
 
-    // 詳情頁狀態
+    let currentRefCode = '';
     let currentDetailPartNo = null;
     let currentDetailQty = 1;
+    let currentPosterTargetProduct = null;
 
     const HERBAL_FALLBACK_IMAGES = {
       cone: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=600&auto=format&fit=crop&q=80",
@@ -534,35 +650,61 @@
       if (product.image_url && product.image_url.trim() !== '') return product.image_url;
       const title = (product.part_name + ' ' + product.part_no).toLowerCase();
       if (title.includes('柱') || title.includes('cone')) return HERBAL_FALLBACK_IMAGES.cone;
-      if (title.includes('絨') || title.includes('raw')) return HERBAL_FALLBACK_IMAGES.raw;
+      if (title.includes('絨') || title.includes('raw') || title.includes('绒')) return HERBAL_FALLBACK_IMAGES.raw;
       if (title.includes('盒') || title.includes('器') || title.includes('burner') || title.includes('device')) return HERBAL_FALLBACK_IMAGES.device;
       if (title.includes('油') || title.includes('oil')) return HERBAL_FALLBACK_IMAGES.oil;
       if (title.includes('浴') || title.includes('足') || title.includes('soak')) return HERBAL_FALLBACK_IMAGES.soak;
-      if (title.includes('條') || title.includes('stick')) return HERBAL_FALLBACK_IMAGES.stick;
+      if (title.includes('條') || title.includes('stick') || title.includes('条')) return HERBAL_FALLBACK_IMAGES.stick;
       return HERBAL_FALLBACK_IMAGES.default;
-    }
-
-    // 將資料庫回傳的字串翻譯為當前語系
-    function _t(str) {
-      if (!str) return str;
-      if (currentLang === 'sc') {
-        let res = str;
-        for (let k in t2sMap) res = res.split(k).join(t2sMap[k]);
-        return res;
-      }
-      // 因為資料庫存的通常是繁體，若當前是 tc 則不用刻意轉 (或確保安全仍可過一次 s2t)
-      return str;
     }
 
     function onTurnstileSuccess(token) { turnstileToken = token; }
     function onTurnstileExpired() { turnstileToken = ''; }
     function onTurnstileError() { turnstileToken = ''; }
 
+    function initReferralSystem() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref') || urlParams.get('r');
+      if (ref) {
+        currentRefCode = ref.trim().toUpperCase();
+        localStorage.setItem('moxa_ref_code', currentRefCode);
+        document.getElementById('referrerBanner').classList.remove('hidden');
+        document.getElementById('orderReferralCode').value = currentRefCode;
+        document.getElementById('orderReferralCode').readOnly = true;
+      } else {
+        const savedRef = localStorage.getItem('moxa_ref_code');
+        if (savedRef) {
+          currentRefCode = savedRef;
+          document.getElementById('orderReferralCode').value = currentRefCode;
+        }
+      }
+      updateShareUrlDisplay();
+    }
+
+    function updateShareUrlDisplay() {
+      const baseUrl = window.location.href.split('?')[0];
+      const activeCode = currentRefCode || 'VIP' + Math.floor(1000 + Math.random() * 9000);
+      const fullUrl = `${baseUrl}?ref=${activeCode}`;
+      document.getElementById('myShareUrlText').innerText = fullUrl;
+      document.getElementById('customRefInput').value = activeCode;
+    }
+
+    function applyCustomRefCode() {
+      const input = document.getElementById('customRefInput').value.trim().toUpperCase();
+      if (!input) return alert(_t("請輸入推薦代碼！"));
+      currentRefCode = input;
+      localStorage.setItem('moxa_ref_code', currentRefCode);
+      updateShareUrlDisplay();
+      alert(_t("您的專屬推薦代碼已更新！海報與分享連結已自動綁定。"));
+      generateStorePoster();
+    }
+
     async function initStore() {
+      initReferralSystem();
       await fetchCategories();
       await fetchCatalog();
-      // 初始化頁面語言
       if(currentLang === 'sc') applyLanguage('sc');
+      startSocialProofToast();
     }
 
     async function fetchCategories() {
@@ -606,9 +748,7 @@
 
     function renderProducts() {
       const container = document.getElementById('productGrid');
-      
       const activeProducts = catalogProducts.filter(p => p.status !== 'INACTIVE');
-
       const filtered = currentCategory === 'ALL' 
         ? activeProducts 
         : activeProducts.filter(p => (p.category || '未分類') === currentCategory);
@@ -744,19 +884,14 @@
       if (!currentDetailPartNo) return;
       const p = catalogProducts.find(x => x.part_no === currentDetailPartNo);
       if (!p) return;
-      
       let newQty = currentDetailQty + delta;
       if (newQty < 1) newQty = 1;
-      
       const c = cart.find(i => i.part_no === currentDetailPartNo);
       const existingQty = c ? c.qty : 0;
-      
       if (newQty + existingQty > p.stock) {
-        const msg = currentLang === 'sc' ? `该商品库存仅剩 ${p.stock} 件！` : `該商品庫存僅剩 ${p.stock} 件！`;
-        alert(msg);
+        alert(currentLang === 'sc' ? `该商品库存仅剩 ${p.stock} 件！` : `該商品庫存僅剩 ${p.stock} 件！`);
         return;
       }
-      
       currentDetailQty = newQty;
       document.getElementById('detailQty').innerText = currentDetailQty;
     }
@@ -765,14 +900,11 @@
       if (!currentDetailPartNo) return;
       const p = catalogProducts.find(x => x.part_no === currentDetailPartNo);
       if (!p) return;
-
       const c = cart.find(i => i.part_no === currentDetailPartNo);
       if (c) { 
         c.qty += currentDetailQty; 
       } else {
-        cart.push({ 
-          id: p.id, part_no: p.part_no, part_name: p.part_name, unit_price: p.unit_price, maxStock: p.stock, qty: currentDetailQty 
-        });
+        cart.push({ id: p.id, part_no: p.part_no, part_name: p.part_name, unit_price: p.unit_price, maxStock: p.stock, qty: currentDetailQty });
       }
       updateCartUI();
       closeProductDetail();
@@ -785,10 +917,7 @@
       if (!p || p.status === 'INACTIVE') return;
       const c = cart.find(i => i.part_no === partNo);
       if (c) { 
-        if (c.qty + 1 > p.stock) {
-           const msg = currentLang === 'sc' ? `库存仅剩 ${p.stock} 件！` : `庫存僅剩 ${p.stock} 件！`;
-           return alert(msg); 
-        }
+        if (c.qty + 1 > p.stock) return alert(currentLang === 'sc' ? `库存仅剩 ${p.stock} 件！` : `庫存僅剩 ${p.stock} 件！`);
         c.qty++; 
       } else {
         cart.push({ id: p.id, part_no: p.part_no, part_name: p.part_name, unit_price: p.unit_price, maxStock: p.stock, qty: 1 });
@@ -807,14 +936,12 @@
     function updateCartUI() {
       const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
       const totalPrice = cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0);
-
       document.getElementById('cartCountBadge').innerText = totalCount;
       document.getElementById('cartTotalText').innerText = `¥${totalPrice}`;
       document.getElementById('btnGoPay').disabled = cart.length === 0;
       
       selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
       const isWx = selectedPayMethod === 'wechat';
-      
       const wxTxt = currentLang === 'sc' ? "微信扫码结算" : "微信掃碼結算";
       const aliTxt = currentLang === 'sc' ? "支付宝安全结算" : "支付寶安全結算";
 
@@ -825,8 +952,7 @@
 
       const box = document.getElementById('cartItemList');
       if (cart.length === 0) {
-        const emptyTxt = currentLang === 'sc' ? '购物车内暂无选购商品' : '購物車內暫無選購商品';
-        box.innerHTML = `<div class="text-center text-slate-400 py-10 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">${emptyTxt}</div>`;
+        box.innerHTML = `<div class="text-center text-slate-400 py-10 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">${_t('購物車內暫無選購商品')}</div>`;
         return;
       }
 
@@ -864,68 +990,48 @@
       const lbl = document.getElementById('lblAddress');
       clearError('orderAddress', 'errAddress');
       
-      if (type === '現場自提' || type === '现场自提') {
-        lbl.innerText = currentLang === 'sc' ? '自提展位 / 备注资讯 *' : '自提展位 / 備註資訊 *';
-        addrInput.placeholder = currentLang === 'sc' ? '请注明您的展位号或预计自提时间（如：A08展台、下午3点自提）' : '請註明您的展位號或預計自提時間（如：A08展台、下午3點自提）';
+      if (type.includes('現場') || type.includes('现场')) {
+        lbl.innerText = _t('自提展位 / 備註資訊 *');
+        addrInput.placeholder = _t('請註明您的展位號或預計自提時間（如：A08展台、下午3點自提）');
       } else {
-        lbl.innerText = currentLang === 'sc' ? '详细收货地址 *' : '詳細收貨地址 *';
-        addrInput.placeholder = currentLang === 'sc' ? '请详细填写：省、市、区/县、街道及详细门牌号' : '請詳細填寫：省、市、區/縣、街道及詳細門牌號';
+        lbl.innerText = _t('詳細收貨地址 *');
+        addrInput.placeholder = _t('請詳細填寫：省、市、區/縣、街道及詳細門牌號');
       }
     }
 
     function validateShippingInfo() {
-      const nameEl = document.getElementById('orderName');
-      const phoneEl = document.getElementById('orderPhone');
-      const addrEl = document.getElementById('orderAddress');
+      const nameEl = document.getElementById('orderName'), phoneEl = document.getElementById('orderPhone'), addrEl = document.getElementById('orderAddress');
       const delType = document.getElementById('orderDeliveryType').value;
-      const errName = document.getElementById('errName');
-      const errPhone = document.getElementById('errPhone');
-      const errAddress = document.getElementById('errAddress');
       let isValid = true;
 
       if (!/^[\u4e00-\u9fa5a-zA-Z·\s]{2,15}$/.test(nameEl.value.trim())) {
-        nameEl.classList.add('border-rose-500', 'bg-rose-50');
-        errName.classList.remove('hidden');
-        isValid = false;
+        nameEl.classList.add('border-rose-500', 'bg-rose-50'); document.getElementById('errName').classList.remove('hidden'); isValid = false;
       }
       if (!/^1[3-9]\d{9}$/.test(phoneEl.value.trim())) {
-        phoneEl.classList.add('border-rose-500', 'bg-rose-50');
-        errPhone.classList.remove('hidden');
-        isValid = false;
+        phoneEl.classList.add('border-rose-500', 'bg-rose-50'); document.getElementById('errPhone').classList.remove('hidden'); isValid = false;
       }
 
       const addrVal = addrEl.value.trim();
-      if (delType === '現場自提' || delType === '现场自提') {
+      if (delType.includes('現場') || delType.includes('现场')) {
         if (addrVal.length < 2) {
-          addrEl.classList.add('border-rose-500', 'bg-rose-50');
-          errAddress.innerText = currentLang === 'sc' ? '自提请填写展位号或备注（至少2字）' : '自提請填寫展位號或備註（至少2字）';
-          errAddress.classList.remove('hidden');
-          isValid = false;
+          addrEl.classList.add('border-rose-500', 'bg-rose-50'); document.getElementById('errAddress').innerText = _t('自提請填寫展位號或備註（至少2字）'); document.getElementById('errAddress').classList.remove('hidden'); isValid = false;
         }
       } else {
         if (addrVal.length < 8 || /^[0-9a-zA-Z]+$/.test(addrVal)) {
-          addrEl.classList.add('border-rose-500', 'bg-rose-50');
-          errAddress.innerText = currentLang === 'sc' ? '请包含省市区/县及详细门牌（至少8字）' : '請包含省市區/縣及詳細門牌（至少8字）';
-          errAddress.classList.remove('hidden');
-          isValid = false;
+          addrEl.classList.add('border-rose-500', 'bg-rose-50'); document.getElementById('errAddress').innerText = _t('請包含省市區/縣及詳細門牌（至少8字）'); document.getElementById('errAddress').classList.remove('hidden'); isValid = false;
         }
       }
       return isValid;
     }
 
     function openPayModal() {
-      if (!validateShippingInfo()) {
-        alert(currentLang === 'sc' ? "收货人发货资料填写有误，请依红字提示修正后再结算！" : "收貨人發貨資料填寫有誤，請依紅字提示修正後再結算！");
-        return;
-      }
+      if (!validateShippingInfo()) return alert(_t("收貨人發貨資料填寫有誤，請依紅字提示修正後再結算！"));
 
-      const total = cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0);
-      document.getElementById('payModalAmount').innerText = `¥${total}`;
-      
+      document.getElementById('payModalAmount').innerText = `¥${cart.reduce((sum, i) => sum + (i.qty * i.unit_price), 0)}`;
       selectedPayMethod = document.querySelector('input[name="payMethod"]:checked').value;
       const isWx = selectedPayMethod === 'wechat';
       
-      document.getElementById('payModalTitle').innerHTML = isWx ? `<span>💬</span> ${currentLang==='sc'?'微信官方安全支付':'微信官方安全支付'}` : `<span>🔷</span> ${currentLang==='sc'?'支付宝官方安全支付':'支付寶官方安全支付'}`;
+      document.getElementById('payModalTitle').innerHTML = isWx ? `<span>💬</span> ${_t('微信官方安全支付')}` : `<span>🔷</span> ${_t('支付寶官方安全支付')}`;
       document.getElementById('payModalTitle').className = `text-xs font-bold flex items-center gap-1.5 ${isWx ? 'text-emerald-800' : 'text-sky-800'}`;
       document.getElementById('qrCodeContainer').className = `p-3.5 rounded-2xl border inline-block shadow-inner ${isWx ? 'border-emerald-200/80 bg-emerald-50/50' : 'border-sky-200/80 bg-sky-50/50'}`;
       
@@ -934,29 +1040,32 @@
       qrImg.src = isWx ? WECHAT_PAY_QR_URL : ALIPAY_QR_URL;
 
       document.getElementById('payInstruction').innerText = isWx 
-        ? (currentLang === 'sc' ? '请长按二维码识别，或截图后使用微信扫一扫付款' : '請長按二維碼識別，或截圖後使用微信掃一掃付款')
-        : (currentLang === 'sc' ? '请截图后使用支付宝扫一扫结算' : '請截圖後使用支付寶掃一掃結算');
+        ? _t('請長按二維碼識別，或截圖後使用微信掃一掃付款')
+        : _t('請截圖後使用支付寶掃一掃結算');
 
       document.getElementById('btnConfirmPaid').className = `w-full py-3 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] ${isWx ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-sky-600 hover:bg-sky-500'}`;
       
-      if (window.turnstile) { try { turnstile.reset(); } catch(e) {} }
+      if (window.turnstile) try { turnstile.reset(); } catch(e) {}
       turnstileToken = '';
       document.getElementById('payModal').classList.replace('hidden', 'flex');
     }
 
     function closePayModal() { document.getElementById('payModal').classList.replace('flex', 'hidden'); }
 
+    /* ================= 升級：結構化提交訂單至資料庫 ================= */
     async function confirmPaidAndSubmit() {
-      if (Date.now() - lastSubmitTimestamp < 15000) return alert(currentLang === 'sc' ? "请勿频繁点击，订单正安全伫列中，请稍候 15 秒！" : "請勿頻繁點擊，訂單正安全佇列中，請稍候 15 秒！");
-      if (!turnstileToken) return alert(currentLang === 'sc' ? "人机安全检查进行中，请稍候片刻再点击送出！" : "人機安全檢查進行中，請稍候片刻再點擊送出！");
+      if (Date.now() - lastSubmitTimestamp < 15000) return alert(_t("請勿頻繁點擊，訂單正安全佇列中，請稍候 15 秒！"));
+      if (!turnstileToken) return alert(_t("人機安全檢查進行中，請稍候片刻再點擊送出！"));
 
       const btn = document.getElementById('btnConfirmPaid'); 
       btn.disabled = true; 
-      btn.innerText = currentLang === 'sc' ? "正在为您安全建立订单..." : "正在為您安全建立訂單...";
+      btn.innerText = _t("正在為您安全建立訂單...");
       
       const orderNo = (selectedPayMethod === 'wechat' ? 'WX' : 'AL') + Date.now().toString().slice(-8);
+      const referralCode = document.getElementById('orderReferralCode').value.trim().toUpperCase();
 
       try {
+        // 同步傳遞 p_referral_code 與 p_notes 確保資料庫與備註雙向同步
         const { data, error } = await supabaseClient.rpc('submit_shop_order', {
           p_name: document.getElementById('orderName').value.trim(),
           p_phone: document.getElementById('orderPhone').value.trim(),
@@ -965,7 +1074,9 @@
           p_payment_method: selectedPayMethod === 'wechat' ? '微信支付' : '支付寶',
           p_items: cart.map(item => ({ id: item.id, part_no: item.part_no, part_name: item.part_name, qty: item.qty, unit_price: item.unit_price })),
           p_order_no: orderNo,
-          p_notes: '', p_turnstile_token: turnstileToken
+          p_notes: referralCode ? `【推薦人代碼】${referralCode}` : '',
+          p_referral_code: referralCode,
+          p_turnstile_token: turnstileToken
         });
 
         if (error) throw new Error(error.message);
@@ -983,32 +1094,244 @@
         if (window.turnstile) try { turnstile.reset(); } catch(e) {}
         fetchCatalog();
       } catch (err) { 
-        alert((currentLang === 'sc' ? "下单失败: " : "下單失敗: ") + err.message); 
+        alert(_t("下單失敗: ") + err.message); 
         if (window.turnstile) try { turnstile.reset(); } catch(e) {}
         turnstileToken = '';
       } finally { 
         btn.disabled = false; 
-        btn.innerText = currentLang === 'sc' ? "我已完成付款，立即送出订单" : "我已完成付款，立即送出訂單"; 
+        btn.innerText = _t("我已完成付款，立即送出訂單"); 
       }
     }
 
     function closeSuccessModal() { document.getElementById('successModal').classList.replace('flex', 'hidden'); }
-    function openShareModal() { document.getElementById('shareQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(window.location.href.split('?')[0])}`; document.getElementById('shareModal').classList.replace('hidden', 'flex'); }
-    function closeShareModal() { document.getElementById('shareModal').classList.replace('flex', 'hidden'); }
-    
+
+    /* ================= 社交推廣中心與 Canvas 裂變海報核心 ================= */
+    function openShareModal() {
+      currentPosterTargetProduct = null;
+      switchShareTab('poster');
+      document.getElementById('shareModal').classList.replace('hidden', 'flex');
+      generateStorePoster();
+    }
+
+    function generateProductPoster(partNo) {
+      const p = catalogProducts.find(x => x.part_no === partNo);
+      if (!p) return;
+      currentPosterTargetProduct = p;
+      closeProductDetail();
+      switchShareTab('poster');
+      document.getElementById('shareModal').classList.replace('hidden', 'flex');
+      generateStorePoster();
+    }
+
+    function closeShareModal() { 
+      document.getElementById('shareModal').classList.replace('flex', 'hidden'); 
+    }
+
+    function switchShareTab(tab) {
+      ['poster', 'copy', 'link'].forEach(t => {
+        document.getElementById('shareTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t) ? 'space-y-3' : 'hidden';
+        document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1)).className = (tab === t)
+          ? 'flex-1 py-1.5 rounded-lg bg-white text-emerald-900 font-bold shadow-sm transition'
+          : 'flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition';
+      });
+    }
+
+    async function generateStorePoster() {
+      const canvas = document.getElementById('posterCanvas');
+      const ctx = canvas.getContext('2d');
+      const loading = document.getElementById('posterLoading');
+      loading.classList.remove('hidden');
+
+      const W = canvas.width;
+      const H = canvas.height;
+
+      const gradBg = ctx.createLinearGradient(0, 0, 0, H);
+      gradBg.addColorStop(0, '#fdfbf7');
+      gradBg.addColorStop(1, '#f4ede2');
+      ctx.fillStyle = gradBg;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.strokeStyle = '#d1c7b7';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(16, 16, W - 32, H - 32);
+      ctx.strokeStyle = '#064e3b';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(22, 22, W - 44, H - 44);
+
+      ctx.fillStyle = '#064e3b';
+      ctx.font = 'bold 34px "Noto Serif TC", serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(_t('🌿 艾草生活體驗館'), W / 2, 75);
+
+      ctx.fillStyle = '#b45309';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText(_t('✦ 南陽伏牛山 · 道地純陽純艾 ✦'), W / 2, 108);
+
+      const targetImgUrl = currentPosterTargetProduct 
+        ? getSmartProductImage(currentPosterTargetProduct) 
+        : HERBAL_FALLBACK_IMAGES.cone;
+
+      const mainImg = new Image();
+      mainImg.crossOrigin = 'anonymous';
+      
+      const loadImgPromise = new Promise((resolve) => {
+        mainImg.onload = () => resolve(true);
+        mainImg.onerror = () => resolve(false);
+        mainImg.src = targetImgUrl;
+      });
+      await loadImgPromise;
+
+      const imgX = 45, imgY = 135, imgW = W - 90, imgH = 360;
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(imgX, imgY, imgW, imgH, 20);
+      ctx.clip();
+      try {
+        ctx.drawImage(mainImg, imgX, imgY, imgW, imgH);
+      } catch (e) {
+        ctx.fillStyle = '#064e3b';
+        ctx.fillRect(imgX, imgY, imgW, imgH);
+      }
+      ctx.restore();
+
+      ctx.strokeStyle = 'rgba(6,78,59,0.15)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(imgX, imgY, imgW, imgH, 20);
+      ctx.stroke();
+
+      if (currentPosterTargetProduct) {
+        ctx.fillStyle = '#1e293b';
+        ctx.font = 'bold 26px "Noto Serif TC", serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(_t(currentPosterTargetProduct.part_name), W / 2, 535);
+
+        ctx.fillStyle = '#065f46';
+        ctx.font = 'bold 36px "Noto Serif TC", serif';
+        ctx.fillText(`¥${currentPosterTargetProduct.unit_price}`, W / 2, 580);
+      } else {
+        ctx.fillStyle = '#064e3b';
+        ctx.font = 'bold 24px "Noto Serif TC", serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(_t('溫通經絡，靜享艾香純陽之韻'), W / 2, 535);
+
+        ctx.fillStyle = '#475569';
+        ctx.font = '15px sans-serif';
+        ctx.fillText(_t('傳統中醫草本智慧 · 官方正品包郵直送'), W / 2, 570);
+      }
+
+      ctx.fillStyle = '#f0fdf4';
+      ctx.strokeStyle = '#bbf7d0';
+      ctx.beginPath();
+      ctx.roundRect(45, 605, W - 90, 40, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#065f46';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText(_t('⛰️ 伏牛山原產  |  ☀️ 端午純陽採  |  🏺 乾倉三年陳'), W / 2, 630);
+
+      const baseUrl = window.location.href.split('?')[0];
+      const activeCode = currentRefCode || localStorage.getItem('moxa_ref_code') || '';
+      const targetShareUrl = activeCode ? `${baseUrl}?ref=${activeCode}` : baseUrl;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=4&data=${encodeURIComponent(targetShareUrl)}`;
+
+      const qrImg = new Image();
+      qrImg.crossOrigin = 'anonymous';
+      const loadQrPromise = new Promise((resolve) => {
+        qrImg.onload = () => resolve(true);
+        qrImg.onerror = () => resolve(false);
+        qrImg.src = qrApiUrl;
+      });
+      await loadQrPromise;
+
+      const qrX = 65, qrY = 670, qrSize = 135;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(qrX - 6, qrY - 6, qrSize + 12, qrSize + 12);
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.strokeRect(qrX - 6, qrY - 6, qrSize + 12, qrSize + 12);
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 18px "Noto Serif TC", serif';
+      ctx.fillText(_t('長按識別二維碼開啟選購'), 225, 715);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '13px sans-serif';
+      ctx.fillText(_t('天然無摻假 · 官方正品包郵直送'), 225, 745);
+
+      if (activeCode) {
+        ctx.fillStyle = '#b45309';
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(`專屬推薦碼: ${activeCode}`, 225, 775);
+      }
+
+      loading.classList.add('hidden');
+    }
+
+    function downloadPoster() {
+      const canvas = document.getElementById('posterCanvas');
+      const a = document.createElement('a');
+      a.download = `艾草生活體驗館_宣傳海報_${Date.now()}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+
+    function copyPresetText(idx) {
+      const p = document.getElementById('copyText' + idx);
+      const baseUrl = window.location.href.split('?')[0];
+      const activeCode = currentRefCode || localStorage.getItem('moxa_ref_code') || '';
+      const shareUrl = activeCode ? `${baseUrl}?ref=${activeCode}` : baseUrl;
+      const fullCopy = `${p.innerText}\n\n👉 官方選購通路：${shareUrl}`;
+      navigator.clipboard.writeText(fullCopy).then(() => {
+        alert(_t("種草文案與專屬連結已複製成功！快去微信朋友圈或群聊分享吧！"));
+      }).catch(() => {
+        alert(_t("複製失敗，請手動選取複製。"));
+      });
+    }
+
     function copyStoreLink() {
-      navigator.clipboard.writeText(window.location.href.split('?')[0]).then(() => { 
-        alert(currentLang === 'sc' ? "店铺网址已成功复制到剪贴簿！" : "店鋪網址已成功複製到剪貼簿！"); 
-      }).catch(() => { alert(currentLang === 'sc' ? "复制失败，请手动复制网址。" : "複製失敗，請手動複製網址。"); });
+      const text = document.getElementById('myShareUrlText').innerText;
+      navigator.clipboard.writeText(text).then(() => { 
+        alert(_t("專屬推薦連結已複製到剪貼簿！")); 
+      }).catch(() => { alert(_t("複製失敗，請手動複製網址。")); });
     }
 
     function nativeShare() {
-      const url = window.location.href.split('?')[0];
+      const text = document.getElementById('myShareUrlText').innerText;
       if (navigator.share) {
-        navigator.share({ title: '艾草生活體驗館', text: currentLang === 'sc' ? '发现一家优质天然艾草草本馆，产地直送官方正品！' : '發現一家優質天然艾草草本館，產地直送官方正品！', url: url });
+        navigator.share({ 
+          title: _t('艾草生活體驗館'), 
+          text: _t('發現一家優質天然艾草草本館，產地直送官方正品！'), 
+          url: text 
+        });
       } else {
-        alert(currentLang === 'sc' ? "您的装置暂不支持直接调用系统分享，请点击「复制连结」分享给好友！" : "您的裝置暫不支援直接調用系統分享，請點擊「複製連結」分享給好友！");
+        copyStoreLink();
       }
+    }
+
+    /* ================= 社交從眾動態氣泡 (Social Proof) ================= */
+    const SOCIAL_BUYERS = [
+      { city: "廣東", name: "張女士", item: "伏牛山五年陳艾柱" },
+      { city: "北京", name: "劉先生", item: "特級純手工純艾絨" },
+      { city: "上海", name: "陳阿姨", item: "古法隨身溫灸盒套裝" },
+      { city: "浙江", name: "王先生", item: "三年陳天然大艾條" },
+      { city: "江蘇", name: "趙女士", item: "草本溫養艾草精油" },
+      { city: "四川", name: "李老師", item: "地道草本泡腳艾絨包" }
+    ];
+
+    function startSocialProofToast() {
+      const toast = document.getElementById('socialProofToast');
+      setInterval(() => {
+        const randomBuyer = SOCIAL_BUYERS[Math.floor(Math.random() * SOCIAL_BUYERS.length)];
+        document.getElementById('socialToastUser').innerText = _t(`來自 ${randomBuyer.city} 的 ${randomBuyer.name}`);
+        document.getElementById('socialToastAction').innerText = _t(`剛剛選購了 ${randomBuyer.item}`);
+        
+        toast.classList.remove('hidden', 'animate-social-toast');
+        void toast.offsetWidth;
+        toast.classList.add('animate-social-toast');
+      }, 12000);
     }
 
     window.addEventListener('DOMContentLoaded', initStore);
